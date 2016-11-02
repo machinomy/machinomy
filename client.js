@@ -1,7 +1,7 @@
 "use strict";
 
 var machinomy = require("./index");
-var web3 = paywall.web3;
+var web3 = machinomy.web3;
 
 // Actually "Main account" on Mac machine
 var CLIENT_ACCOUNT_ADDRESS = "0xede7E5A513E1669c25b522CDB285562A2169a473";
