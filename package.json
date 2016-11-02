@@ -1,0 +1,28 @@
+{
+  "name": "machinomy",
+  "version": "0.0.8",
+  "description": "Micropayments for the Machine Economy",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "machinomy": "./bin/machinomy.js"
+  },
+  "keywords": [
+    "micropayments",
+    "ethereum",
+    "express"
+  ],
+  "author": "Sergey Ukustov <sergey.ukustov@machinomy.com>",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "nedb": "^1.8.0",
+    "request": "^2.76.0",
+    "web3": "^0.16.0"
+  },
+  "devDependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0"
+  }
+}
