@@ -12,7 +12,7 @@ var paywall = new machinomy.Paywall(ADDRESS);
 app.use(bodyParser.json());
 app.use(paywall.middleware());
 
-app.get("/resource", paywall.paid(function (req, res) {
+app.get("/resource", paywall.guard(1000, function (req, res) {
     res.send("Hello, world!");
 }));
 
