@@ -1,6 +1,8 @@
 pragma solidity ^0.4.2;
 
-contract Channels {
+import "Mortal";
+
+contract Broker is Mortal {
     struct PaymentChannel {
         address sender;
         address receiver;
@@ -18,7 +20,7 @@ contract Channels {
     event DidClaim(bytes32 indexed channelId, uint256 value);
     event DidClose(address indexed channelId);
 
-    function Channels() {
+    function Broker() {
         id = 0;
     }
 
