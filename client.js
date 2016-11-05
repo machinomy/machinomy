@@ -16,9 +16,9 @@ function step1_1() {
     client.buy(RESOURCE_URL, function (error, price, callback) {
         if (error) throw error;
         var value = price * 10;
-        callback(null, value, function (error, something) {
+        callback(null, value, function (error, response) {
             if (error) throw error;
-            console.log(something);
+            console.log(response.body);
         });
     });
 }
