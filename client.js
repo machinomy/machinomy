@@ -13,9 +13,13 @@ function step1_1() {
     var transport = new machinomy.Transport();
     var storage = new machinomy.Storage('./db.client.db.0');
     var client = new machinomy.Client(CLIENT_ACCOUNT_ADDRESS, machinomy.contract, transport, storage);
-    client.buy(RESOURCE_URL, function (error, something) {
+    client.buy(RESOURCE_URL, function (error, price, callback) {
         if (error) throw error;
-        console.log(something);
+        var value = price * 10;
+        callback(null, value, function (error, something) {
+            if (error) throw error;
+            console.log(something);
+        });
     });
 }
 
