@@ -11,5 +11,6 @@ module.exports = {
     Storage: storage.Storage,
     web3: channel.web3,
     contract: channel.contract,
-    cli: cli
+    cli: cli,
+    Payment: channel.Payment
 };
