@@ -3,18 +3,21 @@ pragma solidity ^0.4.2;
 import "Mortal";
 
 contract Broker is Mortal {
+    enum ChannelState { Open, Closed }
+
     struct PaymentChannel {
         address sender;
         address receiver;
         uint256 value;
 
+        ChannelState state;
+
         uint openUntil;
-        bool open;
     }
 
     mapping(bytes32 => PaymentChannel) channels;
     uint id;
-    
+
     event DidCreateChannel(address indexed sender, address indexed receiver, bytes32 channelId);
     event DidDeposit(address indexed channelId, uint256 value);
     event DidClaim(bytes32 indexed channelId, uint256 value);
@@ -28,8 +31,8 @@ contract Broker is Mortal {
         var channelId = sha3(id++);
         var sender = msg.sender;
         var value = msg.value;
-        channels[channelId] = PaymentChannel(sender, receiver, value, block.timestamp + 1 days, true);
-        
+        channels[channelId] = PaymentChannel(sender, receiver, value, ChannelState.Open, block.timestamp + 1 days);
+
         DidCreateChannel(sender, receiver, channelId);
     }
 
@@ -47,7 +50,7 @@ contract Broker is Mortal {
             DidClaim(channelId, value);
         }
 
-        channels[channelId].open = false;
+        channels[channelId].state = ChannelState.Closed;
     }
 
     function getHash(bytes32 channelId, uint256 value) constant returns(bytes32) {
@@ -56,7 +59,7 @@ contract Broker is Mortal {
 
     function verify(bytes32 channelId, uint256 value, uint8 v, bytes32 r, bytes32 s) constant returns(bool) {
         var channel = channels[channelId];
-		return channel.open &&
+		return channel.state == ChannelState.Open &&
             channel.openUntil > block.timestamp &&
             channel.sender == ecrecover(getHash(channelId, value), v, r, s);
     }
@@ -80,6 +83,6 @@ contract Broker is Mortal {
 
     function isOpenChannel(bytes32 channelId) constant returns(bool) {
         var channel = channels[channelId];
-        return channel.open && channel.openUntil >= block.timestamp;
+        return channel.state == ChannelState.Open && channel.openUntil >= block.timestamp;
     }
 }
