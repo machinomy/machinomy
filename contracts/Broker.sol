@@ -14,6 +14,8 @@ contract Broker is Mortal {
 
         ChannelState state;
         uint until; // state is invalid
+
+        uint256 payment;
     }
 
     mapping(bytes32 => PaymentChannel) channels;
@@ -37,7 +39,7 @@ contract Broker is Mortal {
         var sender = msg.sender;
         var value = msg.value;
         channels[channelId] =
-          PaymentChannel(sender, receiver, value, settlementPeriod, ChannelState.Open, block.timestamp + duration);
+          PaymentChannel(sender, receiver, value, settlementPeriod, ChannelState.Open, block.timestamp + duration, 0);
 
         DidCreateChannel(sender, receiver, channelId);
     }
@@ -61,17 +63,28 @@ contract Broker is Mortal {
 
     /* Sender starts settling */
     function startSettle(bytes32 channelId, uint256 payment) public {
-      if (!canStartSettle(msg.sender, channelId)) throw;
-      var channel = channels[channelId];
-      channel.state = ChannelState.Settling;
-      channel.until = now + channel.settlementPeriod;
-      DidStartSettle(channelId, payment);
+        if (!canStartSettle(msg.sender, channelId)) throw;
+        var channel = channels[channelId];
+        channel.state = ChannelState.Settling;
+        channel.until = now + channel.settlementPeriod;
+        channel.payment = payment;
+        DidStartSettle(channelId, payment);
     }
 
     /* Sender settles the channel, if receiver have not done that */
-    function finishSettle(bytes32 channelId, uint256 payment) public {
+    function finishSettle(bytes32 channelId) public {
       if (!canFinishSettle(msg.sender, channelId)) throw;
-      this.settle(channelId, payment);
+      this.settle(channelId, channels[channelId].payment);
+    }
+
+    function close(bytes32 channelId) {
+        var channel = channels[channelId];
+        if (channel.state == ChannelState.Settled && (msg.sender == owner || msg.sender == channel.sender || msg.sender == channel.receiver)) {
+            if (channel.value > 0) {
+                if (!channel.sender.send(channel.value)) throw;
+            }
+            delete channels[channelId];
+        }
     }
 
     /******** BEHIND THE SCENES ********/
@@ -119,21 +132,14 @@ contract Broker is Mortal {
     function canFinishSettle(address sender, bytes32 channelId) constant returns(bool) {
         var channel = channels[channelId];
         return channel.state == ChannelState.Settling &&
-            channel.sender == sender;
+            (sender == channel.sender || sender == owner) &&
+            channel.until >= now;
     }
 
     /******** READERS ********/
 
     function getHash(bytes32 channelId, uint256 value) constant returns(bytes32) {
         return sha3(channelId, value);
-    }
-
-    function close(bytes32 channelId) returns(bool) { // FIXME as part of #6
-        var channel = channels[channelId];
-        if (channel.value > 0) {
-            if (!channel.sender.send(channel.value)) throw;
-            delete channels[channelId];
-        }
     }
 
     function isOpenChannel(bytes32 channelId) constant returns(bool) {
