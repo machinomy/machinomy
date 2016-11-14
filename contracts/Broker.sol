@@ -1,70 +1,134 @@
 pragma solidity ^0.4.2;
 
-import "Mortal";
+import "Mortal.sol";
 
 contract Broker is Mortal {
-    enum ChannelState { Open, Closed }
+    enum ChannelState { Open, Settling, Settled }
 
     struct PaymentChannel {
         address sender;
         address receiver;
         uint256 value;
 
-        ChannelState state;
+        uint settlementPeriod;
 
-        uint openUntil;
+        ChannelState state;
+        uint until; // state is invalid
     }
 
     mapping(bytes32 => PaymentChannel) channels;
     uint id;
 
     event DidCreateChannel(address indexed sender, address indexed receiver, bytes32 channelId);
-    event DidDeposit(address indexed channelId, uint256 value);
-    event DidClaim(bytes32 indexed channelId, uint256 value);
-    event DidClose(address indexed channelId);
+    event DidDeposit(bytes32 indexed channelId, uint256 value);
+    event DidClaim(bytes32 indexed channelId, uint256 payment);
+    event DidStartSettle(bytes32 indexed channelId, uint256 payment);
+    event DidSettle(bytes32 indexed channelId, uint256 payment, uint256 oddValue);
 
     function Broker() {
         id = 0;
     }
 
-    function createChannel(address receiver) payable {
+    /******** ACTIONS ********/
+
+    /* Create payment channel */
+    function createChannel(address receiver, uint duration, uint settlementPeriod) public payable {
         var channelId = sha3(id++);
         var sender = msg.sender;
         var value = msg.value;
-        channels[channelId] = PaymentChannel(sender, receiver, value, ChannelState.Open, block.timestamp + 1 days);
+        channels[channelId] =
+          PaymentChannel(sender, receiver, value, settlementPeriod, ChannelState.Open, block.timestamp + duration);
 
         DidCreateChannel(sender, receiver, channelId);
     }
 
-    function claim(bytes32 channelId, uint256 value, uint8 v, bytes32 r, bytes32 s) {
-        if (!verify(channelId, value, v, r, s)) return;
+    /* Add funds to the channel */
+    function deposit(bytes32 channelId) public payable {
+        if (!canDeposit(msg.sender, channelId)) throw;
 
         var channel = channels[channelId];
-        if (value > channel.value) {
-            if (!channel.receiver.send(channel.value)) throw;
-            channel.value = 0;
-            DidClaim(channelId, channel.value);
-        } else {
-            if (!channel.receiver.send(value)) throw;
-            channel.value -= value;
-            DidClaim(channelId, value);
-        }
+        channel.value += msg.value;
 
-        channels[channelId].state = ChannelState.Closed;
+        DidDeposit(channelId, msg.value);
     }
+
+    /* Receiver settles channel */
+    function claim(bytes32 channelId, uint256 payment, uint8 v, bytes32 r, bytes32 s) public {
+        if (!canClaim(channelId, payment, v, r, s)) return;
+
+        this.settle(channelId, payment);
+    }
+
+    /* Sender starts settling */
+    function startSettle(bytes32 channelId, uint256 payment) public {
+      if (!canStartSettle(msg.sender, channelId)) throw;
+      var channel = channels[channelId];
+      channel.state = ChannelState.Settling;
+      channel.until = now + channel.settlementPeriod;
+      DidStartSettle(channelId, payment);
+    }
+
+    /* Sender settles the channel, if receiver have not done that */
+    function finishSettle(bytes32 channelId, uint256 payment) public {
+      if (!canFinishSettle(msg.sender, channelId)) throw;
+      this.settle(channelId, payment);
+    }
+
+    /******** BEHIND THE SCENES ********/
+
+    function settle(bytes32 channelId, uint256 payment) {
+      var channel = channels[channelId];
+      uint256 paid = payment;
+      uint256 oddMoney = 0;
+
+      if (payment > channel.value) {
+        paid = channel.value;
+        if (!channel.receiver.send(paid)) throw;
+      } else {
+        if (!channel.receiver.send(paid)) throw;
+        oddMoney = channel.value - paid;
+        if (!channel.sender.send(oddMoney)) throw;
+        channel.value = 0;
+      }
+
+      channels[channelId].state = ChannelState.Settled;
+      DidSettle(channelId, payment, oddMoney);
+    }
+
+    /******** CAN CHECKS ********/
+
+    function canDeposit(address sender, bytes32 channelId) constant returns(bool) {
+        var channel = channels[channelId]; // FIXME what if there is no channelId present?!
+        return channel.state == ChannelState.Open &&
+            channel.sender == sender;
+    }
+
+    function canClaim(bytes32 channelId, uint256 payment, uint8 v, bytes32 r, bytes32 s) constant returns(bool) {
+        var channel = channels[channelId];
+        return (channel.state == ChannelState.Open || channel.state == ChannelState.Settling) &&
+            channel.until > now &&
+            channel.sender == ecrecover(getHash(channelId, payment), v, r, s);
+    }
+
+    function canStartSettle(address sender, bytes32 channelId) constant returns(bool) {
+        var channel = channels[channelId];
+        return channel.state == ChannelState.Open &&
+            channel.sender == sender;
+    }
+
+    function canFinishSettle(address sender, bytes32 channelId) constant returns(bool) {
+        var channel = channels[channelId];
+        return channel.state == ChannelState.Settling &&
+            channel.sender == sender;
+    }
+
+    /******** READERS ********/
 
     function getHash(bytes32 channelId, uint256 value) constant returns(bytes32) {
         return sha3(channelId, value);
     }
 
-    function verify(bytes32 channelId, uint256 value, uint8 v, bytes32 r, bytes32 s) constant returns(bool) {
-        var channel = channels[channelId];
-		return channel.state == ChannelState.Open &&
-            channel.openUntil > block.timestamp &&
-            channel.sender == ecrecover(getHash(channelId, value), v, r, s);
-    }
-
-    function close(bytes32 channelId) returns(bool) {
+    function close(bytes32 channelId) returns(bool) { // FIXME as part of #6
         var channel = channels[channelId];
         if (channel.value > 0) {
             if (!channel.sender.send(channel.value)) throw;
@@ -72,17 +136,8 @@ contract Broker is Mortal {
         }
     }
 
-    function deposit(bytes32 channelId) payable {
-        if (!isOpenChannel(channelId)) throw;
-
-        var channel = channels[channelId];
-        channel.value += msg.value;
-
-        DidDeposit(msg.sender, msg.value);
-    }
-
     function isOpenChannel(bytes32 channelId) constant returns(bool) {
         var channel = channels[channelId];
-        return channel.state == ChannelState.Open && channel.openUntil >= block.timestamp;
+        return channel.state == ChannelState.Open && channel.until >= now;
     }
 }
