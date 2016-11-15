@@ -1,4 +1,4 @@
 #!/usr/bin/env node
 
-var machinomy = require("machinomy");
-machinomy.cli.run();
+var commands = require("../commands");
+commands.main(process.argv);
