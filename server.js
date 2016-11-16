@@ -6,11 +6,11 @@ var bodyParser = require('body-parser');
 var machinomy = require("./index"),
     web3 = machinomy.web3;
 
-var configuration = machinomy.configuration.receiver();
+var settings = machinomy.configuration.receiver();
 
-web3.personal.unlockAccount(configuration.account, configuration.password, 1000);
+web3.personal.unlockAccount(settings.account, settings.password, 1000);
 
-var paywall = new machinomy.Paywall(configuration.account);
+var paywall = new machinomy.Paywall(settings.account);
 
 app.use(bodyParser.json());
 app.use(paywall.middleware());

@@ -4,13 +4,13 @@ var machinomy = require("../index"),
     web3 = machinomy.web3;
 
 var buy = function (uri) {
-    var configuration = machinomy.configuration.sender();
+    var settings = machinomy.configuration.sender();
 
-    web3.personal.unlockAccount(configuration.account, configuration.password, 1000);
+    web3.personal.unlockAccount(settings.account, settings.password, 1000);
 
     var transport = new machinomy.Transport();
-    var storage = new machinomy.Storage('./db.client.db.0');
-    var client = new machinomy.Client(configuration.account, machinomy.contract, transport, storage);
+    var storage = new machinomy.Storage(settings.databaseFile, "sender");
+    var client = new machinomy.Client(settings.account, machinomy.contract, transport, storage);
     client.buy(uri, function (error, price, callback) {
         if (error) throw error;
         var value = price * 10;
