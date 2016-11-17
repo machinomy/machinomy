@@ -139,15 +139,15 @@ contract Broker is Mortal {
     /******** READERS ********/
 
     function getState(bytes32 channelId) constant returns(ChannelState) {
-        return channel[channelId].state;
+        return channels[channelId].state;
     }
 
     function getUntil(bytes32 channelId) constant returns(uint) {
-        return channel[channelId].until;
+        return channels[channelId].until;
     }
 
-    function getPayment(bytes32 channelId) {
-        return channel[channelId].payment;        
+    function getPayment(bytes32 channelId) constant returns(uint) {
+        return channels[channelId].payment;        
     }
 
     function getHash(bytes32 channelId, uint256 value) constant returns(bytes32) {
