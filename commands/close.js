@@ -3,6 +3,33 @@
 var machinomy = require("../index"),
     web3 = machinomy.web3;
 
+var claim = function (storage, contract, paymentChannel) {
+    var channelId = paymentChannel.channelId;
+    storage.lastPaymentDoc(channelId, function (err, paymentDoc) {
+        var canClaim = contract.canClaim(channelId, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s);
+        if (canClaim) {
+            contract.claim(paymentChannel.receiver, paymentChannel.channelId, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s, function (error, value) {
+                if (error) throw error;
+                console.log("Claimed " + value + " out of " + paymentChannel.value + " from channel " + channelId);
+            });
+        } else {
+            console.log("Can not claim " + paymentDoc.value + " from channel " + channelId);
+        }
+    });
+};
+
+var startSettle = function (settings, contract, paymentChannel) {
+    var canStartSettle = contract.canStartSettle(settings.account, paymentChannel.channelId);
+    if (canStartSettle) {
+        contract.startSettle(settings.account, paymentChannel.channelId, paymentChannel.spent, function (error) {
+            if (error) throw error;
+            console.log("Start settling channel " + paymentChannel.channelId);
+        });
+    } else {
+        console.log("Can not start settling channel " + paymentChannel.channelId);
+    }
+};
+
 /**
  * @param {String} channelId
  * @param {Object} options
@@ -26,17 +53,9 @@ var close = function (channelId, options) {
             case 0: // open
                 console.log("Channel " + channelId + " is open");
                 if (settings.account == paymentChannel.sender) {
-                    var canStartSettle = contract.canStartSettle(settings.account, channelId);
-                    if (canStartSettle) {
-                        contract.startSettle(settings.account, channelId, paymentChannel.spent, function (error) {
-                            if (error) throw error;
-                            console.log("Start settling channel " + channelId);
-                        });
-                    } else {
-                        console.log("Can not start settling channel " + channelId);
-                    }
+                    startSettle(settings, contract, paymentChannel);
                 } else if (settings.account == paymentChannel.receiver) {
-                    console.log("Claiming the channel")
+                    claim(storage, contract, paymentChannel);
                 }
                 break;
             case 1: // settling
@@ -44,17 +63,7 @@ var close = function (channelId, options) {
                 if (settings.account == paymentChannel.sender) {
                     throw "FIXME";
                 } else if (settings.account == paymentChannel.receiver) {
-                    storage.lastPaymentDoc(paymentChannel.channelId, function (err, paymentDoc) {
-                        var canClaim = contract.canClaim(channelId, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s);
-                        if (canClaim) {
-                            contract.claim(paymentChannel.receiver, paymentChannel.channelId, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s, function (error, value) {
-                                if (error) throw error;
-                                console.log("Claimed " + value + " out of " + paymentChannel.value + " from channel " + channelId);
-                            });
-                        } else {
-                            console.log("Can not claim " + paymentDoc.value + " from channel " + channelId);
-                        }
-                    });
+                    claim(storage, contract, paymentChannel);
                 }
                 break;
             case 2: // settled, nothing to do
