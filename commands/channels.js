@@ -13,8 +13,10 @@ var channels = function (command) {
         var state;
         for (var paymentChannel of paymentChannels) {
             state = machinomy.contract.getState(paymentChannel.channelId);
-            paymentChannel.state = state;
-            console.log(paymentChannel);
+            if (state < 2) {
+                paymentChannel.state = state;
+                console.log(paymentChannel);
+            }
         }
     });
 };
