@@ -23,7 +23,6 @@ contract Broker is Mortal {
 
     event DidCreateChannel(address indexed sender, address indexed receiver, bytes32 channelId);
     event DidDeposit(bytes32 indexed channelId, uint256 value);
-    event DidClaim(bytes32 indexed channelId, uint256 payment);
     event DidStartSettle(bytes32 indexed channelId, uint256 payment);
     event DidSettle(bytes32 indexed channelId, uint256 payment, uint256 oddValue);
 
