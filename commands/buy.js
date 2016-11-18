@@ -3,10 +3,11 @@
 var machinomy = require("../index"),
     web3 = machinomy.web3;
 
-var buy = function (uri) {
+var buy = function (uri, command) {
     var settings = machinomy.configuration.sender();
+    var password = command.parent.password || settings.password;
 
-    web3.personal.unlockAccount(settings.account, settings.password, 1000);
+    web3.personal.unlockAccount(settings.account, password, 1000);
 
     var transport = new machinomy.Transport();
     var storage = new machinomy.Storage(settings.databaseFile, "sender");
