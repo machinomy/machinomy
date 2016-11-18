@@ -10,7 +10,12 @@ var channels = function (command) {
     var storage = new machinomy.Storage(settings.databaseFile, namespace);
 
     storage.channels(function (err, paymentChannels) {
-        console.log(paymentChannels);
+        var state;
+        for (var paymentChannel of paymentChannels) {
+            state = machinomy.contract.getState(paymentChannel.channelId);
+            paymentChannel.state = state;
+            console.log(paymentChannel);
+        }
     });
 };
 
