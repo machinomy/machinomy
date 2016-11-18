@@ -49,8 +49,9 @@ var close = function (channelId, options) {
     var namespace = options.namespace || "sender";
 
     var settings = machinomy.configuration[namespace].call();
+    var password = command.parent.password || settings.password;
 
-    web3.personal.unlockAccount(settings.account, settings.password, 1000);
+    web3.personal.unlockAccount(settings.account, password, 1000);
 
     var storage = new machinomy.Storage(settings.databaseFile, namespace);
     var contract = machinomy.contract;

@@ -9,7 +9,9 @@ var commander = require("commander"),
 
 var main = function (args) {
     var version = machinomy.NAME + " v" + machinomy.VERSION;
-    var parser = commander.version(version);
+    var parser = commander
+        .version(version)
+        .option("-P, --password [password]", "password to unlock the account");
 
     parser.command("buy <uri>")
         .description("buy a resource at <uri>")
