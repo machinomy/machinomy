@@ -4,7 +4,8 @@ var commander = require("commander"),
     machinomy = require("./index"),
     buy = require("./commands/buy"),
     pry = require("./commands/pry"),
-    channels = require("./commands/channels");
+    channels = require("./commands/channels"),
+    close = require("./commands/close");
 
 var main = function (args) {
     var version = machinomy.NAME + " v" + machinomy.VERSION;
@@ -22,6 +23,11 @@ var main = function (args) {
         .option("-n, --namespace [value]", "find channels under namespace [sender]")
         .description("show open/closed channels")
         .action(channels);
+
+    parser.command("close <channelId>")
+        .option("-n, --namespace [value]", "find channels under namespace [sender]")
+        .description("close the channel")
+        .action(close);
 
     parser.parse(args);
 };
