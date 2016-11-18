@@ -30,6 +30,17 @@ var startSettle = function (settings, contract, paymentChannel) {
     }
 };
 
+var finishSettle = function (settings, contract, paymentChannel) {
+    if (contract.canFinishSettle(settings.account, paymentChannel.channelId)) {
+        contract.finishSettle(settings.account, paymentChannel.channelId, function (error, payment) {
+            console.log("Settled to pay " + payment + " to " + paymentChannel.receiver);
+        });
+    } else {
+        var until = contract.getUntil(paymentChannel.channelId);
+        console.log("Can not finish settle until " + until);
+    }
+};
+
 /**
  * @param {String} channelId
  * @param {Object} options
@@ -40,8 +51,6 @@ var close = function (channelId, options) {
     var settings = machinomy.configuration[namespace].call();
 
     web3.personal.unlockAccount(settings.account, settings.password, 1000);
-
-    var transport = new machinomy.Transport();
 
     var storage = new machinomy.Storage(settings.databaseFile, namespace);
     var contract = machinomy.contract;
@@ -61,7 +70,7 @@ var close = function (channelId, options) {
             case 1: // settling
                 console.log("Channel " + channelId + " is settling");
                 if (settings.account == paymentChannel.sender) {
-                    throw "FIXME";
+                    finishSettle(settings, contract, paymentChannel);
                 } else if (settings.account == paymentChannel.receiver) {
                     claim(storage, contract, paymentChannel);
                 }
