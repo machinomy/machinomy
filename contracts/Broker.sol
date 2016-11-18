@@ -23,7 +23,6 @@ contract Broker is Mortal {
 
     event DidCreateChannel(address indexed sender, address indexed receiver, bytes32 channelId);
     event DidDeposit(bytes32 indexed channelId, uint256 value);
-    event DidClaim(bytes32 indexed channelId, uint256 payment);
     event DidStartSettle(bytes32 indexed channelId, uint256 payment);
     event DidSettle(bytes32 indexed channelId, uint256 payment, uint256 oddValue);
 
@@ -137,6 +136,18 @@ contract Broker is Mortal {
     }
 
     /******** READERS ********/
+
+    function getState(bytes32 channelId) constant returns(ChannelState) {
+        return channels[channelId].state;
+    }
+
+    function getUntil(bytes32 channelId) constant returns(uint) {
+        return channels[channelId].until;
+    }
+
+    function getPayment(bytes32 channelId) constant returns(uint) {
+        return channels[channelId].payment;        
+    }
 
     function getHash(bytes32 channelId, uint256 value) constant returns(bytes32) {
         return sha3(channelId, value);
