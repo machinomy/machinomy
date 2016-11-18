@@ -2,7 +2,8 @@ var channel = require("./lib/channel"),
     middleware = require("./lib/middleware"),
     transport = require("./lib/transport"),
     storage = require("./lib/storage"),
-    configuration = require("./lib/configuration");
+    configuration = require("./lib/configuration"),
+    log = require("./lib/log");
 
 module.exports = {
     NAME: "machinomy",
@@ -14,5 +15,6 @@ module.exports = {
     web3: channel.web3,
     contract: channel.contract,
     configuration: configuration,
-    Payment: channel.Payment
+    Payment: channel.Payment,
+    log: log
 };

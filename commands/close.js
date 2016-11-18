@@ -5,7 +5,8 @@ var machinomy = require("../index"),
 
 var claim = function (storage, contract, paymentChannel) {
     var channelId = paymentChannel.channelId;
-    storage.lastPaymentDoc(channelId, function (err, paymentDoc) {
+    storage.lastPaymentDoc(channelId, function (error, paymentDoc) {
+        if (error) throw error;
         var canClaim = contract.canClaim(channelId, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s);
         if (canClaim) {
             contract.claim(paymentChannel.receiver, paymentChannel.channelId, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s, function (error, value) {

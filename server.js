@@ -4,7 +4,8 @@ var express = require("express");
 var app = express();
 var bodyParser = require('body-parser');
 var machinomy = require("./index"),
-    web3 = machinomy.web3;
+    web3 = machinomy.web3,
+    log = machinomy.log;
 
 var settings = machinomy.configuration.receiver();
 
@@ -20,5 +21,5 @@ app.get("/resource", paywall.guard(1000, function (req, res) {
 }));
 
 app.listen(3000, function() {
-    console.log('Example app listening on port 3000!');
+    log.info('Dummy server listening on port 3000...');
 });
