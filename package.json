@@ -21,7 +21,8 @@
     "homedir": "^0.6.0",
     "nedb": "^1.8.0",
     "request": "^2.76.0",
-    "web3": "^0.16.0"
+    "web3": "^0.16.0",
+    "winston": "^2.3.0"
   },
   "devDependencies": {
     "body-parser": "^1.15.2",
