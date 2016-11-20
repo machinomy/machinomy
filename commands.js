@@ -6,7 +6,8 @@ var commander = require("commander"),
     pry = require("./commands/pry"),
     channels = require("./commands/channels"),
     close = require("./commands/close"),
-    configuration = require("./commands/configuration");
+    configuration = require("./commands/configuration"),
+    setup = require("./commands/setup");
 
 var main = function (args) {
     var version = machinomy.NAME + " v" + machinomy.VERSION;
@@ -16,7 +17,7 @@ var main = function (args) {
 
     parser.command("buy <uri>")
         .description("buy a resource at <uri>")
-        .action(buy);
+        .action(machinomy.configuration.ensure(buy));
 
     parser.command("pry <uri>")
         .description("see cost of a resource at <uri>")
@@ -37,6 +38,10 @@ var main = function (args) {
         .option("-n, --namespace [value]", "use snamespace [sender]")
         .description("display configuration")
         .action(configuration);
+
+    parser.command("setup")
+        .description("initial setup")
+        .action(setup);
 
     parser.parse(args);
 };
