@@ -41,6 +41,7 @@ var main = function (args) {
 
     parser.command("setup")
         .description("initial setup")
+        .option("-n, --namespace [value]", "use namespace [sender]")
         .action(setup);
 
     parser.parse(args);
