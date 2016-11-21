@@ -21,23 +21,23 @@ var main = function (args) {
 
     parser.command("pry <uri>")
         .description("see cost of a resource at <uri>")
-        .action(pry);
+        .action(machinomy.configuration.ensure(pry));
 
     parser.command("channels")
         .option("-n, --namespace [value]", "find channels under namespace [sender]")
         .description("show open/closed channels")
-        .action(channels);
+        .action(machinomy.configuration.ensure(channels));
 
     parser.command("close <channelId>")
         .option("-n, --namespace [value]", "find channels under namespace [sender]")
         .description("close the channel")
-        .action(close);
+        .action(machinomy.configuration.ensure(close));
 
     parser.command("configuration")
         .alias("config")
         .option("-n, --namespace [value]", "use snamespace [sender]")
         .description("display configuration")
-        .action(configuration);
+        .action(machinomy.configuration.ensure(configuration));
 
     parser.command("setup")
         .description("initial setup")

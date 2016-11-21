@@ -23,6 +23,7 @@ var setup = function (command) {
 
     prompt.start();
     console.log("Please, for a command line client insert you Ethereum account address, and optionally a password");
+    console.log("For " + namespace);
     prompt.get(["account", "password"], function (err, result) {
         configuration[namespace] = result;
         console.log("Full configuration:");
