@@ -11,7 +11,7 @@ var settings = machinomy.configuration.receiver();
 
 web3.personal.unlockAccount(settings.account, settings.password, 1000);
 
-var paywall = new machinomy.Paywall(settings.account);
+var paywall = new machinomy.Paywall(settings.account, 'http://localhost:3000');
 
 app.use(bodyParser.json());
 app.use(paywall.middleware());
