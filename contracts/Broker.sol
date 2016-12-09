@@ -13,7 +13,8 @@ contract Broker is Mortal {
         uint settlementPeriod;
 
         ChannelState state;
-        uint until; // state is invalid
+        /* until state is invalid */
+        uint until;
 
         uint256 payment;
     }
@@ -110,7 +111,7 @@ contract Broker is Mortal {
     /******** CAN CHECKS ********/
 
     function canDeposit(address sender, bytes32 channelId) constant returns(bool) {
-        var channel = channels[channelId]; // FIXME what if there is no channelId present?!
+        var channel = channels[channelId]; 
         return channel.state == ChannelState.Open &&
             channel.sender == sender;
     }
