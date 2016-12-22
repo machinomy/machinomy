@@ -1,6 +1,18 @@
 pragma solidity ^0.4.2;
 
-import "Mortal.sol";
+contract Owned {
+    address owner;
+
+    function Owned () {
+        owner = msg.sender;        
+    }
+}
+
+contract Mortal is Owned {
+    function kill() {
+        if (msg.sender == owner) selfdestruct(owner);
+    }
+}
 
 contract Broker is Mortal {
     enum ChannelState { Open, Settling, Settled }

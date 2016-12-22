@@ -13,8 +13,11 @@ var app = express();
 app.use(bodyParser.json());
 app.use(paywall.middleware());
 
-app.get("/resource", paywall.guard(1000, function (req, res) {
-    res.send("Hello, world!");
+app.get("/test", paywall.guard(1000, function (req, res) {
+    res.write("Have just received 1000 wei.\n");
+    res.end("Hello, meat world!");
 }));
 
-app.listen(3000);
+app.listen(3000, function(_) {
+    console.log("Waiting at http://localhost:3000/test");
+});
