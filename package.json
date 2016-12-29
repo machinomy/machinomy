@@ -1,6 +1,6 @@
 {
   "name": "machinomy",
-  "version": "0.0.8",
+  "version": "0.1",
   "description": "Micropayments for the Machine Economy",
   "main": "index.js",
   "scripts": {
