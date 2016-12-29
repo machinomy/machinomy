@@ -32,7 +32,7 @@ var buy = function (uri, account, password, _callback) {
 
 module.exports = {
     NAME: "machinomy",
-    VERSION: "0.1",
+    VERSION: "0.1.0",
     Paywall: middleware.Paywall,
     Transport: transport.Transport,
     Client: transport.Client,
