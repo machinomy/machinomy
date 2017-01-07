@@ -50,7 +50,7 @@ var close = function (channelId, options) {
     var namespace = options.namespace || "sender";
 
     var settings = machinomy.configuration[namespace].call();
-    var password = command.parent.password || settings.password;
+    var password = options.parent.password || settings.password;
 
     web3.personal.unlockAccount(settings.account, password, 1000);
 
