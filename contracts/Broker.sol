@@ -67,8 +67,8 @@ contract Broker is Mortal {
     }
 
     /* Receiver settles channel */
-    function claim(bytes32 channelId, uint256 payment, uint8 v, bytes32 r, bytes32 s) public {
-        if (!canClaim(channelId, payment, v, r, s)) return;
+    function claim(bytes32 channelId, uint256 payment, bytes32 h, uint8 v, bytes32 r, bytes32 s) public {
+        if (!canClaim(channelId, h, v, r, s)) return;
 
         this.settle(channelId, payment);
     }
@@ -128,11 +128,10 @@ contract Broker is Mortal {
             channel.sender == sender;
     }
 
-    function canClaim(bytes32 channelId, uint256 payment, uint8 v, bytes32 r, bytes32 s) constant returns(bool) {
+    function canClaim(bytes32 channelId, bytes32 h, uint8 v, bytes32 r, bytes32 s) constant returns(bool) {
         var channel = channels[channelId];
         return (channel.state == ChannelState.Open || channel.state == ChannelState.Settling) &&
-            channel.until > now &&
-            channel.sender == ecrecover(getHash(channelId, payment), v, r, s);
+            channel.sender == ecrecover(h, v, r, s);
     }
 
     function canStartSettle(address sender, bytes32 channelId) constant returns(bool) {
@@ -160,10 +159,6 @@ contract Broker is Mortal {
 
     function getPayment(bytes32 channelId) constant returns(uint) {
         return channels[channelId].payment;        
-    }
-
-    function getHash(bytes32 channelId, uint256 value) constant returns(bytes32) {
-        return sha3(channelId, value);
     }
 
     function isOpenChannel(bytes32 channelId) constant returns(bool) {
