@@ -1,0 +1,103 @@
+# Machinomy
+
+Machinomy is a Node.js library for micropayments in Ether over HTTP. It allows you to send and receive a minuscule
+amount of money instantly.
+
+Web site: [machinomy.com](http://machinomy.com).
+Twitter: [@machinomy](http://twitter.com).
+Support/Discussion: [Gitter](https://gitter.im/machinomy/machinomy).
+
+## Documentation
+
+The website contains [Getting Started](http://machinomy.com/documentation/getting-started/) guide.
+It is more illustrative than instructions below.
+
+## Installation
+
+    $ npm install -g machinomy
+    
+Assumptions:
+* [geth](https://github.com/ethereum/go-ethereum) node runs on `http://localhost:8545`,
+* geth runs [Ropsten](https://blog.ethereum.org/2016/11/20/from-morden-to-ropsten/) network.
+
+The library supports currently Ropsten network only. It is early days, we would like to avoid
+losses by mistake on your side. Ether on Ropsten cost nothing. One could get some from [ZeroGox Faucet](https://zerogox.com/ethereum/wei_faucet) for free.
+
+## Set up
+
+To only play with CLI a command below is enough:
+
+    $ machinomy setup
+    
+If you also intend to _sell_ services via HTTP, set up "receiver" side:
+  
+    $ machinomy setup --namespace receiver
+    
+## Usage
+
+### Buy
+
+    $ machinomy buy http://playground.machinomy.com/hello
+    
+Buys a service provided by a respective endpoint. You could buy the service from JavaScript as well:
+
+    ```
+    "use strict";
+    
+    const machinomy = require("machinomy");
+    const uri = "http://playground.machinomy.com/hello";
+    
+    const settings = machinomy.configuration.sender();
+    machinomy.buy(uri, settings.account, settings.password, function (err, contents) {
+        if (err) throw err;
+        console.log(contents);
+    });
+    ```
+
+### Sell
+
+Machinomy allows you to sell a service over HTTP. The library provides [Express](http://expressjs.com) middleware
+to abstract details of payment handling from the business logic.
+
+A code like below runs on `http://playground.machinomy.com/hello`:
+
+    ```javascript
+    "use strict";
+    
+    const express    = require("express"),
+          bodyParser = require("body-parser"),
+          machinomy  = require("machinomy");
+    
+    const BASE = "http://localhost:3000";
+    
+    const settings = machinomy.configuration.receiver();
+    let paywall = new machinomy.Paywall(settings.account, BASE);
+    
+    let app = express();
+    app.use(bodyParser.json());
+    app.use(paywall.middleware());
+    
+    app.get("/hello", paywall.guard(1000, function (req, res) {
+        res.write("Have just received 1000 wei.\n");
+        res.end("Hello, meat world!");
+    }));
+    
+    app.listen(8080, function(_) {
+        console.log(`Waiting at ${BASE}/hello ...`);
+    });
+    ```
+    
+You could test it with `machinomy buy` command described above.
+
+## Contributing
+
+**Developers:** Machinomy is for you. Feel free to use it, break it, fork it, and make the world better. The code is plain old JavaScript, no special skills required. 
+
+**Non-Developers:** You are lovely. As a starter, help us spread the word! Tell a friend right now.
+If not enough, developers need flesh-world guidance. It starts with proper documentation and a pinch of fantasy.
+Really anything, whether it is a short post on a use case of IoT micropayments, addition to the documentation (code comments, yay!),
+or an elaborate analysis of machine economy implications. Do not hesitate to share any idea with us on [Gitter](https://gitter.im/machinomy/machinomy). 
+
+## License
+
+Licensed under [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
