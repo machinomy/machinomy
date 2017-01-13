@@ -41,18 +41,18 @@ If you also intend to _sell_ services via HTTP, set up "receiver" side:
     
 Buys a service provided by a respective endpoint. You could buy the service from JavaScript as well:
 
-    ```
-    "use strict";
-    
-    const machinomy = require("machinomy");
-    const uri = "http://playground.machinomy.com/hello";
-    
-    const settings = machinomy.configuration.sender();
-    machinomy.buy(uri, settings.account, settings.password, function (err, contents) {
-        if (err) throw err;
-        console.log(contents);
-    });
-    ```
+```javascript
+"use strict";
+
+const machinomy = require("machinomy");
+const uri = "http://playground.machinomy.com/hello";
+
+const settings = machinomy.configuration.sender();
+machinomy.buy(uri, settings.account, settings.password, function (err, contents) {
+    if (err) throw err;
+    console.log(contents);
+});
+```
 
 ### Sell
 
@@ -61,31 +61,31 @@ to abstract details of payment handling from the business logic.
 
 A code like below runs on `http://playground.machinomy.com/hello`:
 
-    ```javascript
-    "use strict";
-    
-    const express    = require("express"),
-          bodyParser = require("body-parser"),
-          machinomy  = require("machinomy");
-    
-    const BASE = "http://localhost:3000";
-    
-    const settings = machinomy.configuration.receiver();
-    let paywall = new machinomy.Paywall(settings.account, BASE);
-    
-    let app = express();
-    app.use(bodyParser.json());
-    app.use(paywall.middleware());
-    
-    app.get("/hello", paywall.guard(1000, function (req, res) {
-        res.write("Have just received 1000 wei.\n");
-        res.end("Hello, meat world!");
-    }));
-    
-    app.listen(8080, function(_) {
-        console.log(`Waiting at ${BASE}/hello ...`);
-    });
-    ```
+```javascript
+"use strict";
+
+const express    = require("express"),
+      bodyParser = require("body-parser"),
+      machinomy  = require("machinomy");
+
+const BASE = "http://localhost:3000";
+
+const settings = machinomy.configuration.receiver();
+let paywall = new machinomy.Paywall(settings.account, BASE);
+
+let app = express();
+app.use(bodyParser.json());
+app.use(paywall.middleware());
+
+app.get("/hello", paywall.guard(1000, function (req, res) {
+    res.write("Have just received 1000 wei.\n");
+    res.end("Hello, meat world!");
+}));
+
+app.listen(8080, function(_) {
+    console.log(`Waiting at ${BASE}/hello ...`);
+});
+```
     
 You could test it with `machinomy buy` command described above.
 
