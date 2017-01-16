@@ -1,7 +1,7 @@
 {
   "name": "machinomy",
   "version": "0.1.3",
-  "description": "Micropayments for the Machine Economy",
+  "description": "Micropayments in Ether over HTTP",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
