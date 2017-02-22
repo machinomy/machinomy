@@ -14,7 +14,7 @@
     "url": "https://github.com/machinomy/machinomy.git"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --require babel-polyfill --compilers js:babel-register"
   },
   "main": "index.js",
   "bin": {
@@ -32,7 +32,10 @@
     "winston": "^2.3.0"
   },
   "devDependencies": {
+    "babel-polyfill": "^6.23.0",
+    "babel-register": "^6.23.0",
     "body-parser": "^1.15.2",
-    "express": "^4.14.0"
+    "express": "^4.14.0",
+    "mocha": "^3.2.0"
   }
 }
