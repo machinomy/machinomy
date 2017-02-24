@@ -1,7 +1,60 @@
-import assert from 'assert'
-import storage from '../lib/storage'
-import { describe } from 'mocha'
+'use strict'
 
-describe('Storage', () => {
-  console.log('FIXME')
+const tmp = require('tmp')
+const assert = require('assert')
+const mocha = require('mocha')
+const Promise = require('bluebird')
+
+const storage = require('../lib/storage')
+
+const describe = mocha.describe
+const it = mocha.it
+
+const tmpFileName = Promise.promisify(tmp.tmpName)
+
+const NAMESPACE = 'test'
+
+describe('storage', () => {
+  describe('.engine', () => {
+    it('returns Engine instance', () => {
+      tmpFileName().then(filename => {
+        let engine = storage.engine(filename, NAMESPACE)
+        assert.equal(typeof engine, 'object')
+      })
+    })
+  })
+
+  describe('Engine', () => {
+    let engine = tmpFileName().then(filename => {
+      return storage.engine(filename, NAMESPACE, true)
+    })
+
+    describe('#insert and #find', () => {
+      it('match the data', (done) => {
+        const name = 'foo'
+        engine.then(engine => {
+          return engine.insert({name: name}).then(() => {
+            return engine.find({name: name})
+          })
+        }).then(returnedDocs => {
+          assert.equal(returnedDocs.length, 1)
+          assert.equal(returnedDocs[0].name, name)
+        }).then(done)
+      })
+    })
+
+    describe('#insert and #findOne', () => {
+      it('match the data', (done) => {
+        const name = 'foo'
+        engine.then(engine => {
+          return engine.insert({name: name}).then(() => {
+            return engine.findOne({name: name})
+          })
+        }).then(doc => {
+          assert.equal(doc.name, name)
+        }).then(done)
+      })
+    })
+  })
+
 })
