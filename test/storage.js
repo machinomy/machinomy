@@ -28,7 +28,7 @@ describe('storage', () => {
     })
 
     describe('#insert and #find', () => {
-      it('match the data', (done) => {
+      it('match the data', done => {
         const name = 'foo'
         engine.then(engine => {
           return engine.insert({name: name}).then(() => {
@@ -42,7 +42,7 @@ describe('storage', () => {
     })
 
     describe('#insert and #findOne', () => {
-      it('match the data', (done) => {
+      it('match the data', done => {
         const name = 'foo'
         engine.then(engine => {
           return engine.insert({name: name}).then(() => {
@@ -50,6 +50,26 @@ describe('storage', () => {
           })
         }).then(doc => {
           assert.equal(doc.name, name)
+        }).then(done)
+      })
+    })
+
+    describe('#update', () => {
+      it('updates the data', done => {
+        const name = 'foo'
+        const randomInteger = Math.floor(Math.random() * 100)
+        engine.then(engine => {
+          return engine.insert({name: name}).then(() => {
+            let update = {
+              $set: { nonce: randomInteger }
+            }
+            return engine.update({name: name}, update).then(() => {
+              return engine.findOne({name: name})
+            })
+          })
+        }).then(doc => {
+          assert.equal(doc.name, name)
+          assert.equal(doc.nonce, randomInteger)
         }).then(done)
       })
     })
