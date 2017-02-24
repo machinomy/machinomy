@@ -16,7 +16,7 @@ describe('storage', () => {
   describe('.engine', () => {
     it('returns Engine instance', () => {
       tmpFileName().then(filename => {
-        let engine = storage.engine(filename)
+        let engine = storage.engine(filename, true)
         assert.equal(typeof engine, 'object')
       })
     })
@@ -55,4 +55,13 @@ describe('storage', () => {
     })
   })
 
+  describe('.channels', () => {
+    it('returns ChannelsDatabase instance', () => {
+      tmpFileName().then(filename => {
+        let engine = storage.engine(filename)
+        let channels = storage.channels(engine)
+        assert.equal(typeof channels, 'object')
+      })
+    })
+  })
 })
