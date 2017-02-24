@@ -12,13 +12,11 @@ const it = mocha.it
 
 const tmpFileName = Promise.promisify(tmp.tmpName)
 
-const NAMESPACE = 'test'
-
 describe('storage', () => {
   describe('.engine', () => {
     it('returns Engine instance', () => {
       tmpFileName().then(filename => {
-        let engine = storage.engine(filename, NAMESPACE)
+        let engine = storage.engine(filename)
         assert.equal(typeof engine, 'object')
       })
     })
@@ -26,7 +24,7 @@ describe('storage', () => {
 
   describe('Engine', () => {
     let engine = tmpFileName().then(filename => {
-      return storage.engine(filename, NAMESPACE, true)
+      return storage.engine(filename, true)
     })
 
     describe('#insert and #find', () => {
