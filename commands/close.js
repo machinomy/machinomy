@@ -59,8 +59,7 @@ var close = function (channelId, options) {
   var storage = new machinomy.Storage(settings.databaseFile, namespace)
   var contract = machinomy.contract
 
-  storage.channelByChannelId(channelId, function (err, paymentChannel) {
-    if (err) throw err
+  storage._channels.firstById(channelId).then(paymentChannel => {
     var state = contract.getState(channelId)
     switch (state) {
       case 0: // open
@@ -85,6 +84,8 @@ var close = function (channelId, options) {
       default:
         throw new Error('Unsupported channel state: ' + state)
     }
+  }).catch(error => {
+    throw error
   })
 }
 
