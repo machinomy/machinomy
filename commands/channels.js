@@ -9,8 +9,7 @@ const channels = (command) => {
   let settings = machinomy.configuration.sender()
 
   let engine = machinomy.storage.engine(settings.databaseFile)
-  let channels = machinomy.storage.channels(engine, namespace)
-  channels.all().then(found => {
+  machinomy.storage.channels(engine, namespace).all().then(found => {
     _.each(found, paymentChannel => {
       let state = machinomy.contract.getState(paymentChannel.channelId)
       if (state < 2) {
