@@ -202,5 +202,29 @@ describe('storage', () => {
         }).then(done)
       })
     })
+
+    describe('#allByQuery', () => {
+      it('finds according to query', done => {
+        let aChannelId = channel.id(Buffer.from(randomInteger().toString()))
+        let aHexChannelId = aChannelId.toString()
+        let aPaymentChannel = new channel.PaymentChannel('sender', 'receiver', aHexChannelId, 'contract', 10, 0)
+
+        let bChannelId = channel.id(Buffer.from(randomInteger().toString()))
+        let bHexChannelId = bChannelId.toString()
+        let bPaymentChannel = new channel.PaymentChannel('sender2', 'receiver2', bHexChannelId, 'contract', 10, 0)
+
+        channelsPromise().then(channels => {
+          return channels.save(aPaymentChannel).then(() => {
+            return channels.save(bPaymentChannel)
+          }).then(() => {
+            return channels.allByQuery({sender: 'sender2'})
+          }).then(found => {
+            assert.equal(found.length, 1)
+            let foundChannelId = found[0].channelId
+            assert.equal(foundChannelId, bHexChannelId)
+          })
+        }).then(done)
+      })
+    })
   })
 })
