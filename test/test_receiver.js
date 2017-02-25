@@ -89,5 +89,8 @@ describe('receiver', () => {
         }).then(done)
       })
     })
+    describe('#whenValidPayment', () => {
+      console.log('PENDING') // FIXME
+    })
   })
 })
