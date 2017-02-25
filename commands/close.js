@@ -6,7 +6,7 @@ const web3 = machinomy.web3
 
 const claim = function (storage, contract, paymentChannel) {
   let channelId = paymentChannel.channelId
-  storage._payments.firstMaximum(channelId).then(paymentDoc => {
+  storage.payments.firstMaximum(channelId).then(paymentDoc => {
     var canClaim = contract.canClaim(channelId, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s)
     if (canClaim) {
       contract.claim(paymentChannel.receiver, paymentChannel.channelId, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s, function (error, value) {
@@ -60,7 +60,7 @@ var close = function (channelId, options) {
   var storage = new machinomy.Storage(settings.databaseFile, namespace)
   var contract = machinomy.contract
 
-  storage._channels.firstById(channelId).then(paymentChannel => {
+  storage.channels.firstById(channelId).then(paymentChannel => {
     var state = contract.getState(channelId)
     switch (state) {
       case 0: // open
