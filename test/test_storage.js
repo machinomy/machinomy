@@ -14,7 +14,7 @@ const it = mocha.it
 const tmpFileName = Promise.promisify(tmp.tmpName)
 
 const randomInteger = () => {
-  return Math.floor(Math.random() * 100)
+  return Math.floor(Math.random() * 10000)
 }
 
 const channelsPromise = () => {
@@ -147,6 +147,41 @@ describe('storage', () => {
           return channels.firstById(channelId)
         }).then(found => {
           assert.equal(found, null)
+        }).then(done)
+      })
+    })
+    describe('#saveOrUpdate', () => {
+      it('saves new PaymentChannel', done => {
+        let channelId = channel.id(Buffer.from(randomInteger().toString()))
+        let hexChannelId = channelId.toString()
+        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 'contract', 10, 0)
+        channelsPromise().then(channels => {
+          return channels.firstById(channelId).then(found => {
+            assert.equal(found, null)
+          }).then(() => {
+            return channels.saveOrUpdate(paymentChannel)
+          }).then(() => {
+            return channels.firstById(channelId)
+          }).then(found => {
+            assert.deepEqual(found, paymentChannel)
+          })
+        }).then(done)
+      })
+
+      it('updates spent value on existing PaymentChannel', done => {
+        let channelId = channel.id(Buffer.from(randomInteger().toString()))
+        let hexChannelId = channelId.toString()
+        let spent = 5
+        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 'contract', 10, 0)
+        let updatedPaymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 'contract', 10, spent)
+        channelsPromise().then(channels => {
+          return channels.save(paymentChannel).then(() => {
+            return channels.saveOrUpdate(updatedPaymentChannel)
+          }).then(() => {
+            return channels.firstById(channelId)
+          }).then(found => {
+            assert.equal(found.spent, spent)
+          })
         }).then(done)
       })
     })
