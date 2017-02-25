@@ -22,7 +22,7 @@ const randomInteger = () => {
 
 const databasePromise = (genDatabase) => {
   return tmpFileName().then(filename => {
-    let engine = storage.engine(filename)
+    let engine = storage.engine(filename, true)
     return genDatabase(engine)
   })
 }
