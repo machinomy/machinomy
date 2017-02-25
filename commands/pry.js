@@ -1,20 +1,19 @@
-"use strict";
+'use strict'
 
-var machinomy = require("../index"),
-    web3 = machinomy.web3;
+const machinomy = require('../index')
 
-var pry = function (uri) {
-    var settings = machinomy.configuration.sender();
-    var transport = new machinomy.Transport();
-    var storage = new machinomy.Storage(settings.databaseFile, "sender");
-    var client = machinomy.sender.build(settings.account, machinomy.contract, transport, storage);
-    client.pry(uri, function (error, paymentRequired) {
-       if (error) {
-           console.log(error);
-       } else {
-           console.log(paymentRequired);
-       }
-    });
-};
+const pry = (uri) => {
+  let settings = machinomy.configuration.sender()
+  let transport = new machinomy.Transport()
+  let storage = new machinomy.Storage(settings.databaseFile, 'sender')
+  let client = machinomy.sender.build(settings.account, machinomy.contract, transport, storage)
+  client.pry(uri, function (error, paymentRequired) {
+    if (error) {
+      console.log(error)
+    } else {
+      console.log(paymentRequired)
+    }
+  })
+}
 
-module.exports = pry;
+module.exports = pry
