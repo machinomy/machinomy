@@ -7,7 +7,7 @@ var pry = function (uri) {
     var settings = machinomy.configuration.sender();
     var transport = new machinomy.Transport();
     var storage = new machinomy.Storage(settings.databaseFile, "sender");
-    var client = new machinomy.Client(settings.account, machinomy.contract, transport, storage);
+    var client = machinomy.sender.build(settings.account, machinomy.contract, transport, storage);
     client.pry(uri, function (error, paymentRequired) {
        if (error) {
            console.log(error);

@@ -3,6 +3,7 @@
 const channel = require('./lib/channel')
 const middleware = require('./lib/middleware')
 const transport = require('./lib/transport')
+const sender = require('./lib/sender')
 const storage = require('./lib/storage')
 const configuration = require('./lib/configuration')
 const log = require('./lib/log')
@@ -23,7 +24,7 @@ const buy = (uri, account, password, _callback) => {
 
   let _transport = new transport.Transport()
   let _storage = new storage.Storage(settings.databaseFile, 'sender')
-  let client = new transport.Client(account, channel.contract, _transport, _storage)
+  let client = sender.build(account, channel.contract, _transport, _storage)
   client.buy(uri, function (error, price, callback) {
     if (error) {
       throw error
@@ -41,7 +42,6 @@ module.exports = {
   VERSION: '0.1.5',
   Paywall: middleware.Paywall,
   Transport: transport.Transport,
-  Client: transport.Client,
   Storage: storage.Storage,
   web3: channel.web3,
   contract: channel.contract,
@@ -49,5 +49,6 @@ module.exports = {
   Payment: channel.Payment,
   storage: storage,
   log: log,
-  buy: buy
+  buy: buy,
+  sender: sender
 }
