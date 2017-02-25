@@ -41,6 +41,7 @@ module.exports = {
     contract: channel.contract,
     configuration: configuration,
     Payment: channel.Payment,
+    storage: storage,
     log: log,
     buy: buy
 };

@@ -185,5 +185,22 @@ describe('storage', () => {
         }).then(done)
       })
     })
+
+    describe('#all', () => {
+      it('returns all the channels', done => {
+        let channelId = channel.id(Buffer.from(randomInteger().toString()))
+        let hexChannelId = channelId.toString()
+        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 'contract', 10, 0)
+        channelsPromise().then(channels => {
+          return channels.save(paymentChannel).then(() => {
+            return channels.all()
+          }).then(found => {
+            assert.equal(found.length, 1)
+            let foundChannelId = found[0].channelId
+            assert.equal(foundChannelId, hexChannelId)
+          })
+        }).then(done)
+      })
+    })
   })
 })

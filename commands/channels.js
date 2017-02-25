@@ -1,24 +1,24 @@
-"use strict";
+'use strict'
 
-var machinomy = require("../index"),
-    web3 = machinomy.web3;
+const _ = require('lodash')
 
-var channels = function (command) {
-    var namespace = command.namespace || "sender";
-    var settings = machinomy.configuration.sender();
+const machinomy = require('../index')
 
-    var storage = new machinomy.Storage(settings.databaseFile, namespace);
+const channels = (command) => {
+  let namespace = command.namespace || 'sender'
+  let settings = machinomy.configuration.sender()
 
-    storage.channels(function (err, paymentChannels) {
-        var state;
-        for (var paymentChannel of paymentChannels) {
-            state = machinomy.contract.getState(paymentChannel.channelId);
-            if (state < 2) {
-                paymentChannel.state = state;
-                console.log(paymentChannel);
-            }
-        }
-    });
-};
+  let engine = machinomy.storage.engine(settings.databaseFile)
+  let channels = machinomy.storage.channels(engine, namespace)
+  channels.all().then(found => {
+    _.each(found, paymentChannel => {
+      let state = machinomy.contract.getState(paymentChannel.channelId)
+      if (state < 2) {
+        paymentChannel.state = state
+        console.log(paymentChannel)
+      }
+    })
+  })
+}
 
-module.exports = channels;
+module.exports = channels
