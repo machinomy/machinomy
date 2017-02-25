@@ -13,6 +13,9 @@ const it = mocha.it
 
 const tmpFileName = Promise.promisify(tmp.tmpName)
 
+/**
+ * @return {number}
+ */
 const randomInteger = () => {
   return Math.floor(Math.random() * 10000)
 }
@@ -24,12 +27,19 @@ const databasePromise = (genDatabase) => {
   })
 }
 
-const channelsPromise = () => databasePromise(engine => {
+const channelsDatabase = () => databasePromise(engine => {
   return storage.channels(engine)
 })
 
-const tokensPromise = () => databasePromise(engine => {
+const tokensDatabase = () => databasePromise(engine => {
   return storage.tokens(engine)
+})
+
+/**
+ * @returns {Promise<PaymentsDatabase>}
+ */
+const paymentsDatabase = () => databasePromise(engine => {
+  return storage.payments(engine)
 })
 
 describe('storage', () => {
@@ -122,7 +132,7 @@ describe('storage', () => {
         let hexChannelId = channelId.toString()
         let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 'contract', 10, 0)
         let spent = 33
-        channelsPromise().then(channels => {
+        channelsDatabase().then(channels => {
           return channels.save(paymentChannel).then(() => {
             return channels.spend(channelId, spent)
           }).then(() => {
@@ -139,7 +149,7 @@ describe('storage', () => {
         let channelId = channel.id('0xdeadbeaf')
         let hexChannelId = channelId.toString()
         let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 'contract', 10, 0)
-        channelsPromise().then(channels => {
+        channelsDatabase().then(channels => {
           return channels.save(paymentChannel).then(() => {
             return channels.firstById(channelId)
           })
@@ -150,7 +160,7 @@ describe('storage', () => {
     })
     describe('#firstById', () => {
       it('returns null if not found', done => {
-        channelsPromise().then(channels => {
+        channelsDatabase().then(channels => {
           let channelId = channel.id(Buffer.from(randomInteger().toString()))
           return channels.firstById(channelId)
         }).then(found => {
@@ -163,7 +173,7 @@ describe('storage', () => {
         let channelId = channel.id(Buffer.from(randomInteger().toString()))
         let hexChannelId = channelId.toString()
         let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 'contract', 10, 0)
-        channelsPromise().then(channels => {
+        channelsDatabase().then(channels => {
           return channels.firstById(channelId).then(found => {
             assert.equal(found, null)
           }).then(() => {
@@ -182,7 +192,7 @@ describe('storage', () => {
         let spent = 5
         let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 'contract', 10, 0)
         let updatedPaymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 'contract', 10, spent)
-        channelsPromise().then(channels => {
+        channelsDatabase().then(channels => {
           return channels.save(paymentChannel).then(() => {
             return channels.saveOrUpdate(updatedPaymentChannel)
           }).then(() => {
@@ -199,7 +209,7 @@ describe('storage', () => {
         let channelId = channel.id(Buffer.from(randomInteger().toString()))
         let hexChannelId = channelId.toString()
         let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 'contract', 10, 0)
-        channelsPromise().then(channels => {
+        channelsDatabase().then(channels => {
           return channels.save(paymentChannel).then(() => {
             return channels.all()
           }).then(found => {
@@ -221,7 +231,7 @@ describe('storage', () => {
         let bHexChannelId = bChannelId.toString()
         let bPaymentChannel = new channel.PaymentChannel('sender2', 'receiver2', bHexChannelId, 'contract', 10, 0)
 
-        channelsPromise().then(channels => {
+        channelsDatabase().then(channels => {
           return channels.save(aPaymentChannel).then(() => {
             return channels.save(bPaymentChannel)
           }).then(() => {
@@ -240,7 +250,7 @@ describe('storage', () => {
     describe('#isPresent', () => {
       it('checks if non-existent token is absent', done => {
         let randomToken = randomInteger().toString()
-        tokensPromise().then(tokens => {
+        tokensDatabase().then(tokens => {
           return tokens.isPresent(randomToken)
         }).then(isPresent => {
           assert.equal(isPresent, false)
@@ -250,7 +260,7 @@ describe('storage', () => {
       it('checks if existing token is present', done => {
         let randomToken = randomInteger().toString()
         let channelId = channel.id(Buffer.from(randomInteger().toString()))
-        tokensPromise().then(tokens => {
+        tokensDatabase().then(tokens => {
           return tokens.save(randomToken, channelId).then(() => {
             return tokens.isPresent(randomToken)
           })
@@ -260,4 +270,36 @@ describe('storage', () => {
       })
     })
   })
+
+  describe('PaymentsDatabase', () => {
+    describe('#save and #firstMaximum', () => {
+      it('match the data', done => {
+        let randomToken = randomInteger().toString()
+        let channelId = channel.id(Buffer.from(randomInteger().toString()))
+        let payment = new channel.Payment({
+          channelId: channelId.toString(),
+          sender: 'sender',
+          receiver: 'receiver',
+          price: 10,
+          value: 12,
+          channelValue: 10,
+          v: 1,
+          r: 2,
+          s: 3
+        })
+        paymentsDatabase().then(payments => {
+          return payments.save(randomToken, payment).then(() => {
+            return payments.firstMaximum(channelId)
+          })
+        }).then(found => {
+          assert.deepEqual(found.channelId, payment.channelId)
+          assert.equal(found.token, randomToken)
+          assert.deepEqual(found.r, payment.r)
+          assert.deepEqual(found.s, payment.s)
+          assert.deepEqual(found.v, payment.v)
+        }).then(done)
+      })
+    })
+  })
+
 })
