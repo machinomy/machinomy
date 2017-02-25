@@ -17,12 +17,20 @@ const randomInteger = () => {
   return Math.floor(Math.random() * 10000)
 }
 
-const channelsPromise = () => {
+const databasePromise = (genDatabase) => {
   return tmpFileName().then(filename => {
     let engine = storage.engine(filename)
-    return storage.channels(engine)
+    return genDatabase(engine)
   })
 }
+
+const channelsPromise = () => databasePromise(engine => {
+  return storage.channels(engine)
+})
+
+const tokensPromise = () => databasePromise(engine => {
+  return storage.tokens(engine)
+})
 
 describe('storage', () => {
   describe('.engine', () => {
@@ -223,6 +231,31 @@ describe('storage', () => {
             let foundChannelId = found[0].channelId
             assert.equal(foundChannelId, bHexChannelId)
           })
+        }).then(done)
+      })
+    })
+  })
+
+  describe('TokensDatabase', () => {
+    describe('#isPresent', () => {
+      it('checks if non-existent token is absent', done => {
+        let randomToken = randomInteger().toString()
+        tokensPromise().then(tokens => {
+          return tokens.isPresent(randomToken)
+        }).then(isPresent => {
+          assert.equal(isPresent, false)
+        }).then(done)
+      })
+
+      it('checks if existing token is present', done => {
+        let randomToken = randomInteger().toString()
+        let channelId = channel.id(Buffer.from(randomInteger().toString()))
+        tokensPromise().then(tokens => {
+          return tokens.save(randomToken, channelId).then(() => {
+            return tokens.isPresent(randomToken)
+          })
+        }).then(isPresent => {
+          assert.equal(isPresent, true)
         }).then(done)
       })
     })
