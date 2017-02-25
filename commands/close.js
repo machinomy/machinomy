@@ -6,8 +6,7 @@ const web3 = machinomy.web3
 
 const claim = function (storage, contract, paymentChannel) {
   let channelId = paymentChannel.channelId
-  storage.lastPaymentDoc(channelId, function (error, paymentDoc) {
-    if (error) throw error
+  storage._payments.firstMaximum(channelId).then(paymentDoc => {
     var canClaim = contract.canClaim(channelId, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s)
     if (canClaim) {
       contract.claim(paymentChannel.receiver, paymentChannel.channelId, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s, function (error, value) {
@@ -17,6 +16,8 @@ const claim = function (storage, contract, paymentChannel) {
     } else {
       console.log('Can not claim ' + paymentDoc.value + ' from channel ' + channelId)
     }
+  }).catch(error => {
+    throw error
   })
 }
 
