@@ -1,13 +1,13 @@
 # Machinomy
 
+[![Build Status](https://img.shields.io/travis/machinomy/machinomy.svg)](https://travis-ci.org/machinomy/machinomy) 
+
 Machinomy is a Node.js library for micropayments in Ether over HTTP. It allows you to send and receive a minuscule
 amount of money instantly.
 
 Web site: [machinomy.com](http://machinomy.com).
 Twitter: [@machinomy](http://twitter.com).
 Support/Discussion: [Gitter](https://gitter.im/machinomy/machinomy).
-
-[![Build Status][travis-image]][travis-url]
 
 ## Documentation
 
@@ -103,6 +103,3 @@ or an elaborate analysis of machine economy implications. Do not hesitate to sha
 ## License
 
 Licensed under [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
-
-[travis-image]: https://img.shields.io/travis/machinomy/machinomy.svg
-[travis-url]: https://travis-ci.org/machinomy/machinomy
