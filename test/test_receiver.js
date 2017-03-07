@@ -43,7 +43,6 @@ describe('receiver', () => {
   describe('Receiver', () => {
     describe('#findPaymentChannel', () => {
       it('finds a channel if saved before', done => {
-        let randomToken = randomInteger().toString()
         let channelId = channel.id(Buffer.from(randomInteger().toString()))
         let payment = new channel.Payment({
           channelId: channelId.toString(),
@@ -90,7 +89,54 @@ describe('receiver', () => {
       })
     })
     describe('#whenValidPayment', () => {
-      console.log('PENDING') // FIXME
+      let channelId = channel.id(Buffer.from(randomInteger().toString()))
+      let payment = new channel.Payment({
+        channelId: channelId.toString(),
+        sender: 'sender',
+        receiver: 'receiver',
+        price: 10,
+        value: 12,
+        channelValue: 10,
+        v: 1,
+        r: 2,
+        s: 3
+      })
+
+      it('returns token', done => {
+        randomStorage().then(storage => {
+          return receiver.build('0xdeadbeaf', storage).whenValidPayment(payment).then(token => {
+            assert.notEqual(token, null)
+          })
+        }).then(done)
+      })
+
+      it('save payment', done => {
+        randomStorage().then(storage => {
+          return receiver.build('0xdeadbeaf', storage).whenValidPayment(payment).then(() => {
+            return storage.payments.firstMaximum(payment.channelId)
+          }).then(savedPayment => {
+            assert.equal(payment.channelId, savedPayment.channelId)
+            assert.equal(payment.sender, savedPayment.sender)
+            assert.equal(payment.receiver, savedPayment.receiver)
+            assert.equal(payment.price, savedPayment.price)
+            assert.equal(payment.value, savedPayment.value)
+            assert.equal(payment.channelValue, savedPayment.channelValue)
+            assert.equal(payment.r, savedPayment.r)
+            assert.equal(payment.s, savedPayment.s)
+            assert.equal(payment.v, savedPayment.v)
+          })
+        }).then(done)
+      })
+
+      it('save token', done => {
+        randomStorage().then(storage => {
+          return receiver.build('0xdeadbeaf', storage).whenValidPayment(payment).then(token => {
+            return storage.tokens.isPresent(token)
+          }).then(isPresent => {
+            assert(isPresent)
+          })
+        }).then(done)
+      })
     })
   })
 })
