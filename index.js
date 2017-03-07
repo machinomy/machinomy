@@ -22,7 +22,7 @@ const buy = (uri, account, password, _callback) => {
   let settings = configuration.sender()
   channel.web3.personal.unlockAccount(account, password, UNLOCK_PERIOD)
 
-  let _transport = new transport.Transport()
+  let _transport = transport.build()
   let _storage = new storage.Storage(settings.databaseFile, 'sender')
   let client = sender.build(account, channel.contract, _transport, _storage)
   client.buy(uri, function (error, price, callback) {
@@ -44,6 +44,7 @@ module.exports = {
   Transport: transport.Transport,
   Storage: storage.Storage,
   web3: channel.web3,
+  transport: transport,
   contract: channel.contract,
   configuration: configuration,
   Payment: channel.Payment,
