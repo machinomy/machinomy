@@ -1,6 +1,11 @@
-# Machinomy
-
-[![Build Status](https://img.shields.io/travis/machinomy/machinomy.svg)](https://travis-ci.org/machinomy/machinomy) 
+# Machinomy [![Build Status][travis-img]][travis] [![Coverage Status][coveralls-img]][coveralls] [![Chat][gitter-img]][gitter] 
+ 
+[travis]: https://travis-ci.org/machinomy/machinomy
+[travis-img]: https://img.shields.io/travis/machinomy/machinomy.svg
+[coveralls]: https://coveralls.io/github/machinomy/machinomy?branch=master
+[coveralls-img]: https://coveralls.io/repos/github/machinomy/machinomy/badge.svg?branch=master
+[gitter]: https://gitter.im/machinomy/machinomy
+[gitter-img]: https://img.shields.io/gitter/room/machinomy/machinomy.js.svg
 
 Machinomy is a Node.js library for micropayments in Ether over HTTP. It allows you to send and receive a minuscule
 amount of money instantly.
