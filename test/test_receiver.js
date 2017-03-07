@@ -174,5 +174,29 @@ describe('receiver', () => {
         }).then(done)
       })
     })
+
+    describe('#ensureCanAcceptPayment', () => {
+      let channelId = channel.id(Buffer.from(randomInteger().toString()))
+      let payment = new channel.Payment({
+        channelId: channelId.toString(),
+        sender: 'sender',
+        receiver: 'receiver',
+        price: 10,
+        value: 12,
+        channelValue: 10,
+        v: 1,
+        r: 2,
+        s: 3
+      })
+
+      it('throws an error if can not', () => {
+        randomStorage().then(storage => {
+          let r = receiver.build('0xdeadbeaf', storage)
+          assert.throws(() => {
+            r.ensureCanAcceptPayment(payment)
+          }, Error)
+        })
+      })
+    })
   })
 })
