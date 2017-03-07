@@ -198,5 +198,30 @@ describe('receiver', () => {
         })
       })
     })
+
+    describe('#acceptPayment', () => {
+      let channelId = channel.id(Buffer.from(randomInteger().toString()))
+      let receiverAccount = '0xdeadbeaf'
+      let payment = new channel.Payment({
+        channelId: channelId.toString(),
+        sender: 'sender',
+        receiver: receiverAccount,
+        price: 10,
+        value: 12,
+        channelValue: 10,
+        v: 1,
+        r: 2,
+        s: 3
+      })
+
+      it('accepts new payment, and returns a token', done => {
+        randomStorage().then(storage => {
+          let r = receiver.build(receiverAccount, storage)
+          return r.acceptPayment(payment).then(token => {
+            assert.notEqual(token, null)
+          })
+        }).then(done)
+      })
+    })
   })
 })
