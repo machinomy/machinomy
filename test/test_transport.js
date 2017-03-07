@@ -4,10 +4,18 @@ const assert = require('assert')
 const mocha = require('mocha')
 const nock = require('nock')
 
+const channel = require('../lib/channel')
 const transport = require('../lib/transport')
 
 const describe = mocha.describe
 const it = mocha.it
+
+/**
+ * @return {number}
+ */
+const randomInteger = () => {
+  return Math.floor(Math.random() * 10000)
+}
 
 describe('transport', () => {
   describe('.build', () => {
@@ -49,6 +57,32 @@ describe('transport', () => {
 
         t.getWithToken('http://example.com/path', expectedToken).then(response => {
           assert.equal(response.body, expectedResponse)
+        }).then(done)
+      })
+    })
+
+    describe('#_requestToken', () => {
+      let channelId = channel.id(Buffer.from(randomInteger().toString()))
+      let payment = new channel.Payment({
+        channelId: channelId.toString(),
+        sender: 'sender',
+        receiver: 'receiver',
+        price: 10,
+        value: 12,
+        channelValue: 10,
+        v: 1,
+        r: 2,
+        s: 3
+      })
+
+      let randomToken = randomInteger().toString()
+      nock('http://example.com').post('/path').reply(202, '', {
+        'paywall-token': randomToken
+      })
+
+      it('sends payment, gets token', done => {
+        t.requestToken('http://example.com/path', payment).then(token => {
+          assert.equal(token, randomToken)
         }).then(done)
       })
     })
