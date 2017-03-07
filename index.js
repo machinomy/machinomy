@@ -11,7 +11,7 @@ const log = require('./lib/log')
 const UNLOCK_PERIOD = 1000
 
 /**
- * Shortcut for Client.buy.
+ * Shortcut for Sender.buy.
  *
  * @param {String} uri
  * @param {String} account
