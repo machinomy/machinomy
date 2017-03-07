@@ -19,7 +19,7 @@ const randomInteger = () => {
 
 describe('transport', () => {
   describe('.build', () => {
-    it('returns Transport instance', () => {
+    it('return Transport instance', () => {
       let t = transport.build()
       assert.equal(typeof t, 'object')
     })
@@ -30,7 +30,7 @@ describe('transport', () => {
     let expectedResponse = 'YABADABA'
 
     describe('#get', () => {
-      it('makes GET request', done => {
+      it('make GET request', done => {
         nock('http://example.com').get('/path').reply(200, expectedResponse)
 
         t.get('http://example.com/path').then(response => {
@@ -38,7 +38,7 @@ describe('transport', () => {
         }).then(done)
       })
 
-      it('sends headers', done => {
+      it('send headers', done => {
         nock('http://example.com', { reqheaders: { 'X-Header': expectedResponse } })
           .get('/path')
           .reply(200, expectedResponse)
@@ -49,7 +49,7 @@ describe('transport', () => {
     })
 
     describe('#getWithToken', () => {
-      it('makes GET request with headers', done => {
+      it('make GET request with headers', done => {
         let expectedToken = 'tkn'
         nock('http://example.com', { reqheaders: { 'authorization': `Paywall ${expectedToken}` } })
           .get('/path')
@@ -61,7 +61,7 @@ describe('transport', () => {
       })
     })
 
-    describe('#_requestToken', () => {
+    describe('#requestToken', () => {
       let channelId = channel.id(Buffer.from(randomInteger().toString()))
       let payment = new channel.Payment({
         channelId: channelId.toString(),
@@ -80,7 +80,7 @@ describe('transport', () => {
         'paywall-token': randomToken
       })
 
-      it('sends payment, gets token', done => {
+      it('send payment, get token', done => {
         t.requestToken('http://example.com/path', payment).then(token => {
           assert.equal(token, randomToken)
         }).then(done)

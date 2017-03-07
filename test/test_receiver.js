@@ -32,7 +32,7 @@ const randomStorage = () => {
 
 describe('receiver', () => {
   describe('.build', () => {
-    it('builds Receiver', done => {
+    it('build Receiver', done => {
       randomStorage().then(storage => {
         let result = receiver.build('0xdeadbeaf', storage)
         assert.equal(typeof result, 'object')
@@ -42,7 +42,7 @@ describe('receiver', () => {
 
   describe('Receiver', () => {
     describe('#findPaymentChannel', () => {
-      it('finds a channel if saved before', done => {
+      it('find a channel if saved before', done => {
         let channelId = channel.id(Buffer.from(randomInteger().toString()))
         let payment = new channel.Payment({
           channelId: channelId.toString(),
@@ -68,7 +68,7 @@ describe('receiver', () => {
       })
     })
     describe('#findPaymentChannel', () => {
-      it('returns null if not channel present', done => {
+      it('return null if not channel present', done => {
         let channelId = channel.id(Buffer.from(randomInteger().toString()))
         let payment = new channel.Payment({
           channelId: channelId.toString(),
@@ -102,7 +102,7 @@ describe('receiver', () => {
         s: 3
       })
 
-      it('returns token', done => {
+      it('return token', done => {
         randomStorage().then(storage => {
           return receiver.build('0xdeadbeaf', storage).whenValidPayment(payment).then(token => {
             assert.notEqual(token, null)
@@ -153,7 +153,7 @@ describe('receiver', () => {
         s: 3
       })
 
-      it('checks if token is present', done => {
+      it('check if token is present', done => {
         randomStorage().then(storage => {
           let r = receiver.build('0xdeadbeaf', storage)
           return r.whenValidPayment(payment).then(token => {
@@ -164,7 +164,7 @@ describe('receiver', () => {
         }).then(done)
       })
 
-      it('checks if token is absent', done => {
+      it('check if token is absent', done => {
         let randomToken = randomInteger().toString()
         randomStorage().then(storage => {
           let r = receiver.build('0xdeadbeaf', storage)
@@ -189,7 +189,7 @@ describe('receiver', () => {
         s: 3
       })
 
-      it('throws an error if can not', () => {
+      it('throw an error if can not', () => {
         randomStorage().then(storage => {
           let r = receiver.build('0xdeadbeaf', storage)
           assert.throws(() => {
@@ -214,7 +214,7 @@ describe('receiver', () => {
         s: 3
       })
 
-      it('accepts new payment, and returns a token', done => {
+      it('accept new payment, and return a token', done => {
         randomStorage().then(storage => {
           let r = receiver.build(receiverAccount, storage)
           return r.acceptPayment(payment).then(token => {

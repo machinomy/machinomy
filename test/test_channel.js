@@ -1,9 +1,7 @@
 'use strict'
 
-const tmp = require('tmp')
 const assert = require('assert')
 const mocha = require('mocha')
-const Promise = require('bluebird')
 
 const channel = require('../lib/channel')
 
@@ -23,19 +21,19 @@ describe('channel', () => {
   describe('.id', () => {
     const buffer = Buffer.from(HEX_ADDRESS, 'hex')
     const expected = new channel.ChannelId(buffer)
-    it('builds ChannelId from non-prefixed hex', () => {
+    it('build ChannelId from non-prefixed hex', () => {
       let channelId = channel.id(HEX_ADDRESS)
       assert.deepEqual(channelId, expected)
     })
-    it('builds ChannelId from prefixed hex', () => {
+    it('build ChannelId from prefixed hex', () => {
       let channelId = channel.id('0x' + HEX_ADDRESS)
       assert.deepEqual(channelId, expected)
     })
-    it('builds ChannelId from Buffer', () => {
+    it('build ChannelId from Buffer', () => {
       let channelId = channel.id(buffer)
       assert.deepEqual(channelId, expected)
     })
-    it('builds ChannelId from ChannelId', () => {
+    it('build ChannelId from ChannelId', () => {
       let channelId = channel.id(expected)
       assert.deepEqual(channelId, expected)
     })
@@ -43,7 +41,7 @@ describe('channel', () => {
 
   describe('ChannelId', () => {
     describe('#toString', () => {
-      it('returns prefixed hex', () => {
+      it('return prefixed hex', () => {
         let channelId = channel.id(HEX_ADDRESS)
         let actual = channelId.toString()
         assert.equal(actual, '0x' + HEX_ADDRESS)
@@ -53,15 +51,15 @@ describe('channel', () => {
 
   describe('Payment', () => {
     describe('.fromPaymentChannel', () => {
-      it('builts Payment object', () => {
+      it('build Payment object', () => {
         let channelId = channel.id(Buffer.from(randomInteger().toString()))
         let payment = new channel.Payment({
           channelId: channelId.toString(),
           sender: 'sender',
           receiver: 'receiver',
-          price: 10,
-          value: 12,
-          channelValue: 10,
+          price: randomInteger(),
+          value: randomInteger(),
+          channelValue: randomInteger(),
           v: 1,
           r: 2,
           s: 3
