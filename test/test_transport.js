@@ -87,4 +87,18 @@ describe('transport', () => {
       })
     })
   })
+
+  describe('PaymentRequired', () => {
+    describe('.parse', () => {
+      let headers = {
+        'paywall-address': '0xdeadbeaf',
+        'paywall-price': '10',
+        'paywall-gateway': 'http://example.com/gateway'
+      }
+      let paymentRequired = transport.PaymentRequired.parse(headers)
+      assert.equal(paymentRequired.receiver, '0xdeadbeaf')
+      assert.equal(paymentRequired.price, 10)
+      assert.equal(paymentRequired.gateway, 'http://example.com/gateway')
+    })
+  })
 })
