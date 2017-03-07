@@ -14,7 +14,7 @@
     "url": "https://github.com/machinomy/machinomy.git"
   },
   "scripts": {
-    "test": "mocha --require babel-polyfill --compilers js:babel-register"
+    "test": "NODE_ENV=test mocha --require babel-polyfill --compilers js:babel-register"
   },
   "main": "index.js",
   "bin": {
