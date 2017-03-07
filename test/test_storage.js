@@ -130,7 +130,7 @@ describe('storage', () => {
       it('updates spent amount', (done) => {
         let channelId = channel.id('0xdeadbeaf')
         let hexChannelId = channelId.toString()
-        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 'contract', 10, 0)
+        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 10, 0)
         let spent = 33
         channelsDatabase().then(channels => {
           return channels.save(paymentChannel).then(() => {
@@ -148,7 +148,7 @@ describe('storage', () => {
       it('match', done => {
         let channelId = channel.id('0xdeadbeaf')
         let hexChannelId = channelId.toString()
-        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 'contract', 10, 0)
+        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 10, 0)
         channelsDatabase().then(channels => {
           return channels.save(paymentChannel).then(() => {
             return channels.firstById(channelId)
@@ -172,7 +172,7 @@ describe('storage', () => {
       it('saves new PaymentChannel', done => {
         let channelId = channel.id(Buffer.from(randomInteger().toString()))
         let hexChannelId = channelId.toString()
-        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 'contract', 10, 0)
+        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 10, 0)
         channelsDatabase().then(channels => {
           return channels.firstById(channelId).then(found => {
             assert.equal(found, null)
@@ -190,8 +190,8 @@ describe('storage', () => {
         let channelId = channel.id(Buffer.from(randomInteger().toString()))
         let hexChannelId = channelId.toString()
         let spent = 5
-        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 'contract', 10, 0)
-        let updatedPaymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 'contract', 10, spent)
+        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 10, 0)
+        let updatedPaymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 10, spent)
         channelsDatabase().then(channels => {
           return channels.save(paymentChannel).then(() => {
             return channels.saveOrUpdate(updatedPaymentChannel)
@@ -208,7 +208,7 @@ describe('storage', () => {
       it('returns all the channels', done => {
         let channelId = channel.id(Buffer.from(randomInteger().toString()))
         let hexChannelId = channelId.toString()
-        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 'contract', 10, 0)
+        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 10, 0)
         channelsDatabase().then(channels => {
           return channels.save(paymentChannel).then(() => {
             return channels.all()
@@ -225,11 +225,11 @@ describe('storage', () => {
       it('finds according to query', done => {
         let aChannelId = channel.id(Buffer.from(randomInteger().toString()))
         let aHexChannelId = aChannelId.toString()
-        let aPaymentChannel = new channel.PaymentChannel('sender', 'receiver', aHexChannelId, 'contract', 10, 0)
+        let aPaymentChannel = new channel.PaymentChannel('sender', 'receiver', aHexChannelId, 10, 0)
 
         let bChannelId = channel.id(Buffer.from(randomInteger().toString()))
         let bHexChannelId = bChannelId.toString()
-        let bPaymentChannel = new channel.PaymentChannel('sender2', 'receiver2', bHexChannelId, 'contract', 10, 0)
+        let bPaymentChannel = new channel.PaymentChannel('sender2', 'receiver2', bHexChannelId, 10, 0)
 
         channelsDatabase().then(channels => {
           return channels.save(aPaymentChannel).then(() => {
