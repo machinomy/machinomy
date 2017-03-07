@@ -44,11 +44,20 @@ const paymentsDatabase = () => databasePromise(engine => {
 
 describe('storage', () => {
   describe('.engine', () => {
-    it('returns Engine instance', () => {
+    it('returns Engine instance', done => {
       tmpFileName().then(filename => {
         let engine = storage.engine(filename, true)
         assert.equal(typeof engine, 'object')
-      })
+      }).then(done)
+    })
+  })
+
+  describe('.build', () => {
+    it('returns Storage', done => {
+      tmpFileName().then(filename => {
+        let s = storage.build(filename, 'namespace')
+        assert.equal(typeof s, 'object')
+      }).then(done)
     })
   })
 
@@ -301,5 +310,4 @@ describe('storage', () => {
       })
     })
   })
-
 })
