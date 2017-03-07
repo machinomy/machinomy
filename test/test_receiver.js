@@ -138,5 +138,41 @@ describe('receiver', () => {
         }).then(done)
       })
     })
+
+    describe('#acceptToken', () => {
+      let channelId = channel.id(Buffer.from(randomInteger().toString()))
+      let payment = new channel.Payment({
+        channelId: channelId.toString(),
+        sender: 'sender',
+        receiver: 'receiver',
+        price: 10,
+        value: 12,
+        channelValue: 10,
+        v: 1,
+        r: 2,
+        s: 3
+      })
+
+      it('checks if token is present', done => {
+        randomStorage().then(storage => {
+          let r = receiver.build('0xdeadbeaf', storage)
+          return r.whenValidPayment(payment).then(token => {
+            return r.acceptToken(token)
+          }).then(isPresent => {
+            assert(isPresent)
+          })
+        }).then(done)
+      })
+
+      it('checks if token is absent', done => {
+        let randomToken = randomInteger().toString()
+        randomStorage().then(storage => {
+          let r = receiver.build('0xdeadbeaf', storage)
+          return r.acceptToken(randomToken).then(isPresent => {
+            assert.equal(isPresent, false)
+          })
+        }).then(done)
+      })
+    })
   })
 })
