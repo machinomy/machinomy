@@ -23,7 +23,7 @@ const buy = (uri, account, password, _callback) => {
   channel.web3.personal.unlockAccount(account, password, UNLOCK_PERIOD)
 
   let _transport = transport.build()
-  let _storage = new storage.Storage(settings.databaseFile, 'sender')
+  let _storage = storage.build(settings.databaseFile, 'sender')
   let client = sender.build(account, channel.contract, _transport, _storage)
   client.buy(uri, function (error, response) {
     _callback(error, response.body)
