@@ -1,14 +1,16 @@
-"use strict";
+'use strict'
 
-var machinomy = require("../index");
+const machinomy = require('../index')
 
-var buy = function (uri, command) {
-    var settings = machinomy.configuration.sender();
-    var password = command.parent.password || settings.password;
-    machinomy.buy(uri, settings.account, password, function (err, contents) {
-        if (err) throw err;
-        console.log(contents);
-    });
-};
+const buy = (uri, command) => {
+  let settings = machinomy.configuration.sender()
+  let password = command.parent.password || settings.password
 
-module.exports = buy;
+  machinomy.buy(uri, settings.account, password).then(contents => {
+    console.log(contents)
+  }).catch(error => {
+    console.error(error)
+  })
+}
+
+module.exports = buy

@@ -49,16 +49,17 @@ If you also intend to _sell_ services via HTTP, set up "receiver" side:
 Buys a service provided by a respective endpoint. You could buy the service from JavaScript as well:
 
 ```javascript
-"use strict";
+'use strict'
 
-const machinomy = require("machinomy");
-const uri = "http://playground.machinomy.com/hello";
+const machinomy = require('machinomy')
+const uri = 'http://playground.machinomy.com/hello'
 
-const settings = machinomy.configuration.sender();
-machinomy.buy(uri, settings.account, settings.password, function (err, contents) {
-    if (err) throw err;
-    console.log(contents);
-});
+const settings = machinomy.configuration.sender()
+machinomy.buy(uri, settings.account, settings.password).then(contents => {
+  console.log(contents)
+}).catch(error => {
+  throw error
+})
 ```
 
 ### Sell

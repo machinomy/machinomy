@@ -16,19 +16,17 @@ const UNLOCK_PERIOD = 1000
  * @param {String} uri
  * @param {String} account
  * @param {String} password
- * @param _callback
+ * @return {Promise<string>}
  */
-const buy = (uri, account, password, _callback) => {
+const buy = (uri, account, password) => {
   let settings = configuration.sender()
   channel.web3.personal.unlockAccount(account, password, UNLOCK_PERIOD)
 
   let _transport = transport.build()
   let _storage = storage.build(settings.databaseFile, 'sender')
   let client = sender.build(account, channel.contract, _transport, _storage)
-  client.buy(uri).then(response => {
-    _callback(null, response.body)
-  }).catch(error => {
-    _callback(error, null)
+  return client.buy(uri).then(response => {
+    return response.body
   })
 }
 
