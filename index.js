@@ -25,15 +25,8 @@ const buy = (uri, account, password, _callback) => {
   let _transport = transport.build()
   let _storage = new storage.Storage(settings.databaseFile, 'sender')
   let client = sender.build(account, channel.contract, _transport, _storage)
-  client.buy(uri, function (error, price, callback) {
-    if (error) {
-      throw error
-    } else {
-      let value = price * 10
-      callback(null, value, function (error, response) {
-        _callback(error, response.body)
-      })
-    }
+  client.buy(uri, function (error, response) {
+    _callback(error, response.body)
   })
 }
 
