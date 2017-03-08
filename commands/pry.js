@@ -7,12 +7,10 @@ const pry = (uri) => {
   let transport = machinomy.transport.build()
   let storage = new machinomy.Storage(settings.databaseFile, 'sender')
   let client = machinomy.sender.build(settings.account, machinomy.contract, transport, storage)
-  client.pry(uri, function (error, paymentRequired) {
-    if (error) {
-      console.log(error)
-    } else {
-      console.log(paymentRequired)
-    }
+  client.pry(uri).then(paymentRequired => {
+    console.log(paymentRequired)
+  }).catch(error => {
+    console.error(error)
   })
 }
 
