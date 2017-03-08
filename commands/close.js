@@ -9,9 +9,10 @@ const claim = function (storage, contract, paymentChannel) {
   storage.payments.firstMaximum(channelId).then(paymentDoc => {
     var canClaim = contract.canClaim(channelId, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s)
     if (canClaim) {
-      contract.claim(paymentChannel.receiver, paymentChannel.channelId, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s, function (error, value) {
-        if (error) throw error
+      contract.claim(paymentChannel.receiver, paymentChannel.channelId, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s).then(value => {
         console.log('Claimed ' + value + ' out of ' + paymentChannel.value + ' from channel ' + channelId)
+      }).catch(error => {
+        throw error
       })
     } else {
       console.log('Can not claim ' + paymentDoc.value + ' from channel ' + channelId)
