@@ -1,33 +1,22 @@
 'use strict'
 
-const tmp = require('tmp')
 const assert = require('assert')
-const mocha = require('mocha')
-const Promise = require('bluebird')
+
+const support = require('./support')
 
 const sender = require('../lib/sender')
 const transport = require('../lib/transport')
 const storage = require('../lib/storage')
 const channel = require('../lib/channel')
 
-const describe = mocha.describe
-const it = mocha.it
-
-const tmpFileName = Promise.promisify(tmp.tmpName)
-
-/**
- * @return {number}
- */
-const randomInteger = () => {
-  return Math.floor(Math.random() * 10000)
-}
+const describe = support.describe
+const it = support.it
 
 /**
  * @returns {Promise<Storage>}
  */
-const randomStorage = () => {
-  let web3 = null // FIXME
-  return tmpFileName().then(filename => {
+const randomStorage = (web3) => {
+  return support.tmpFileName().then(filename => {
     return storage.build(web3, filename, null, true)
   })
 }
@@ -36,10 +25,12 @@ const randomStorage = () => {
  * @return {Promise<Sender>}
  */
 const randomSender = () => {
-  return randomStorage().then(storage => {
-    return sender.build('0xdeadbeaf', channel.contract, transport.build(), storage)
+  let web3 = support.fakeWeb3()
+  return randomStorage(web3).then(storage => {
+    return sender.build(web3, '0xdeadbeaf', channel.contract(web3), transport.build(), storage)
   })
 }
+
 
 describe('sender', () => {
   describe('.build', () => {
@@ -52,7 +43,7 @@ describe('sender', () => {
 
   describe('Sender', () => {
     describe('#canUseChannel', () => {
-      let channelId = channel.id(Buffer.from(randomInteger().toString()))
+      let channelId = channel.id(Buffer.from(support.randomInteger().toString()))
       let payment = new channel.Payment({
         channelId: channelId.toString(),
         sender: 'sender',

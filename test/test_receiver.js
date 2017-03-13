@@ -1,32 +1,22 @@
 'use strict'
 
-const tmp = require('tmp')
 const assert = require('assert')
-const mocha = require('mocha')
-const Promise = require('bluebird')
+
+const support = require('./support')
 
 const receiver = require('../lib/receiver')
 const storage = require('../lib/storage')
 const channel = require('../lib/channel')
 
-const describe = mocha.describe
-const it = mocha.it
-
-const tmpFileName = Promise.promisify(tmp.tmpName)
-
-/**
- * @return {number}
- */
-const randomInteger = () => {
-  return Math.floor(Math.random() * 10000)
-}
+const describe = support.describe
+const it = support.it
 
 /**
  * @returns {Promise<Storage>}
  */
-const randomStorage = () => {
-  return tmpFileName().then(filename => {
-    return storage.build(filename, null, true)
+const randomStorage = (web3) => {
+  return support.tmpFileName().then(filename => {
+    return storage.build(web3, filename, null, true)
   })
 }
 
@@ -41,9 +31,11 @@ describe('receiver', () => {
   })
 
   describe('Receiver', () => {
+    let web3 = support.fakeWeb3()
+
     describe('#findPaymentChannel', () => {
       it('find a channel if saved before', done => {
-        let channelId = channel.id(Buffer.from(randomInteger().toString()))
+        let channelId = support.randomChannelId()
         let payment = new channel.Payment({
           channelId: channelId.toString(),
           sender: 'sender',
@@ -56,9 +48,9 @@ describe('receiver', () => {
           s: 3
         })
         let paymentChannel = channel.PaymentChannel.fromPayment(payment)
-        randomStorage().then(storage => {
+        randomStorage(web3).then(storage => {
           return storage.channels.save(paymentChannel).then(() => {
-            return receiver.build('0xdeadbeaf', storage).findPaymentChannel(payment)
+            return receiver.build(web3, '0xdeadbeaf', storage).findPaymentChannel(payment)
           }).then(found => {
             assert.equal(found.channelId, channelId.toString())
             assert.equal(found.sender, payment.sender)
@@ -69,7 +61,7 @@ describe('receiver', () => {
     })
     describe('#findPaymentChannel', () => {
       it('return null if not channel present', done => {
-        let channelId = channel.id(Buffer.from(randomInteger().toString()))
+        let channelId = support.randomChannelId()
         let payment = new channel.Payment({
           channelId: channelId.toString(),
           sender: 'sender',
@@ -81,15 +73,15 @@ describe('receiver', () => {
           r: 2,
           s: 3
         })
-        randomStorage().then(storage => {
-          return receiver.build('0xdeadbeaf', storage).findPaymentChannel(payment).then(found => {
+        randomStorage(web3).then(storage => {
+          return receiver.build(web3, '0xdeadbeaf', storage).findPaymentChannel(payment).then(found => {
             assert.equal(found, null)
           })
         }).then(done)
       })
     })
     describe('#whenValidPayment', () => {
-      let channelId = channel.id(Buffer.from(randomInteger().toString()))
+      let channelId = support.randomChannelId()
       let payment = new channel.Payment({
         channelId: channelId.toString(),
         sender: 'sender',
@@ -101,18 +93,17 @@ describe('receiver', () => {
         r: 2,
         s: 3
       })
-
       it('return token', done => {
-        randomStorage().then(storage => {
-          return receiver.build('0xdeadbeaf', storage).whenValidPayment(payment).then(token => {
+        randomStorage(web3).then(storage => {
+          return receiver.build(web3, '0xdeadbeaf', storage).whenValidPayment(payment).then(token => {
             assert.notEqual(token, null)
           })
         }).then(done)
       })
 
       it('save payment', done => {
-        randomStorage().then(storage => {
-          return receiver.build('0xdeadbeaf', storage).whenValidPayment(payment).then(() => {
+        randomStorage(web3).then(storage => {
+          return receiver.build(web3, '0xdeadbeaf', storage).whenValidPayment(payment).then(() => {
             return storage.payments.firstMaximum(payment.channelId)
           }).then(savedPayment => {
             assert.equal(payment.channelId, savedPayment.channelId)
@@ -129,8 +120,8 @@ describe('receiver', () => {
       })
 
       it('save token', done => {
-        randomStorage().then(storage => {
-          return receiver.build('0xdeadbeaf', storage).whenValidPayment(payment).then(token => {
+        randomStorage(web3).then(storage => {
+          return receiver.build(web3, '0xdeadbeaf', storage).whenValidPayment(payment).then(token => {
             return storage.tokens.isPresent(token)
           }).then(isPresent => {
             assert(isPresent)
@@ -140,7 +131,7 @@ describe('receiver', () => {
     })
 
     describe('#acceptToken', () => {
-      let channelId = channel.id(Buffer.from(randomInteger().toString()))
+      let channelId = support.randomChannelId()
       let payment = new channel.Payment({
         channelId: channelId.toString(),
         sender: 'sender',
@@ -154,8 +145,8 @@ describe('receiver', () => {
       })
 
       it('check if token is present', done => {
-        randomStorage().then(storage => {
-          let r = receiver.build('0xdeadbeaf', storage)
+        randomStorage(web3).then(storage => {
+          let r = receiver.build(web3, '0xdeadbeaf', storage)
           return r.whenValidPayment(payment).then(token => {
             return r.acceptToken(token)
           }).then(isPresent => {
@@ -165,9 +156,9 @@ describe('receiver', () => {
       })
 
       it('check if token is absent', done => {
-        let randomToken = randomInteger().toString()
-        randomStorage().then(storage => {
-          let r = receiver.build('0xdeadbeaf', storage)
+        let randomToken = support.randomInteger().toString()
+        randomStorage(web3).then(storage => {
+          let r = receiver.build(web3, '0xdeadbeaf', storage)
           return r.acceptToken(randomToken).then(isPresent => {
             assert.equal(isPresent, false)
           })
@@ -176,7 +167,7 @@ describe('receiver', () => {
     })
 
     describe('#ensureCanAcceptPayment', () => {
-      let channelId = channel.id(Buffer.from(randomInteger().toString()))
+      let channelId = support.randomChannelId()
       let payment = new channel.Payment({
         channelId: channelId.toString(),
         sender: 'sender',
@@ -200,7 +191,7 @@ describe('receiver', () => {
     })
 
     describe('#acceptPayment', () => {
-      let channelId = channel.id(Buffer.from(randomInteger().toString()))
+      let channelId = support.randomChannelId()
       let receiverAccount = '0xdeadbeaf'
       let payment = new channel.Payment({
         channelId: channelId.toString(),
@@ -215,8 +206,8 @@ describe('receiver', () => {
       })
 
       it('accept new payment, and return a token', done => {
-        randomStorage().then(storage => {
-          let r = receiver.build(receiverAccount, storage)
+        randomStorage(web3).then(storage => {
+          let r = receiver.build(web3, receiverAccount, storage)
           return r.acceptPayment(payment).then(token => {
             assert.notEqual(token, null)
           })

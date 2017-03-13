@@ -1,34 +1,25 @@
 'use strict'
 
-const tmp = require('tmp')
 const assert = require('assert')
-const mocha = require('mocha')
-const Promise = require('bluebird')
+
+const support = require('./support')
 
 const storage = require('../lib/storage')
 const channel = require('../lib/channel')
 
-const describe = mocha.describe
-const it = mocha.it
-
-const tmpFileName = Promise.promisify(tmp.tmpName)
-
-/**
- * @return {number}
- */
-const randomInteger = () => {
-  return Math.floor(Math.random() * 10000)
-}
+const describe = support.describe
+const it = support.it
 
 const databasePromise = (genDatabase) => {
-  return tmpFileName().then(filename => {
+  return support.tmpFileName().then(filename => {
     let engine = storage.engine(filename, true)
     return genDatabase(engine)
   })
 }
 
-const channelsDatabase = () => databasePromise(engine => {
-  return storage.channels(engine)
+const channelsDatabase = (_web3) => databasePromise(engine => {
+  let web3 = _web3 || support.fakeWeb3()
+  return storage.channels(web3, engine)
 })
 
 const tokensDatabase = () => databasePromise(engine => {
@@ -45,7 +36,7 @@ const paymentsDatabase = () => databasePromise(engine => {
 describe('storage', () => {
   describe('.engine', () => {
     it('return Engine instance', done => {
-      tmpFileName().then(filename => {
+      support.tmpFileName().then(filename => {
         let engine = storage.engine(filename, true)
         assert.equal(typeof engine, 'object')
       }).then(done)
@@ -54,7 +45,7 @@ describe('storage', () => {
 
   describe('.build', () => {
     it('return Storage', done => {
-      tmpFileName().then(filename => {
+      support.tmpFileName().then(filename => {
         let s = storage.build(filename, 'namespace')
         assert.equal(typeof s, 'object')
       }).then(done)
@@ -62,7 +53,7 @@ describe('storage', () => {
   })
 
   describe('Engine', () => {
-    let engine = tmpFileName().then(filename => {
+    let engine = support.tmpFileName().then(filename => {
       return storage.engine(filename, true)
     })
 
@@ -96,7 +87,7 @@ describe('storage', () => {
     describe('#findOne', () => {
       it('return null if not found', done => {
         engine.then(engine => {
-          return engine.findOne({number: randomInteger()})
+          return engine.findOne({number: support.randomInteger()})
         }).then(document => {
           assert.equal(document, null)
         }).then(done)
@@ -106,7 +97,7 @@ describe('storage', () => {
     describe('#update', () => {
       it('update the data', done => {
         const name = 'foo'
-        const nonce = randomInteger()
+        const nonce = support.randomInteger()
         engine.then(engine => {
           return engine.insert({name: name}).then(() => {
             let update = {
@@ -126,7 +117,7 @@ describe('storage', () => {
 
   describe('.channels', () => {
     it('return ChannelsDatabase instance', () => {
-      tmpFileName().then(filename => {
+      support.tmpFileName().then(filename => {
         let engine = storage.engine(filename)
         let channels = storage.channels(engine)
         assert.equal(typeof channels, 'object')
@@ -141,7 +132,7 @@ describe('storage', () => {
         let hexChannelId = channelId.toString()
         let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 10, 0)
         let spent = 33
-        channelsDatabase().then(channels => {
+        channelsDatabase(support.fakeWeb3()).then(channels => {
           return channels.save(paymentChannel).then(() => {
             return channels.spend(channelId, spent)
           }).then(() => {
@@ -170,7 +161,7 @@ describe('storage', () => {
     describe('#firstById', () => {
       it('return null if not found', done => {
         channelsDatabase().then(channels => {
-          let channelId = channel.id(Buffer.from(randomInteger().toString()))
+          let channelId = support.randomChannelId()
           return channels.firstById(channelId)
         }).then(found => {
           assert.equal(found, null)
@@ -179,7 +170,7 @@ describe('storage', () => {
     })
     describe('#saveOrUpdate', () => {
       it('save new PaymentChannel', done => {
-        let channelId = channel.id(Buffer.from(randomInteger().toString()))
+        let channelId = support.randomChannelId()
         let hexChannelId = channelId.toString()
         let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 10, 0)
         channelsDatabase().then(channels => {
@@ -196,7 +187,7 @@ describe('storage', () => {
       })
 
       it('update spent value on existing PaymentChannel', done => {
-        let channelId = channel.id(Buffer.from(randomInteger().toString()))
+        let channelId = support.randomChannelId()
         let hexChannelId = channelId.toString()
         let spent = 5
         let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 10, 0)
@@ -215,7 +206,7 @@ describe('storage', () => {
 
     describe('#all', () => {
       it('return all the channels', done => {
-        let channelId = channel.id(Buffer.from(randomInteger().toString()))
+        let channelId = support.randomChannelId()
         let hexChannelId = channelId.toString()
         let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 10, 0)
         channelsDatabase().then(channels => {
@@ -232,11 +223,11 @@ describe('storage', () => {
 
     describe('#allByQuery', () => {
       it('find according to query', done => {
-        let aChannelId = channel.id(Buffer.from(randomInteger().toString()))
+        let aChannelId = support.randomChannelId()
         let aHexChannelId = aChannelId.toString()
         let aPaymentChannel = new channel.PaymentChannel('sender', 'receiver', aHexChannelId, 10, 0)
 
-        let bChannelId = channel.id(Buffer.from(randomInteger().toString()))
+        let bChannelId = support.randomChannelId()
         let bHexChannelId = bChannelId.toString()
         let bPaymentChannel = new channel.PaymentChannel('sender2', 'receiver2', bHexChannelId, 10, 0)
 
@@ -258,7 +249,7 @@ describe('storage', () => {
   describe('TokensDatabase', () => {
     describe('#isPresent', () => {
       it('check if non-existent token is absent', done => {
-        let randomToken = randomInteger().toString()
+        let randomToken = support.randomInteger().toString()
         tokensDatabase().then(tokens => {
           return tokens.isPresent(randomToken)
         }).then(isPresent => {
@@ -267,8 +258,8 @@ describe('storage', () => {
       })
 
       it('check if existing token is present', done => {
-        let randomToken = randomInteger().toString()
-        let channelId = channel.id(Buffer.from(randomInteger().toString()))
+        let randomToken = support.randomInteger().toString()
+        let channelId = support.randomChannelId()
         tokensDatabase().then(tokens => {
           return tokens.save(randomToken, channelId).then(() => {
             return tokens.isPresent(randomToken)
@@ -283,8 +274,8 @@ describe('storage', () => {
   describe('PaymentsDatabase', () => {
     describe('#save and #firstMaximum', () => {
       it('match the data', done => {
-        let randomToken = randomInteger().toString()
-        let channelId = channel.id(Buffer.from(randomInteger().toString()))
+        let randomToken = support.randomInteger().toString()
+        let channelId = support.randomChannelId()
         let payment = new channel.Payment({
           channelId: channelId.toString(),
           sender: 'sender',
