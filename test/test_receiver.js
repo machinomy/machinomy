@@ -24,7 +24,7 @@ describe('receiver', () => {
   describe('.build', () => {
     it('build Receiver', done => {
       randomStorage().then(storage => {
-        let result = receiver.build('0xdeadbeaf', storage)
+        let result = receiver.build(support.fakeWeb3(), '0xdeadbeaf', storage)
         assert.equal(typeof result, 'object')
       }).then(done)
     })
