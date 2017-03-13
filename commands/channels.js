@@ -7,11 +7,12 @@ const machinomy = require('../index')
 const channels = (command) => {
   let namespace = command.namespace || 'sender'
   let settings = machinomy.configuration.sender()
+  let web3 = machinomy.configuration.web3()
 
   let engine = machinomy.storage.engine(settings.databaseFile)
-  machinomy.storage.channels(engine, namespace).all().then(found => {
+  machinomy.storage.channels(web3, engine, namespace).all().then(found => {
     _.each(found, paymentChannel => {
-      let state = machinomy.contract.getState(paymentChannel.channelId)
+      let state = machinomy.contract(web3).getState(paymentChannel.channelId)
       if (state < 2) {
         paymentChannel.state = state
         console.log(paymentChannel)

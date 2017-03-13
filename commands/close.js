@@ -2,7 +2,7 @@
 
 const machinomy = require('../index')
 
-const web3 = machinomy.web3
+const web3 = machinomy.configuration.web3()
 
 const claim = function (storage, contract, paymentChannel) {
   let channelId = paymentChannel.channelId
@@ -61,7 +61,7 @@ var close = function (channelId, options) {
   web3.personal.unlockAccount(settings.account, password, 1000)
 
   var storage = new machinomy.Storage(settings.databaseFile, namespace)
-  var contract = machinomy.contract
+  var contract = machinomy.contract(web3)
 
   storage.channels.firstById(channelId).then(paymentChannel => {
     var state = contract.getState(channelId)

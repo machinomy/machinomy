@@ -20,11 +20,13 @@ const UNLOCK_PERIOD = 1000
  */
 const buy = (uri, account, password) => {
   let settings = configuration.sender()
-  channel.web3.personal.unlockAccount(account, password, UNLOCK_PERIOD)
+  let web3 = configuration.web3()
+  web3.personal.unlockAccount(account, password, UNLOCK_PERIOD) // FIXME
 
   let _transport = transport.build()
-  let _storage = storage.build(settings.databaseFile, 'sender')
-  let client = sender.build(account, channel.contract, _transport, _storage)
+  let _storage = storage.build(web3, settings.databaseFile, 'sender')
+  let contract = channel.contract(web3)
+  let client = sender.build(web3, account, contract, _transport, _storage)
   return client.buy(uri).then(response => {
     return response.body
   })

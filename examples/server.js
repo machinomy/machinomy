@@ -5,9 +5,10 @@ var bodyParser = require('body-parser')
 var machinomy = require('./../index')
 
 var settings = machinomy.configuration.receiver()
-machinomy.web3.personal.unlockAccount(settings.account, settings.password, 1000)
+let web3 = machinomy.configuration.web3()
+web3.personal.unlockAccount(settings.account, settings.password, 1000)
 
-var paywall = new machinomy.Paywall(settings.account, 'http://localhost:3000')
+var paywall = new machinomy.Paywall(web3, settings.account, 'http://localhost:3000')
 
 var app = express()
 app.use(bodyParser.json())

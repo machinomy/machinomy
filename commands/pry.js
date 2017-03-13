@@ -8,7 +8,7 @@ const pry = (uri) => {
   let storage = new machinomy.Storage(settings.databaseFile, 'sender')
   let web3 = machinomy.configuration.web3()
   let contract = machinomy.contract(web3)
-  let client = machinomy.sender.build(settings.account, contract, transport, storage)
+  let client = machinomy.sender.build(web3, settings.account, contract, transport, storage)
   client.pry(uri).then(paymentRequired => {
     console.log(paymentRequired)
   }).catch(error => {

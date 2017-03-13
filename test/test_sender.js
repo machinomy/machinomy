@@ -26,8 +26,9 @@ const randomInteger = () => {
  * @returns {Promise<Storage>}
  */
 const randomStorage = () => {
+  let web3 = null // FIXME
   return tmpFileName().then(filename => {
-    return storage.build(filename, null, true)
+    return storage.build(web3, filename, null, true)
   })
 }
 
