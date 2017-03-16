@@ -1,14 +1,18 @@
 const path = require('path')
 
 module.exports = {
-  entry: './index.js',
+  entry: './browser.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'machinomy.bundle.js'
   },
   module: {
     rules: [
-      {test: /\.js$/, use: 'babel-loader'}
+      {
+        test: /\.js$/,
+        exclude: /(node_modules|bower_components)/,
+        use: 'babel-loader'
+      }
     ]
   },
   node: {
