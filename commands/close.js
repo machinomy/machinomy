@@ -23,16 +23,17 @@ const claim = function (storage, contract, paymentChannel) {
 }
 
 var startSettle = function (settings, contract, paymentChannel) {
-  var canStartSettle = contract.canStartSettle(settings.account, paymentChannel.channelId)
-  if (canStartSettle) {
-    contract.startSettle(settings.account, paymentChannel.channelId, paymentChannel.spent).then(() => {
-      console.log('Start settling channel ' + paymentChannel.channelId)
-    }).catch(error => {
-      throw error
-    })
-  } else {
-    console.log('Can not start settling channel ' + paymentChannel.channelId)
-  }
+  contract.canStartSettle(settings.account, paymentChannel.channelId).then(canStartSettle => {
+    if (canStartSettle) {
+      contract.startSettle(settings.account, paymentChannel.channelId, paymentChannel.spent).then(() => {
+        console.log('Start settling channel ' + paymentChannel.channelId)
+      }).catch(error => {
+        throw error
+      })
+    } else {
+      console.log('Can not start settling channel ' + paymentChannel.channelId)
+    }
+  })
 }
 
 var finishSettle = function (settings, contract, paymentChannel) {
