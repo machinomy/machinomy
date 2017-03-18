@@ -12,11 +12,12 @@ const channels = (command) => {
   let engine = machinomy.storage.engine(settings.databaseFile)
   machinomy.storage.channels(web3, engine, namespace).all().then(found => {
     _.each(found, paymentChannel => {
-      let state = machinomy.contract(web3).getState(paymentChannel.channelId)
-      if (state < 2) {
-        paymentChannel.state = state
-        console.log(paymentChannel)
-      }
+      machinomy.contract(web3).getState(paymentChannel.channelId).then(state => {
+        if (state < 2) {
+          paymentChannel.state = state
+          console.log(paymentChannel)
+        }
+      })
     })
   })
 }

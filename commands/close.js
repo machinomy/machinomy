@@ -65,30 +65,31 @@ var close = function (channelId, options) {
   var contract = machinomy.contract(web3)
 
   storage.channels.firstById(channelId).then(paymentChannel => {
-    var state = contract.getState(channelId)
-    switch (state) {
-      case 0: // open
-        console.log('Channel ' + channelId + ' is open')
-        if (settings.account === paymentChannel.sender) {
-          startSettle(settings, contract, paymentChannel)
-        } else if (settings.account === paymentChannel.receiver) {
-          claim(storage, contract, paymentChannel)
-        }
-        break
-      case 1: // settling
-        console.log('Channel ' + channelId + ' is settling')
-        if (settings.account === paymentChannel.sender) {
-          finishSettle(settings, contract, paymentChannel)
-        } else if (settings.account === paymentChannel.receiver) {
-          claim(storage, contract, paymentChannel)
-        }
-        break
-      case 2: // settled, nothing to do
-        console.log('Channel ' + channelId + ' is settled')
-        break
-      default:
-        throw new Error('Unsupported channel state: ' + state)
-    }
+    contract.getState(channelId).then(state => {
+      switch (state) {
+        case 0: // open
+          console.log('Channel ' + channelId + ' is open')
+          if (settings.account === paymentChannel.sender) {
+            startSettle(settings, contract, paymentChannel)
+          } else if (settings.account === paymentChannel.receiver) {
+            claim(storage, contract, paymentChannel)
+          }
+          break
+        case 1: // settling
+          console.log('Channel ' + channelId + ' is settling')
+          if (settings.account === paymentChannel.sender) {
+            finishSettle(settings, contract, paymentChannel)
+          } else if (settings.account === paymentChannel.receiver) {
+            claim(storage, contract, paymentChannel)
+          }
+          break
+        case 2: // settled, nothing to do
+          console.log('Channel ' + channelId + ' is settled')
+          break
+        default:
+          throw new Error('Unsupported channel state: ' + state)
+      }
+    })
   }).catch(error => {
     throw error
   })
