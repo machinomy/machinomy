@@ -1,5 +1,8 @@
 'use strict'
 
+const fs = require('fs')
+const path = require('path')
+const cors = require('cors')
 const express = require('express')
 const bodyParser = require('body-parser')
 const machinomy = require('./../index')
@@ -12,13 +15,23 @@ const paywall = new machinomy.Paywall(web3, settings.account, 'http://localhost:
 
 const app = express()
 app.use(bodyParser.json())
+
+app.use(cors({
+  origin: '*',
+  credentials: true,
+  allowedHeaders: ['content-type', 'paywall-version', 'paywall-address', 'paywall-gateway', 'paywall-price', 'paywall-token', 'authorization'],
+  exposedHeaders: ['paywall-version', 'paywall-address', 'paywall-gateway', 'paywall-price', 'paywall-token']
+}))
 app.use(paywall.middleware())
 
-app.get('/hello', paywall.guard(1000, (req, res) => {
-  res.write('Have just received 1000 wei.\n')
-  res.end('Hello, meat world!')
+const COST = 61200000000
+app.get('/outline', paywall.guard(COST, (req, res) => {
+  let filepath = path.join(__dirname, 'response.txt')
+  let content = fs.readFileSync(filepath).toString()
+  res.write(content)
+  res.end()
 }))
 
 app.listen(3000, () => {
-  console.log('Waiting at http://localhost:3000/hello')
+  console.log('Waiting at http://localhost:3000/outline')
 })
