@@ -4,10 +4,10 @@ const machinomy = require('../index')
 
 const web3 = machinomy.configuration.web3()
 
-const claim = function (storage, contract, paymentChannel) {
+const claim = (storage, contract, paymentChannel) => {
   let channelId = paymentChannel.channelId
   storage.payments.firstMaximum(channelId).then(paymentDoc => {
-    var canClaim = contract.canClaim(channelId, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s)
+    let canClaim = contract.canClaim(channelId, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s)
     if (canClaim) {
       contract.claim(paymentChannel.receiver, paymentChannel.channelId, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s).then(value => {
         console.log('Claimed ' + value + ' out of ' + paymentChannel.value + ' from channel ' + channelId)
@@ -22,7 +22,7 @@ const claim = function (storage, contract, paymentChannel) {
   })
 }
 
-var startSettle = function (settings, contract, paymentChannel) {
+const startSettle = (settings, contract, paymentChannel) => {
   contract.canStartSettle(settings.account, paymentChannel.channelId).then(canStartSettle => {
     if (canStartSettle) {
       contract.startSettle(settings.account, paymentChannel.channelId, paymentChannel.spent).then(() => {
@@ -36,7 +36,7 @@ var startSettle = function (settings, contract, paymentChannel) {
   })
 }
 
-var finishSettle = function (settings, contract, paymentChannel) {
+const finishSettle = (settings, contract, paymentChannel) => {
   if (contract.canFinishSettle(settings.account, paymentChannel.channelId)) {
     contract.finishSettle(settings.account, paymentChannel.channelId).then(payment => {
       console.log('Settled to pay ' + payment + ' to ' + paymentChannel.receiver)
@@ -44,7 +44,7 @@ var finishSettle = function (settings, contract, paymentChannel) {
       throw error
     })
   } else {
-    var until = contract.getUntil(paymentChannel.channelId)
+    let until = contract.getUntil(paymentChannel.channelId)
     console.log('Can not finish settle until ' + until)
   }
 }
@@ -53,16 +53,16 @@ var finishSettle = function (settings, contract, paymentChannel) {
  * @param {String} channelId
  * @param {Object} options
  */
-var close = function (channelId, options) {
-  var namespace = options.namespace || 'sender'
+const close = (channelId, options) => {
+  let namespace = options.namespace || 'sender'
 
-  var settings = machinomy.configuration[namespace].call()
-  var password = options.parent.password || settings.password
+  let settings = machinomy.configuration[namespace].call()
+  let password = options.parent.password || settings.password
 
   web3.personal.unlockAccount(settings.account, password, 1000)
 
-  var storage = new machinomy.Storage(settings.databaseFile, namespace)
-  var contract = machinomy.contract(web3)
+  let storage = machinomy.storage.build(web3, settings.databaseFile, namespace)
+  let contract = machinomy.contract(web3)
 
   storage.channels.firstById(channelId).then(paymentChannel => {
     contract.getState(channelId).then(state => {
