@@ -44,6 +44,7 @@ module.exports = {
   configuration: configuration,
   Payment: channel.Payment,
   storage: storage,
+  channel: channel,
   log: log,
   buy: buy,
   sender: sender

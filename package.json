@@ -28,12 +28,12 @@
     "ethereumjs-util": "^5.0.1",
     "homedir": "^0.6.0",
     "lodash": "^4.17.4",
+    "loglevel": "^1.4.1",
     "nedb": "^1.8.0",
     "prompt": "^1.0.0",
     "request": "^2.76.0",
     "url-join": "^1.1.0",
-    "web3": "^0.16.0",
-    "winston": "^2.3.0"
+    "web3": "^0.16.0"
   },
   "devDependencies": {
     "babel-core": "^6.24.0",
