@@ -1,6 +1,6 @@
 {
   "name": "machinomy",
-  "version": "0.2.4∆",
+  "version": "0.2.4",
   "description": "Micropayments in Ether over HTTP",
   "author": "Sergey Ukustov <sergey.ukustov@machinomy.com>",
   "license": "Apache-2.0",
