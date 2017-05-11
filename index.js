@@ -28,7 +28,7 @@ const buy = (uri, account, password) => {
   let contract = channel.contract(web3)
   let client = sender.build(web3, account, contract, _transport, _storage)
   return client.buy(uri).then(response => {
-    return response.body
+    return response[1].body
   })
 }
 
