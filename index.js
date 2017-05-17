@@ -13,9 +13,9 @@ const UNLOCK_PERIOD = 1000
 /**
  * Shortcut for Sender.buy.
  *
- * @param {String} uri
- * @param {String} account
- * @param {String} password
+ * @param {string} uri
+ * @param {string} account
+ * @param {string} password
  * @return {Promise<string>}
  */
 const buy = (uri, account, password) => {
@@ -27,7 +27,7 @@ const buy = (uri, account, password) => {
   let _storage = storage.build(web3, settings.databaseFile, 'sender')
   let contract = channel.contract(web3)
   let client = sender.build(web3, account, contract, _transport, _storage)
-  return client.buy(uri).then(response => {
+  return client.buy({ uri: uri }).then(response => {
     return response[1].body
   })
 }
