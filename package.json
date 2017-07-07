@@ -15,14 +15,16 @@
   },
   "scripts": {
     "test": "NODE_ENV=test mocha --require babel-polyfill --compilers js:babel-register",
-    "coveralls": "NODE_ENV=test istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
+    "coveralls": "NODE_ENV=test istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
+    "build": "tsc"
   },
   "main": "index.js",
   "bin": {
     "machinomy": "./bin/machinomy.js"
   },
   "dependencies": {
-    "bluebird": "^3.4.7",
+    "@types/bluebird": "^3.5.8",
+    "bluebird": "^3.5.0",
     "commander": "^2.9.0",
     "cors": "^2.8.1",
     "ethereumjs-util": "^5.0.1",
@@ -32,6 +34,7 @@
     "nedb": "^1.8.0",
     "prompt": "^1.0.0",
     "request": "^2.76.0",
+    "typescript": "^2.4.1",
     "url-join": "^1.1.0",
     "web3": "^0.19.0"
   },
