@@ -14,7 +14,7 @@ export interface Signature {
   s: Buffer
 }
 
-namespace Broker {
+export namespace Broker {
   export interface Contract {
     createChannel (receiver: string, duration: number, settlementPeriod: number, options: any, callback: () => void): void
     startSettle (channelId: string, payment: BigNumber.BigNumber, options: any, callback: () => void): void
@@ -76,7 +76,7 @@ const ethHash = (message: string): string => {
   return '0x' + util.sha3(buffer).toString('hex')
 }
 
-interface PaymentChannelJSON {
+export interface PaymentChannelJSON {
   sender: string
   receiver: string
   channelId: string
@@ -88,7 +88,7 @@ interface PaymentChannelJSON {
 /**
  * The Payment Channel
  */
-class PaymentChannel {
+export class PaymentChannel {
   sender: string
   receiver: string
   channelId: string
@@ -171,7 +171,7 @@ class PaymentChannel {
 /**
  * Wrapper for the payment channel contract.
  */
-class ChannelContract {
+export class ChannelContract {
   web3: Web3
   contract: Broker.Contract
 
@@ -346,7 +346,7 @@ class ChannelContract {
   }
 }
 
-interface PaymentJSON {
+export interface PaymentJSON {
   channelId: string
   sender: string
   receiver: string
@@ -358,7 +358,7 @@ interface PaymentJSON {
   s: string
 }
 
-class Payment {
+export class Payment {
   channelId: string
   sender: string
   receiver: string
@@ -402,7 +402,7 @@ class Payment {
   }
 }
 
-class ChannelId {
+export class ChannelId {
   id: Buffer
 
   constructor (buffer: Buffer) {
@@ -414,7 +414,7 @@ class ChannelId {
   }
 }
 
-const id = (something: string|Buffer|ChannelId): ChannelId => {
+export function id (something: string|Buffer|ChannelId): ChannelId {
   if (typeof something === 'string') {
     const noPrefix = something.replace('0x', '')
     const buffer = Buffer.from(noPrefix, 'HEX')
@@ -428,19 +428,7 @@ const id = (something: string|Buffer|ChannelId): ChannelId => {
   }
 }
 
-/**
- * @param {Web3} web3
- * @return {ChannelContract}
- */
-const contract = (web3: Web3): ChannelContract => {
+export function contract (web3: Web3): ChannelContract {
   const address = configuration.contractAddress()
   return new ChannelContract(web3, address, configuration.CONTRACT_INTERFACE)
-}
-
-module.exports = {
-  contract,
-  Payment,
-  PaymentChannel,
-  ChannelId,
-  id
 }
