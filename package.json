@@ -16,22 +16,23 @@
   "scripts": {
     "test": "NODE_ENV=test mocha --require babel-polyfill --compilers js:babel-register",
     "coveralls": "NODE_ENV=test istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
-    "build": "tsc"
+    "build": "tsc -p tsconfig.json",
+    "lint": "tslint -t stylish --type-check --project 'tsconfig.json'"
   },
   "main": "index.js",
   "bin": {
     "machinomy": "./bin/machinomy.js"
   },
   "dependencies": {
-    "@types/bluebird": "^3.5.8",
     "bluebird": "^3.5.0",
     "commander": "^2.9.0",
     "cors": "^2.8.1",
-    "ethereumjs-util": "^5.0.1",
+    "ethereumjs-util": "^5.1.2",
     "homedir": "^0.6.0",
     "lodash": "^4.17.4",
     "loglevel": "^1.4.1",
     "nedb": "^1.8.0",
+    "ng2-logger": "^1.0.3",
     "prompt": "^1.0.0",
     "request": "^2.76.0",
     "typescript": "^2.4.1",
@@ -39,6 +40,9 @@
     "web3": "^0.19.0"
   },
   "devDependencies": {
+    "@types/bignumber.js": "^4.0.2",
+    "@types/bluebird": "3.5.6",
+    "@types/node": "^8.0.9",
     "body-parser": "^1.15.2",
     "coveralls": "^2.12.0",
     "express": "^4.14.0",
@@ -48,8 +52,12 @@
     "nock": "^9.0.9",
     "tmp": "0.0.31",
     "tslint": "^5.5.0",
-    "tslint-eslint-rules": "^4.1.1",
+    "tslint-config-standard": "^6.0.1",
+    "types-bn": "^0.0.1",
+    "types-ethereumjs-util": "https://github.com/machinomy/types-ethereumjs-util",
+    "types-rlp": "^0.0.1",
     "web3-fake-provider": "^0.1.0",
-    "web3-provider-engine": "^12.0.5"
+    "web3-provider-engine": "^12.0.5",
+    "web3-typescript-typings": "https://github.com/machinomy/web3-typescript-typings"
   }
 }
