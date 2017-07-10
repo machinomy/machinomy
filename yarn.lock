@@ -10,6 +10,14 @@
   version "3.5.6"
   resolved "https://registry.yarnpkg.com/@types/bluebird/-/bluebird-3.5.6.tgz#5af2db8d2b743f5cc552a665d52ed890c19af74f"
 
+"@types/lodash@^4.14.68":
+  version "4.14.68"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.68.tgz#754fbab68bd2bbb69547dc8ce7574f7012eed7f6"
+
+"@types/nedb@^1.8.3":
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/@types/nedb/-/nedb-1.8.3.tgz#e6f21da4927147492084bbbc9dfbbc815310e08b"
+
 "@types/node@^8.0.9":
   version "8.0.9"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-8.0.9.tgz#19f44c3b6cb8a70d261d366f73650e3e3891ab2d"
