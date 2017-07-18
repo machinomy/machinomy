@@ -4,6 +4,8 @@ import path = require('path')
 import Web3 = require('web3')
 import * as env from './env'
 
+declare var web3: Web3 | undefined
+
 const BASE_DIR = '.machinomy'
 const COFNGIRATION_FILE = 'config.json'
 const DATABASE_FILE = 'storage.db'
@@ -487,5 +489,15 @@ export const receiver = (): Configuration => {
   } catch (error) {
     log.error(error)
     return new Configuration({})
+  }
+}
+
+export function currentProvider (): Web3.Provider {
+  if (web3) {
+    // Use Mist/MetaMask's provider
+    return web3.currentProvider
+  } else {
+    // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
+    return new Web3.providers.HttpProvider('http://localhost:8545')
   }
 }
