@@ -135,7 +135,7 @@ export class PaymentChannel {
     const message = this.channelId + value.toString()
     const messageHex = '0x' + Buffer.from(message).toString('hex')
 
-    let isOnNodeJs = false
+    let isOnNodeJs = true
     /*
     if (typeof BROWSER === 'undefined') {
       isOnNodeJs = true

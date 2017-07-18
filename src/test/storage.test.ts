@@ -1,44 +1,38 @@
-'use strict'
+import * as support from './support'
+import * as storage from '../lib/storage'
+import * as channel from '../lib/channel'
 
-const assert = require('assert')
+import Web3 = require('web3')
+import Promise = require('bluebird')
 
-const support = require('./support')
-
-const storage = require('../lib/storage')
-const channel = require('../lib/channel')
-
-const describe = support.describe
-const it = support.it
-
-const databasePromise = (genDatabase) => {
+function databasePromise <A> (genDatabase: (engine: storage.Engine) => A): Promise<A> {
   return support.tmpFileName().then(filename => {
     let engine = storage.engine(filename, true)
     return genDatabase(engine)
   })
 }
 
-const channelsDatabase = (_web3) => databasePromise(engine => {
+const channelsDatabase = (_web3: Web3) => databasePromise((engine: storage.Engine) => {
   let web3 = _web3 || support.fakeWeb3()
-  return storage.channels(web3, engine)
+  return storage.channels(web3, engine, null)
 })
 
 const tokensDatabase = () => databasePromise(engine => {
-  return storage.tokens(engine)
+  return storage.tokens(engine, null)
 })
 
-/**
- * @returns {Promise<PaymentsDatabase>}
- */
 const paymentsDatabase = () => databasePromise(engine => {
-  return storage.payments(engine)
+  return storage.payments(engine, null)
 })
 
 describe('storage', () => {
+  let web3 = support.fakeWeb3()
+
   describe('.engine', () => {
     it('return Engine instance', done => {
       support.tmpFileName().then(filename => {
         let engine = storage.engine(filename, true)
-        assert.equal(typeof engine, 'object')
+        expect(typeof engine).toBe('object')
       }).then(done)
     })
   })
@@ -46,8 +40,8 @@ describe('storage', () => {
   describe('.build', () => {
     it('return Storage', done => {
       support.tmpFileName().then(filename => {
-        let s = storage.build(filename, 'namespace')
-        assert.equal(typeof s, 'object')
+        let s = storage.build(web3, filename, 'namespace')
+        expect(typeof s).toBe('object')
       }).then(done)
     })
   })
@@ -65,8 +59,12 @@ describe('storage', () => {
             return engine.find({name: name})
           })
         }).then(returnedDocs => {
-          assert.equal(returnedDocs.length, 1)
-          assert.equal(returnedDocs[0].name, name)
+          expect(returnedDocs.length).toBe(1)
+          let doc: any = returnedDocs[0]
+          expect(doc).not.toBeNull()
+          if (doc) {
+            expect(doc.name).toBe(name)
+          }
         }).then(done)
       })
     })
@@ -78,8 +76,8 @@ describe('storage', () => {
           return engine.insert({name: name}).then(() => {
             return engine.findOne({name: name})
           })
-        }).then(document => {
-          assert.equal(document.name, name)
+        }).then((document: any) => {
+          expect(document.name).toBe(name)
         }).then(done)
       })
     })
@@ -89,7 +87,7 @@ describe('storage', () => {
         engine.then(engine => {
           return engine.findOne({number: support.randomInteger()})
         }).then(document => {
-          assert.equal(document, null)
+          expect(document).toBeNull()
         }).then(done)
       })
     })
@@ -107,9 +105,9 @@ describe('storage', () => {
               return engine.findOne({name: name})
             })
           })
-        }).then(doc => {
-          assert.equal(doc.name, name)
-          assert.equal(doc.nonce, nonce)
+        }).then((doc: any) => {
+          expect(doc.name).toBe(name)
+          expect(doc.nonce).toBe(nonce)
         }).then(done)
       })
     })
@@ -119,8 +117,8 @@ describe('storage', () => {
     it('return ChannelsDatabase instance', () => {
       support.tmpFileName().then(filename => {
         let engine = storage.engine(filename)
-        let channels = storage.channels(engine)
-        assert.equal(typeof channels, 'object')
+        let channels = storage.channels(web3, engine, null)
+        expect(typeof channels).toBe('object')
       })
     })
   })
@@ -138,52 +136,52 @@ describe('storage', () => {
           }).then(() => {
             return channels.firstById(channelId)
           })
-        }).then(updated => {
-          assert.deepEqual(updated.channelId, hexChannelId)
-          assert.equal(updated.spent, spent)
+        }).then((updated: any) => {
+          expect(updated.channelId).toBe(hexChannelId)
+          expect(updated.spent).toBe(spent)
         }).then(done)
       })
     })
     describe('#save and #firstById', () => {
-      it('match', done => {
+      it('match', () => {
         let channelId = channel.id('0xdeadbeaf')
         let hexChannelId = channelId.toString()
         let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 10, 0)
-        channelsDatabase().then(channels => {
+        return channelsDatabase(web3).then((channels: any) => {
           return channels.save(paymentChannel).then(() => {
             return channels.firstById(channelId)
           })
         }).then(saved => {
-          assert.deepEqual(saved, paymentChannel)
-        }).then(done)
+          expect(saved.toString()).toBe(paymentChannel.toString())
+        })
       })
     })
     describe('#firstById', () => {
       it('return null if not found', done => {
-        channelsDatabase().then(channels => {
+        channelsDatabase(web3).then(channels => {
           let channelId = support.randomChannelId()
           return channels.firstById(channelId)
         }).then(found => {
-          assert.equal(found, null)
+          expect(found).toBeNull()
         }).then(done)
       })
     })
     describe('#saveOrUpdate', () => {
-      it('save new PaymentChannel', done => {
+      it('save new PaymentChannel', () => {
         let channelId = support.randomChannelId()
         let hexChannelId = channelId.toString()
         let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 10, 0)
-        channelsDatabase().then(channels => {
+        return channelsDatabase(web3).then(channels => {
           return channels.firstById(channelId).then(found => {
-            assert.equal(found, null)
+            expect(found).toBeNull()
           }).then(() => {
             return channels.saveOrUpdate(paymentChannel)
           }).then(() => {
             return channels.firstById(channelId)
           }).then(found => {
-            assert.deepEqual(found, paymentChannel)
+            expect(JSON.stringify(found)).toBe(JSON.stringify(paymentChannel))
           })
-        }).then(done)
+        })
       })
 
       it('update spent value on existing PaymentChannel', done => {
@@ -192,13 +190,13 @@ describe('storage', () => {
         let spent = 5
         let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 10, 0)
         let updatedPaymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 10, spent)
-        channelsDatabase().then(channels => {
+        channelsDatabase(web3).then(channels => {
           return channels.save(paymentChannel).then(() => {
             return channels.saveOrUpdate(updatedPaymentChannel)
           }).then(() => {
             return channels.firstById(channelId)
-          }).then(found => {
-            assert.equal(found.spent, spent)
+          }).then((found: any) => {
+            expect(found.spent).toBe(spent)
           })
         }).then(done)
       })
@@ -209,13 +207,13 @@ describe('storage', () => {
         let channelId = support.randomChannelId()
         let hexChannelId = channelId.toString()
         let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, 10, 0)
-        channelsDatabase().then(channels => {
+        channelsDatabase(web3).then(channels => {
           return channels.save(paymentChannel).then(() => {
             return channels.all()
           }).then(found => {
-            assert.equal(found.length, 1)
+            expect(found.length).toBe(1)
             let foundChannelId = found[0].channelId
-            assert.equal(foundChannelId, hexChannelId)
+            expect(foundChannelId).toBe(hexChannelId)
           })
         }).then(done)
       })
@@ -231,15 +229,15 @@ describe('storage', () => {
         let bHexChannelId = bChannelId.toString()
         let bPaymentChannel = new channel.PaymentChannel('sender2', 'receiver2', bHexChannelId, 10, 0)
 
-        channelsDatabase().then(channels => {
+        channelsDatabase(web3).then(channels => {
           return channels.save(aPaymentChannel).then(() => {
             return channels.save(bPaymentChannel)
           }).then(() => {
             return channels.allByQuery({sender: 'sender2'})
           }).then(found => {
-            assert.equal(found.length, 1)
+            expect(found.length).toBe(1)
             let foundChannelId = found[0].channelId
-            assert.equal(foundChannelId, bHexChannelId)
+            expect(foundChannelId).toBe(bHexChannelId)
           })
         }).then(done)
       })
@@ -253,7 +251,7 @@ describe('storage', () => {
         tokensDatabase().then(tokens => {
           return tokens.isPresent(randomToken)
         }).then(isPresent => {
-          assert.equal(isPresent, false)
+          expect(isPresent).toBeFalsy()
         }).then(done)
       })
 
@@ -265,7 +263,7 @@ describe('storage', () => {
             return tokens.isPresent(randomToken)
           })
         }).then(isPresent => {
-          assert.equal(isPresent, true)
+          expect(isPresent).toBeTruthy()
         }).then(done)
       })
     })
@@ -284,19 +282,19 @@ describe('storage', () => {
           value: 12,
           channelValue: 10,
           v: 1,
-          r: 2,
-          s: 3
+          r: '0x2',
+          s: '0x3'
         })
         paymentsDatabase().then(payments => {
           return payments.save(randomToken, payment).then(() => {
             return payments.firstMaximum(channelId)
           })
-        }).then(found => {
-          assert.deepEqual(found.channelId, payment.channelId)
-          assert.equal(found.token, randomToken)
-          assert.deepEqual(found.r, payment.r)
-          assert.deepEqual(found.s, payment.s)
-          assert.deepEqual(found.v, payment.v)
+        }).then((found: any) => {
+          expect(found.channelId).toBe(payment.channelId)
+          expect(found.token).toBe(randomToken)
+          expect(found.r).toBe(payment.r)
+          expect(found.s).toBe(payment.s)
+          expect(found.v).toBe(payment.v)
         }).then(done)
       })
     })

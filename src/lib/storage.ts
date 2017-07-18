@@ -23,7 +23,7 @@ export class PaymentsDatabase {
   kind: string
   engine: Engine
 
-  constructor (engine: Engine, namespace?: string) {
+  constructor (engine: Engine, namespace: string | null) {
     this.kind = namespaced(namespace, 'payment')
     this.engine = engine
   }
@@ -68,7 +68,7 @@ export class PaymentsDatabase {
   }
 }
 
-export const payments = (engine: Engine, namespace?: string): PaymentsDatabase => {
+export const payments = (engine: Engine, namespace: string | null): PaymentsDatabase => {
   return new PaymentsDatabase(engine, namespace)
 }
 
@@ -79,7 +79,7 @@ export class TokensDatabase {
   kind: string
   engine: Engine
 
-  constructor (engine: Engine, namespace?: string) {
+  constructor (engine: Engine, namespace: string | null) {
     this.kind = namespaced(namespace, 'token')
     this.engine = engine
   }
@@ -109,7 +109,7 @@ export class TokensDatabase {
   }
 }
 
-export const tokens = (engine: Engine, namespace?: string): TokensDatabase => {
+export const tokens = (engine: Engine, namespace: string | null): TokensDatabase => {
   return new TokensDatabase(engine, namespace)
 }
 
@@ -121,7 +121,7 @@ export class ChannelsDatabase {
   engine: Engine
   kind: string
 
-  constructor (web3: Web3, engine: Engine, namespace?: string) {
+  constructor (web3: Web3, engine: Engine, namespace: string | null) {
     this.web3 = web3
     this.kind = namespaced(namespace, 'channel')
     this.engine = engine
@@ -208,7 +208,7 @@ export class ChannelsDatabase {
   }
 }
 
-export const channels = (web3: Web3, engine: Engine, namespace?: string): ChannelsDatabase => {
+export const channels = (web3: Web3, engine: Engine, namespace: string | null): ChannelsDatabase => {
   return new ChannelsDatabase(web3, engine, namespace)
 }
 
@@ -255,15 +255,15 @@ export const engine = (path: string, inMemoryOnly: boolean = false): Engine => {
 }
 
 export class Storage {
-  namespace: string|undefined
+  namespace: string|null
   db: Datastore
   channels: ChannelsDatabase
   tokens: TokensDatabase
   payments: PaymentsDatabase
 
-  constructor (web3: Web3, path: string, namespace?: string, inMemoryOnly?: boolean) {
+  constructor (web3: Web3, path: string, namespace: string|null, inMemoryOnly?: boolean) {
     let storageEngine = engine(path, inMemoryOnly)
-    this.namespace = namespace
+    this.namespace = namespace || null
     this.db = storageEngine.datastore
     this.channels = channels(web3, storageEngine, namespace)
     this.tokens = tokens(storageEngine, namespace)
@@ -274,6 +274,6 @@ export class Storage {
 /**
  * Build an instance of Storage.
  */
-export const build = (web3: Web3, path: string, namespace?: string, inMemoryOnly?: boolean): Storage => {
+export const build = (web3: Web3, path: string, namespace: string | null = null, inMemoryOnly?: boolean): Storage => {
   return new Storage(web3, path, namespace, inMemoryOnly)
 }

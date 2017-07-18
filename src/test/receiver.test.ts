@@ -1,31 +1,16 @@
-'use strict'
-
-const assert = require('assert')
-
-const support = require('./support')
-
-const receiver = require('../lib/receiver')
-const storage = require('../lib/storage')
-const channel = require('../lib/channel')
-
-const describe = support.describe
-const it = support.it
-
-/**
- * @returns {Promise<Storage>}
- */
-const randomStorage = (web3) => {
-  return support.tmpFileName().then(filename => {
-    return storage.build(web3, filename, null, true)
-  })
-}
+import * as support from './support'
+import * as receiver from '../lib/receiver'
+import * as channel from '../lib/channel'
+import { randomStorage } from './support'
 
 describe('receiver', () => {
+  let web3 = support.fakeWeb3()
+
   describe('.build', () => {
     it('build Receiver', done => {
-      randomStorage().then(storage => {
+      randomStorage(web3).then(storage => {
         let result = receiver.build(support.fakeWeb3(), '0xdeadbeaf', storage)
-        assert.equal(typeof result, 'object')
+        expect(typeof result).toBe('object')
       }).then(done)
     })
   })
@@ -44,17 +29,20 @@ describe('receiver', () => {
           value: 12,
           channelValue: 10,
           v: 1,
-          r: 2,
-          s: 3
+          r: '0x2',
+          s: '0x3'
         })
         let paymentChannel = channel.PaymentChannel.fromPayment(payment)
         randomStorage(web3).then(storage => {
           return storage.channels.save(paymentChannel).then(() => {
             return receiver.build(web3, '0xdeadbeaf', storage).findPaymentChannel(payment)
           }).then(found => {
-            assert.equal(found.channelId, channelId.toString())
-            assert.equal(found.sender, payment.sender)
-            assert.equal(found.receiver, payment.receiver)
+            expect(found).not.toBeNull()
+            if (found) {
+              expect(found.channelId).toBe(channelId.toString())
+              expect(found.sender).toBe(payment.sender)
+              expect(found.receiver).toBe(payment.receiver)
+            }
           })
         }).then(done)
       })
@@ -70,12 +58,12 @@ describe('receiver', () => {
           value: 12,
           channelValue: 10,
           v: 1,
-          r: 2,
-          s: 3
+          r: '0x2',
+          s: '0x3'
         })
         randomStorage(web3).then(storage => {
           return receiver.build(web3, '0xdeadbeaf', storage).findPaymentChannel(payment).then(found => {
-            assert.equal(found, null)
+            expect(found).toBeNull()
           })
         }).then(done)
       })
@@ -90,33 +78,37 @@ describe('receiver', () => {
         value: 12,
         channelValue: 10,
         v: 1,
-        r: 2,
-        s: 3
+        r: '0x2',
+        s: '0x3'
       })
       it('return token', done => {
         randomStorage(web3).then(storage => {
           return receiver.build(web3, '0xdeadbeaf', storage).whenValidPayment(payment).then(token => {
-            assert.notEqual(token, null)
+            expect(token).not.toBeNull()
           })
         }).then(done)
       })
 
-      it('save payment', done => {
-        randomStorage(web3).then(storage => {
+      it('save payment', () => {
+        return randomStorage(web3).then(storage => {
           return receiver.build(web3, '0xdeadbeaf', storage).whenValidPayment(payment).then(() => {
             return storage.payments.firstMaximum(payment.channelId)
           }).then(savedPayment => {
-            assert.equal(payment.channelId, savedPayment.channelId)
-            assert.equal(payment.sender, savedPayment.sender)
-            assert.equal(payment.receiver, savedPayment.receiver)
-            assert.equal(payment.price, savedPayment.price)
-            assert.equal(payment.value, savedPayment.value)
-            assert.equal(payment.channelValue, savedPayment.channelValue)
-            assert.equal(payment.r, savedPayment.r)
-            assert.equal(payment.s, savedPayment.s)
-            assert.equal(payment.v, savedPayment.v)
+            console.log(savedPayment)
+            expect(savedPayment).not.toBeNull()
+            if (savedPayment) {
+              expect(payment.channelId).toBe(savedPayment.channelId)
+              expect(payment.sender).toBe(savedPayment.sender)
+              expect(payment.receiver).toBe(savedPayment.receiver)
+              expect(payment.price).toBe(savedPayment.price)
+              expect(payment.value).toBe(savedPayment.value)
+              expect(payment.channelValue).toBe(savedPayment.channelValue)
+              expect(payment.v).toBe(savedPayment.v)
+              expect(payment.r).toBe(savedPayment.r)
+              expect(payment.s).toBe(savedPayment.s)
+            }
           })
-        }).then(done)
+        })
       })
 
       it('save token', done => {
@@ -124,7 +116,7 @@ describe('receiver', () => {
           return receiver.build(web3, '0xdeadbeaf', storage).whenValidPayment(payment).then(token => {
             return storage.tokens.isPresent(token)
           }).then(isPresent => {
-            assert(isPresent)
+            expect(isPresent).toBeTruthy()
           })
         }).then(done)
       })
@@ -140,8 +132,8 @@ describe('receiver', () => {
         value: 12,
         channelValue: 10,
         v: 1,
-        r: 2,
-        s: 3
+        r: '0x2',
+        s: '0x3'
       })
 
       it('check if token is present', done => {
@@ -150,7 +142,7 @@ describe('receiver', () => {
           return r.whenValidPayment(payment).then(token => {
             return r.acceptToken(token)
           }).then(isPresent => {
-            assert(isPresent)
+            expect(isPresent).toBeTruthy()
           })
         }).then(done)
       })
@@ -160,7 +152,7 @@ describe('receiver', () => {
         randomStorage(web3).then(storage => {
           let r = receiver.build(web3, '0xdeadbeaf', storage)
           return r.acceptToken(randomToken).then(isPresent => {
-            assert.equal(isPresent, false)
+            expect(isPresent).toBeFalsy()
           })
         }).then(done)
       })
@@ -176,16 +168,16 @@ describe('receiver', () => {
         value: 12,
         channelValue: 10,
         v: 1,
-        r: 2,
-        s: 3
+        r: '0x2',
+        s: '0x3'
       })
 
       it('throw an error if can not', () => {
-        randomStorage().then(storage => {
-          let r = receiver.build('0xdeadbeaf', storage)
-          assert.throws(() => {
+        randomStorage(web3).then(storage => {
+          let r = receiver.build(web3, '0xdeadbeaf', storage)
+          expect(() => {
             r.ensureCanAcceptPayment(payment)
-          }, Error)
+          }).toThrow()
         })
       })
     })
@@ -201,15 +193,15 @@ describe('receiver', () => {
         value: 12,
         channelValue: 10,
         v: 1,
-        r: 2,
-        s: 3
+        r: '0x2',
+        s: '0x3'
       })
 
       it('accept new payment, and return a token', done => {
         randomStorage(web3).then(storage => {
           let r = receiver.build(web3, receiverAccount, storage)
           return r.acceptPayment(payment).then(token => {
-            assert.notEqual(token, null)
+            expect(token).not.toBeNull()
           })
         }).then(done)
       })
