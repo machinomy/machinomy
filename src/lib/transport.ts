@@ -18,8 +18,8 @@ export const STATUS_CODES = {
  * @param {object} response
  * @return {string}
  */
-const extractPaywallToken = (response: RequestResponse) => {
-  let token = response.headers['paywall-token']
+const extractPaywallToken = (response: RequestResponse): string => {
+  let token = response.headers['paywall-token'] as string
   if (token) {
     log.info('Got token from the server')
     return token
@@ -33,7 +33,7 @@ export interface GetWithTokenCallbacks {
   onDidLoad?: Function
 }
 
-export interface RequestTokenCallbacks {
+export interface RequestTokenOpts {
   onWillSendPayment?: Function
   onDidSendPayment?: Function
 }
@@ -43,7 +43,7 @@ export class Transport {
      * Request URI sending a paywall token.
      * @return {Promise<object>}
      */
-  getWithToken (uri: string, token: string, opts: GetWithTokenCallbacks = {}): Promise<object> {
+  getWithToken (uri: string, token: string, opts: GetWithTokenCallbacks = {}): Promise<RequestResponse> {
     let headers = {
       'authorization': 'Paywall ' + token
     }
@@ -59,7 +59,7 @@ export class Transport {
     })
   }
 
-  get (uri: string, headers?: object): Promise<object> {
+  get (uri: string, headers?: object): Promise<RequestResponse> {
     let options = {
       method: 'GET',
       uri: uri,
@@ -76,7 +76,7 @@ export class Transport {
      * @param {{uri: string, headers: object, onWillPreflight: function, onDidPreflight: function, onWillOpenChannel: function, onDidOpenChannel: function, onWillSendPayment: function, onDidSendPayment: function, onWillLoad: function, onDidLoad: function}} opts
      * @return {Promise<string>}
      */
-  requestToken (uri: string, payment: Payment, opts: RequestTokenCallbacks = {}) {
+  requestToken (uri: string, payment: Payment, opts: RequestTokenOpts = {}): Promise<string> {
     let options = {
       method: 'POST',
       uri: uri,

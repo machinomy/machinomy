@@ -8,25 +8,12 @@ import { ChannelId, Payment, PaymentChannel, PaymentChannelJSON } from './channe
 
 const log = Log.create('storage')
 
-export class Storage {
-  namespace: string|undefined
-  db: Datastore
-  channels: ChannelsDatabase
-  tokens: TokensDatabase
-  payments: PaymentsDatabase
-
-  constructor (web3: Web3, path: string, namespace?: string, inMemoryOnly?: boolean) {
-    let storageEngine = engine(path, inMemoryOnly)
-    this.namespace = namespace
-    this.db = storageEngine.datastore
-    this.channels = channels(web3, storageEngine, namespace)
-    this.tokens = tokens(storageEngine, namespace)
-    this.payments = payments(storageEngine, namespace)
+const namespaced = (namespace: string|null|undefined, kind: string): string => {
+  let result = kind
+  if (namespace) {
+    result = namespace + ':' + kind
   }
-}
-
-export const payments = (engine: Engine, namespace?: string): PaymentsDatabase => {
-  return new PaymentsDatabase(engine, namespace)
+  return result
 }
 
 /**
@@ -65,7 +52,7 @@ export class PaymentsDatabase {
   /**
    * Find a payment with maximum value on it inside the channel.
    */
-  firstMaximum (channelId: ChannelId): Promise<Payment|null> {
+  firstMaximum (channelId: ChannelId|string): Promise<Payment|null> {
     log.info(`Trying to find last payment for channel ${channelId.toString()}`)
     let query = { kind: this.kind, channelId: channelId.toString() }
     return this.engine.find(query).then((documents: Array<Payment>) => {
@@ -81,8 +68,8 @@ export class PaymentsDatabase {
   }
 }
 
-export const tokens = (engine: Engine, namespace?: string): TokensDatabase => {
-  return new TokensDatabase(engine, namespace)
+export const payments = (engine: Engine, namespace?: string): PaymentsDatabase => {
+  return new PaymentsDatabase(engine, namespace)
 }
 
 /**
@@ -100,7 +87,7 @@ export class TokensDatabase {
   /**
    * Save token for channelId
    */
-  save (token: string, channelId: ChannelId): Promise<void> {
+  save (token: string, channelId: ChannelId|string): Promise<void> {
     let tokenDocument = {
       kind: this.kind,
       token: token.toString(),
@@ -122,8 +109,8 @@ export class TokensDatabase {
   }
 }
 
-export const channels = (web3: Web3, engine: Engine, namespace?: string): ChannelsDatabase => {
-  return new ChannelsDatabase(web3, engine, namespace)
+export const tokens = (engine: Engine, namespace?: string): TokensDatabase => {
+  return new TokensDatabase(engine, namespace)
 }
 
 /**
@@ -221,11 +208,8 @@ export class ChannelsDatabase {
   }
 }
 
-/**
- * Instantiate a storage engine.
- */
-export const engine = (path: string, inMemoryOnly: boolean = false): Engine => {
-  return new Engine(path, inMemoryOnly)
+export const channels = (web3: Web3, engine: Engine, namespace?: string): ChannelsDatabase => {
+  return new ChannelsDatabase(web3, engine, namespace)
 }
 
 /**
@@ -264,16 +248,27 @@ export class Engine {
 }
 
 /**
- * @param {string|null} namespace
- * @param {string} kind
- * @return {string}
+ * Instantiate a storage engine.
  */
-const namespaced = (namespace: string|null|undefined, kind: string): string => {
-  let result = kind
-  if (namespace) {
-    result = namespace + ':' + kind
+export const engine = (path: string, inMemoryOnly: boolean = false): Engine => {
+  return new Engine(path, inMemoryOnly)
+}
+
+export class Storage {
+  namespace: string|undefined
+  db: Datastore
+  channels: ChannelsDatabase
+  tokens: TokensDatabase
+  payments: PaymentsDatabase
+
+  constructor (web3: Web3, path: string, namespace?: string, inMemoryOnly?: boolean) {
+    let storageEngine = engine(path, inMemoryOnly)
+    this.namespace = namespace
+    this.db = storageEngine.datastore
+    this.channels = channels(web3, storageEngine, namespace)
+    this.tokens = tokens(storageEngine, namespace)
+    this.payments = payments(storageEngine, namespace)
   }
-  return result
 }
 
 /**
