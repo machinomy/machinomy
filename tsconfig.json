@@ -8,7 +8,7 @@
     // "jsx": "preserve",                     /* Specify JSX code generation: 'preserve', 'react-native', or 'react'. */
     "declaration": true,                      /* Generates corresponding '.d.ts' file. */
     "sourceMap": true,                        /* Generates corresponding '.map' file. */
-    "outDir": "./dist",                       /* Redirect output structure to the directory. */
+    "outDir": "./build",                       /* Redirect output structure to the directory. */
     "rootDir": "./src",                       /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */
     // "removeComments": true,                /* Do not emit comments to output. */
     // "noEmit": true,                        /* Do not emit outputs. */
@@ -50,12 +50,7 @@
     "emitDecoratorMetadata": true             /* Enables experimental support for emitting type metadata for decorators. */
   },
   "include": [
-    "node_modules/web3-typescript-typings/index.d.ts",
-    "node_modules/types-bn/index.d.ts",
-    "node_modules/types-rlp/index.d.ts",
-    "node_modules/types-ethereumjs-util/index.d.ts",
-    "node_modules/types-web3-provider-engine/index.d.ts",
-    "node_modules/types-web3-fake-provider/index.d.ts",
+    "node_modules/*/index.d.ts",
     "src/globals.d.ts",
     "src/**/*.ts"
   ]

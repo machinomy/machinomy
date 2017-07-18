@@ -4234,9 +4234,9 @@ web3-provider-engine@^13.2.8:
     xhr "^2.2.0"
     xtend "^4.0.1"
 
-web3-typescript-typings@^0.2.1:
+"web3-typescript-typings@https://github.com/machinomy/web3-typescript-typings":
   version "0.2.1"
-  resolved "https://registry.yarnpkg.com/web3-typescript-typings/-/web3-typescript-typings-0.2.1.tgz#28c893f9b39700599f7763648517729032e46039"
+  resolved "https://github.com/machinomy/web3-typescript-typings#129e3c32ddf33c19af1b81802d6f89b2aecf857d"
   dependencies:
     bignumber.js "^4.0.2"
 
