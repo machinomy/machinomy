@@ -1,4 +1,4 @@
-import * as storage from './storage'
+import Storage from './storage'
 import * as receiver from './receiver'
 import * as channel from './channel'
 import * as configuration from './configuration'
@@ -50,12 +50,12 @@ export class Paywall {
    * @param address       full URI of the server, like 'http://example.com'
    * @param _storage
    */
-  constructor (web3: Web3, account: string, address: string, _storage: storage.Storage|null) {
+  constructor (web3: Web3, account: string, address: string, _storage: Storage|null) {
     let settings = configuration.receiver()
     log.data('Use settings for receiver', settings)
     this.receiverAccount = account
     this.gatewayUri = urljoin(address, configuration.PAYWALL_PATH)
-    let s: storage.Storage = _storage || storage.build(web3, settings.databaseFile, 'receiver')
+    let s: Storage = _storage || new Storage(web3, settings.databaseFile, 'receiver')
     this.server = receiver.build(web3, account, s)
   }
 

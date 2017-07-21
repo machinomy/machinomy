@@ -2,6 +2,7 @@ import * as support from './support'
 import * as receiver from '../lib/receiver'
 import * as channel from '../lib/channel'
 import { randomStorage } from './support'
+import { PaymentChannel } from '../lib/channel'
 
 describe('receiver', () => {
   let web3 = support.fakeWeb3()
@@ -36,7 +37,7 @@ describe('receiver', () => {
         randomStorage(web3).then(storage => {
           return storage.channels.save(paymentChannel).then(() => {
             return receiver.build(web3, '0xdeadbeaf', storage).findPaymentChannel(payment)
-          }).then(found => {
+          }).then((found: PaymentChannel|null) => {
             expect(found).not.toBeNull()
             if (found) {
               expect(found.channelId).toBe(channelId.toString())

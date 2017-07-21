@@ -254,7 +254,7 @@ export const engine = (path: string, inMemoryOnly: boolean = false): Engine => {
   return new Engine(path, inMemoryOnly)
 }
 
-export class Storage {
+export default class Storage {
   namespace: string|null
   db: Datastore
   channels: ChannelsDatabase

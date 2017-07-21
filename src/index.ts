@@ -3,12 +3,13 @@ import * as middleware from './lib/middleware'
 import * as transport from './lib/transport'
 import * as sender from './lib/sender'
 import * as storage from './lib/storage'
+import Storage from './lib/storage'
 import * as configuration from './lib/configuration'
 import Web3 = require('web3')
 import Promise = require('bluebird')
 
 import { Log } from 'ng2-logger'
-import { PaymentPair, Sender } from './lib/sender'
+import { PaymentPair, default as Sender } from './lib/sender'
 import { Logger } from 'ng2-logger/src/logger'
 
 export const log: Logger<any> = Log.create('machinomy')
@@ -41,7 +42,7 @@ export default {
   VERSION: '0.1.5',
   Paywall: middleware.Paywall,
   Transport: transport.Transport,
-  Storage: storage.Storage,
+  Storage: Storage,
   transport: transport,
   contract: channel.contract,
   configuration: configuration,

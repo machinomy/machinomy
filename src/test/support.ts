@@ -3,7 +3,7 @@ import Promise = require('bluebird')
 import Web3 = require('web3')
 import FakeProvider = require('web3-fake-provider')
 import { ChannelId } from '../lib/channel'
-import * as storage from '../lib/storage'
+import Storage from '../lib/storage'
 
 const channel = require('../lib/channel')
 
@@ -27,8 +27,8 @@ export function randomChannelId (): ChannelId {
   return channel.id(Buffer.from(randomInteger().toString()))
 }
 
-export function randomStorage (web3: Web3): Promise<storage.Storage> {
+export function randomStorage (web3: Web3): Promise<Storage> {
   return tmpFileName().then(filename => {
-    return storage.build(web3, filename, null, true)
+    return new Storage(web3, filename, null, true)
   })
 }

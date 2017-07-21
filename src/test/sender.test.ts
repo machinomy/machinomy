@@ -1,15 +1,15 @@
 import * as support from './support'
-import * as sender from '../lib/sender'
+import Sender from '../lib/sender'
 import * as transport from '../lib/transport'
 import * as channel from '../lib/channel'
 import { randomStorage } from './support'
 
 import Promise = require('bluebird')
 
-const randomSender = (): Promise<sender.Sender> => {
+const randomSender = (): Promise<Sender> => {
   let web3 = support.fakeWeb3()
   return randomStorage(web3).then(storage => {
-    return new sender.Sender(web3, '0xdeadbeaf', channel.contract(web3), transport.build(), storage)
+    return new Sender(web3, '0xdeadbeaf', channel.contract(web3), transport.build(), storage)
   })
 }
 

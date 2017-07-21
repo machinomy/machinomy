@@ -1,13 +1,13 @@
-'use strict'
+import CommandPrompt from './CommandPrompt'
+import machinomy from '../index'
+import _ = require('lodash')
+import Web3 = require('web3')
 
-const _ = require('lodash')
-
-const machinomy = require('../index')
-
-const channels = (command) => {
+function channels (command: CommandPrompt): void {
   let namespace = command.namespace || 'sender'
   let settings = machinomy.configuration.sender()
-  let web3 = machinomy.configuration.web3()
+  let provider = machinomy.configuration.currentProvider()
+  let web3 = new Web3(provider)
 
   let engine = machinomy.storage.engine(settings.databaseFile)
   machinomy.storage.channels(web3, engine, namespace).all().then(found => {
@@ -22,4 +22,4 @@ const channels = (command) => {
   })
 }
 
-module.exports = channels
+export default channels

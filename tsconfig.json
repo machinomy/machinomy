@@ -51,7 +51,9 @@
   },
   "include": [
     "node_modules/*/index.d.ts",
+    "node_modules/*/index.d.ts",
     "src/globals.d.ts",
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "types/*/index.d.ts"
   ]
 }

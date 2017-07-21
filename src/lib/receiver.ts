@@ -4,7 +4,7 @@ import Web3 = require('web3')
 
 import * as channel from './channel'
 import { Payment, PaymentChannel } from './channel'
-import { Storage } from './storage'
+import Storage from './storage'
 
 const log = Log.create('sender')
 

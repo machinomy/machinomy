@@ -8,7 +8,7 @@ import * as channel from './channel'
 import * as configuration from './configuration'
 import { ChannelContract, Payment, PaymentChannel } from './channel'
 import { PaymentRequired, RequestTokenOpts, Transport } from './transport'
-import { Storage } from './storage'
+import Storage from './storage'
 import { RequestResponse } from 'request'
 
 const log = Log.create('sender')
@@ -32,7 +32,7 @@ export interface PaymentPair {
   response: RequestResponse
 }
 
-export class Sender {
+export default class Sender {
   web3: Web3
   account: string
   contract: ChannelContract

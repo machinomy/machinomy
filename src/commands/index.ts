@@ -1,31 +1,29 @@
-'use strict'
-
-const fs = require('fs')
-const path = require('path')
-const homedir = require('homedir')
-const commander = require('commander')
-const machinomy = require('./index')
-const buy = require('./commands/buy')
-const pry = require('./commands/pry')
-const channels = require('./commands/channels')
-const close = require('./commands/close')
-const configuration = require('./commands/configuration')
-const setup = require('./commands/setup')
+import * as fs from 'fs'
+import path = require('path')
+import homedir = require('homedir')
+import commander = require('commander')
+import machinomy from './../index'
+import setup from './setup'
+import buy from './buy'
+import pry from './pry'
+import channels from './channels'
+import close from './close'
+import configuration from './configuration'
 
 const BASE_DIR = '.machinomy'
-const COFNGIRATION_FILE = 'config.json'
+const CONFIGURATION_FILE = 'config.json'
 
-const baseDirPath = function () {
+const baseDirPath = function (): string {
   return path.resolve(path.join(homedir(), BASE_DIR))
 }
 
-const ensureBaseDirPresent = function () {
+const ensureBaseDirPresent = function (): void {
   if (!fs.existsSync(baseDirPath())) {
     fs.mkdir(baseDirPath())
   }
 }
 
-const canCreateDatabase = function () {
+const canCreateDatabase = function (): boolean {
   try {
     fs.accessSync(baseDirPath(), fs.constants.R_OK | fs.constants.W_OK)
     return true
@@ -34,11 +32,11 @@ const canCreateDatabase = function () {
   }
 }
 
-const configFilePath = function () {
-  return path.join(baseDirPath(), COFNGIRATION_FILE)
+const configFilePath = function (): string {
+  return path.join(baseDirPath(), CONFIGURATION_FILE)
 }
 
-const canReadConfig = function () {
+const canReadConfig = function (): boolean {
   try {
     fs.accessSync(configFilePath(), fs.constants.R_OK)
     return true
@@ -50,11 +48,11 @@ const canReadConfig = function () {
 /**
  * @returns {object}
  */
-const configurationOptions = function () {
+const configurationOptions = function (): object {
   return JSON.parse(fs.readFileSync(configFilePath(), 'utf8'))
 }
 
-const canParseConfig = function () {
+const canParseConfig = function (): boolean {
   try {
     configurationOptions()
     return true
@@ -63,7 +61,7 @@ const canParseConfig = function () {
   }
 }
 
-const ensure = function (command) {
+const ensure = function (command: Function) {
   return function () {
     ensureBaseDirPresent()
 
@@ -79,7 +77,7 @@ const ensure = function (command) {
   }
 }
 
-const main = function (args) {
+const main = function (args: string[]) {
   let version = machinomy.NAME + ' v' + machinomy.VERSION
   let parser = commander
     .version(version)
