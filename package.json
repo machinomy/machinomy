@@ -1,6 +1,6 @@
 {
   "name": "machinomy",
-  "version": "1.0.0-alpha.7",
+  "version": "1.0.0-alpha.8",
   "description": "Micropayments in Ether over HTTP",
   "author": "Sergey Ukustov <sergey.ukustov@machinomy.com>",
   "license": "Apache-2.0",
@@ -17,15 +17,21 @@
     "test": "NODE_ENV=test jest",
     "build": "tsc -p tsconfig.json",
     "lint": "tslint -t stylish --type-check --project 'tsconfig.json'",
-    "prepublish": "yarn run build"
+    "prepublish": "yarn run build",
+    "publish": "echo 'hello'"
   },
-  "main": "build/index.js",
+  "main": "index.js",
   "bin": {
-    "machinomy": "./build/bin/machinomy.js"
+    "machinomy": "./bin/machinomy.js"
   },
   "types": "build/index.d.ts",
   "files": [
-    "build/",
+    "bin/",
+    "commands/",
+    "contracts/",
+    "examples/",
+    "lib/",
+    "test/",
     "src/"
   ],
   "jest": {
@@ -39,9 +45,6 @@
       "js",
       "json"
     ]
-  },
-  "directories": {
-    "lib": "build/"
   },
   "dependencies": {
     "@types/bignumber.js": "^4.0.2",
