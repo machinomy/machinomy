@@ -1,6 +1,6 @@
 {
   "name": "machinomy",
-  "version": "1.0.0-alpha.4",
+  "version": "1.0.0-alpha.5",
   "description": "Micropayments in Ether over HTTP",
   "author": "Sergey Ukustov <sergey.ukustov@machinomy.com>",
   "license": "Apache-2.0",
@@ -41,23 +41,6 @@
     ]
   },
   "dependencies": {
-    "@types/tmp": "^0.0.33",
-    "bluebird": "^3.5.0",
-    "commander": "^2.9.0",
-    "cors": "^2.8.1",
-    "ethereumjs-util": "^5.1.2",
-    "homedir": "https://github.com/ukstv/node-homedir",
-    "lodash": "^4.17.4",
-    "loglevel": "^1.4.1",
-    "nedb": "^1.8.0",
-    "ng2-logger": "^1.0.3",
-    "prompt": "^1.0.0",
-    "request": "^2.76.0",
-    "typescript": "^2.4.1",
-    "url-join": "^1.1.0",
-    "web3": "^0.19.0"
-  },
-  "devDependencies": {
     "@types/bignumber.js": "^4.0.2",
     "@types/bluebird": "3.5.6",
     "@types/body-parser": "^1.16.4",
@@ -70,7 +53,31 @@
     "@types/nock": "^8.2.1",
     "@types/node": "^8.0.9",
     "@types/request": "^0.0.45",
+    "@types/tmp": "^0.0.33",
     "@types/url-join": "^0.8.2",
+    "bluebird": "^3.5.0",
+    "commander": "^2.9.0",
+    "cors": "^2.8.1",
+    "ethereumjs-util": "^5.1.2",
+    "homedir": "https://github.com/ukstv/node-homedir",
+    "lodash": "^4.17.4",
+    "loglevel": "^1.4.1",
+    "nedb": "^1.8.0",
+    "ng2-logger": "^1.0.3",
+    "prompt": "^1.0.0",
+    "request": "^2.76.0",
+    "types-bn": "^0.0.1",
+    "types-ethereumjs-util": "^0.0.5",
+    "types-rlp": "^0.0.1",
+    "types-web3-fake-provider": "^0.0.2",
+    "types-web3-provider-engine": "^0.0.2",
+    "typescript": "^2.4.1",
+    "url-join": "^1.1.0",
+    "web3": "^0.19.0",
+    "web3-provider-engine": "^12.0.5",
+    "web3-typescript-typings": "https://github.com/machinomy/web3-typescript-typings"
+  },
+  "devDependencies": {
     "body-parser": "^1.15.2",
     "coveralls": "^2.12.0",
     "express": "^4.14.0",
@@ -81,13 +88,6 @@
     "ts-jest": "^20.0.7",
     "tslint": "^5.5.0",
     "tslint-config-standard": "^6.0.1",
-    "types-bn": "^0.0.1",
-    "types-ethereumjs-util": "^0.0.5",
-    "types-rlp": "^0.0.1",
-    "types-web3-fake-provider": "^0.0.2",
-    "types-web3-provider-engine": "^0.0.2",
-    "web3-fake-provider": "^0.1.0",
-    "web3-provider-engine": "^12.0.5",
-    "web3-typescript-typings": "https://github.com/machinomy/web3-typescript-typings"
+    "web3-fake-provider": "^0.1.0"
   }
 }
