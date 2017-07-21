@@ -166,6 +166,17 @@ export class PaymentChannel {
       })
     }
   }
+
+  toJSON (): PaymentChannelJSON {
+    return {
+      state: this.state,
+      spent: this.spent,
+      value: this.value,
+      channelId: this.channelId,
+      receiver: this.receiver,
+      sender: this.sender
+    }
+  }
 }
 
 /**
