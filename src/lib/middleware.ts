@@ -62,7 +62,7 @@ export class Paywall {
   /**
    * Require payment before serving the request.
    */
-  guard (price: number|PriceFunction, callback: Function) {
+  guard (price: number|PriceFunction, callback: (req: express.Request, res: express.Response) => void) {
     let _guard = (fixedPrice: number, req: express.Request, res: express.Response, error: any, token?: string) => {
       if (error) {
         log.error(error)
