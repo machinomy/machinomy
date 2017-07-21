@@ -493,7 +493,7 @@ export const receiver = (): Configuration => {
 }
 
 export function currentProvider (): Web3.Provider {
-  if (web3) {
+  if (typeof web3 !== 'undefined') {
     // Use Mist/MetaMask's provider
     return web3.currentProvider
   } else {

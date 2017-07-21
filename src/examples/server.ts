@@ -27,9 +27,11 @@ if (web3.personal && settings.account && settings.password) {
 
   const COST = 61200000000
   app.get('/outline', paywall.guard(COST, (req, res) => {
+    /*
     let filepath = path.join(__dirname, 'response.txt')
     let content = fs.readFileSync(filepath).toString()
-    res.write(content)
+    */
+    res.write('Response')
     res.end()
   }))
 
