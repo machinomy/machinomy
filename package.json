@@ -1,6 +1,6 @@
 {
   "name": "machinomy",
-  "version": "1.0.0-alpha.5",
+  "version": "1.0.0-alpha.6",
   "description": "Micropayments in Ether over HTTP",
   "author": "Sergey Ukustov <sergey.ukustov@machinomy.com>",
   "license": "Apache-2.0",
@@ -47,7 +47,6 @@
     "@types/commander": "^2.9.1",
     "@types/cors": "^2.8.1",
     "@types/express": "^4.0.36",
-    "@types/jest": "^20.0.4",
     "@types/lodash": "^4.14.68",
     "@types/nedb": "^1.8.3",
     "@types/nock": "^8.2.1",
@@ -78,6 +77,7 @@
     "web3-typescript-typings": "https://github.com/machinomy/web3-typescript-typings"
   },
   "devDependencies": {
+    "@types/jest": "^20.0.4",
     "body-parser": "^1.15.2",
     "coveralls": "^2.12.0",
     "express": "^4.14.0",
