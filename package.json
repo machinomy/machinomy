@@ -1,6 +1,6 @@
 {
   "name": "machinomy",
-  "version": "1.0.0-alpha.0",
+  "version": "1.0.0-alpha.1",
   "description": "Micropayments in Ether over HTTP",
   "author": "Sergey Ukustov <sergey.ukustov@machinomy.com>",
   "license": "Apache-2.0",
@@ -22,6 +22,7 @@
   "bin": {
     "machinomy": "./build/bin/machinomy.js"
   },
+  "types": "build/index.d.ts",
   "jest": {
     "transform": {
       "^.+\\.tsx?$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
