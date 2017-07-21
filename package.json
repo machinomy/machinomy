@@ -1,6 +1,6 @@
 {
   "name": "machinomy",
-  "version": "1.0.0-alpha.6",
+  "version": "1.0.0-alpha.7",
   "description": "Micropayments in Ether over HTTP",
   "author": "Sergey Ukustov <sergey.ukustov@machinomy.com>",
   "license": "Apache-2.0",
@@ -39,6 +39,9 @@
       "js",
       "json"
     ]
+  },
+  "directories": {
+    "lib": "build/"
   },
   "dependencies": {
     "@types/bignumber.js": "^4.0.2",
