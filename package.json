@@ -1,6 +1,6 @@
 {
   "name": "machinomy",
-  "version": "1.0.0-alpha.18",
+  "version": "1.0.0-alpha.19",
   "description": "Micropayments in Ether over HTTP",
   "author": "Sergey Ukustov <sergey.ukustov@machinomy.com>",
   "license": "Apache-2.0",
@@ -71,7 +71,7 @@
     "lodash": "^4.17.4",
     "loglevel": "^1.4.1",
     "nedb": "^1.8.0",
-    "ng2-logger": "^1.0.3",
+    "ng2-logger": "https://github.com/darekf77/ng2-logger",
     "prompt": "^1.0.0",
     "request": "^2.76.0",
     "types-bn": "^0.0.1",
