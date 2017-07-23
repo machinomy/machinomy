@@ -8,7 +8,6 @@
     // "jsx": "preserve",                     /* Specify JSX code generation: 'preserve', 'react-native', or 'react'. */
     "declaration": true,                      /* Generates corresponding '.d.ts' file. */
     "sourceMap": true,                        /* Generates corresponding '.map' file. */
-    "rootDir": "./src",                       /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */
     // "removeComments": true,                /* Do not emit comments to output. */
     // "noEmit": true,                        /* Do not emit outputs. */
     // "importHelpers": true,                 /* Import emit helpers from 'tslib'. */
@@ -48,6 +47,11 @@
     "experimentalDecorators": true,           /* Enables experimental support for ES7 decorators. */
     "emitDecoratorMetadata": true             /* Enables experimental support for emitting type metadata for decorators. */
   },
+  "files": [
+    "index.ts",
+    "bin/machinomy.ts",
+    "commands/index.ts"
+  ],
   "include": [
     "node_modules/*/index.d.ts",
     "node_modules/*/index.d.ts",

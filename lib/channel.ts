@@ -143,7 +143,7 @@ export class PaymentChannel {
     */
 
     if (isOnNodeJs) {
-      return new Promise((resolve, reject) => {
+      return new Promise<Signature>((resolve, reject) => {
         web3.eth.sign(this.sender, messageHex, (error, signature) => {
           if (error) {
             reject(error)
@@ -153,7 +153,7 @@ export class PaymentChannel {
         })
       })
     } else {
-      return new Promise((resolve, reject) => {
+      return new Promise<Signature>((resolve, reject) => {
         const message = Buffer.from(messageHex.replace('0x', ''), 'hex').toString()
         const sha3 = ethHash(message)
         web3.eth.sign(this.sender, sha3, (error, signature) => {
@@ -234,7 +234,7 @@ export class ChannelContract {
   }
 
   claim (receiver: string, channelId: string, value: number, v: number, r: string, s: string): Promise<BigNumber.BigNumber> {
-    return new Promise((resolve, reject) => {
+    return new Promise<BigNumber.BigNumber>((resolve, reject) => {
       const h = ethHash(channelId.toString() + value.toString())
       this.contract.claim(channelId, value, h, v, r, s, {from: receiver}, () => {
         const didSettle = this.contract.DidSettle({channelId})
@@ -258,7 +258,7 @@ export class ChannelContract {
    * @returns Boolean
    */
   canStartSettle (account: string, channelId: string): Promise<boolean> {
-    return new Promise((resolve, reject) => {
+    return new Promise<boolean>((resolve, reject) => {
       this.contract.canStartSettle(account, channelId, (error, result) => {
         if (error) {
           reject(error)
