@@ -439,7 +439,7 @@ export function id (something: string|Buffer|ChannelId): ChannelId {
   }
 }
 
-export function contract (web3: Web3): ChannelContract {
-  const address = configuration.contractAddress()
+export function contract (web3: Web3, _address?: string): ChannelContract {
+  const address = _address || configuration.contractAddress()
   return new ChannelContract(web3, address, configuration.CONTRACT_INTERFACE)
 }
