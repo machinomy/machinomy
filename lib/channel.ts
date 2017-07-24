@@ -209,9 +209,9 @@ export class ChannelContract {
         value,
         gas: CREATE_CHANNEL_GAS
       }
-      const didCreateChannelEvent = this.contract.DidCreateChannel({sender, receiver})
-      didCreateChannelEvent.watch<Broker.DidCreateChannel>((error, result) => {
-        this.contract.createChannel(receiver, duration, settlementPeriod, options, () => {
+      this.contract.createChannel(receiver, duration, settlementPeriod, options, () => {
+        const didCreateChannelEvent = this.contract.DidCreateChannel({sender, receiver})
+        didCreateChannelEvent.watch<Broker.DidCreateChannel>((error, result) => {
           log.info('Waiting for the channel to be created on the blockchain: watching for DidCreateChannel event')
           if (error) {
             reject(error)
