@@ -1,5 +1,5 @@
 import * as channel from './channel'
-import { Log } from 'ng2-logger'
+import { Log } from 'typescript-logger'
 import Promise = require('bluebird')
 import _ = require('lodash')
 import Datastore = require('nedb')

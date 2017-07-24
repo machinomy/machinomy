@@ -1,6 +1,6 @@
 import Promise = require('bluebird')
 import * as util from 'ethereumjs-util'
-import { Log } from 'ng2-logger'
+import { Log } from 'typescript-logger'
 import * as configuration from './configuration'
 import { FilterResult } from 'web3'
 import Web3 = require('web3')

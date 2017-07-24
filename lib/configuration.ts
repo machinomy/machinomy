@@ -1,5 +1,5 @@
 import homedir = require('homedir')
-import { Log } from 'ng2-logger'
+import { Log } from 'typescript-logger'
 import path = require('path')
 import Web3 = require('web3')
 import * as env from './env'

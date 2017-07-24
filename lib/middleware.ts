@@ -3,7 +3,7 @@ import * as receiver from './receiver'
 import * as channel from './channel'
 import * as configuration from './configuration'
 import * as express from 'express'
-import { Log } from 'ng2-logger'
+import { Log } from 'typescript-logger'
 import Web3 = require('web3')
 
 import urljoin = require('url-join')
@@ -23,7 +23,7 @@ type GotTokenCallback = (error: string|null, token?: string) => void
 const parseToken = (req: express.Request, callback: GotTokenCallback) => {
   let content = req.get(HEADER_NAME)
   if (content) {
-    log.data('Authorization header: ' + content)
+    log.debug('Authorization header: ' + content)
     let authorization = content.split(' ')
     let type = authorization[0].toLowerCase()
     let token = authorization[1]
@@ -52,7 +52,7 @@ export class Paywall {
    */
   constructor (web3: Web3, account: string, address: string, _storage: Storage|null) {
     let settings = configuration.receiver()
-    log.data('Use settings for receiver', settings)
+    log.debug('Use settings for receiver', settings)
     this.receiverAccount = account
     this.gatewayUri = urljoin(address, configuration.PAYWALL_PATH)
     let s: Storage = _storage || new Storage(web3, settings.databaseFile, 'receiver')

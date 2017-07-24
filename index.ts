@@ -7,9 +7,9 @@ import * as configuration from './lib/configuration'
 import Web3 = require('web3')
 import Promise = require('bluebird')
 
-import { Log } from 'ng2-logger'
+import { Log } from 'typescript-logger'
 import { PaymentPair, default as Sender } from './lib/sender'
-import { Logger } from 'ng2-logger/src/logger'
+import { Logger } from 'typescript-logger/build/logger'
 
 export const log: Logger<any> = Log.create('machinomy')
 

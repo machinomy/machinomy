@@ -1,5 +1,5 @@
 import Promise = require('bluebird')
-import { Log } from 'ng2-logger'
+import { Log } from 'typescript-logger'
 import _ = require('lodash')
 import Web3 = require('web3')
 
@@ -93,9 +93,9 @@ export default class Sender {
   canUseChannel (paymentChannel: PaymentChannel, paymentRequired: PaymentRequired): Promise<boolean> {
     return this.contract.getState(paymentChannel.channelId).then(state => {
       let isOpen = state === 0 // FIXME Harmonize channel states
-      log.data(`canUseChannel: isOpen: ${isOpen}`)
+      log.debug(`canUseChannel: isOpen: ${isOpen}`)
       let funded = paymentChannel.value >= (paymentChannel.spent + paymentRequired.price)
-      log.data(`canUseChannel: funded: ${funded}`)
+      log.debug(`canUseChannel: funded: ${funded}`)
       return isOpen && funded
     })
   }
