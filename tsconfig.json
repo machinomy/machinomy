@@ -50,7 +50,8 @@
   "files": [
     "index.ts",
     "bin/machinomy.ts",
-    "commands/index.ts"
+    "commands/index.ts",
+    "examples/server.ts"
   ],
   "include": [
     "node_modules/*/index.d.ts",
