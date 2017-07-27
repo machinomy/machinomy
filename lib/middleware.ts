@@ -52,7 +52,7 @@ export class Paywall {
    */
   constructor (web3: Web3, account: string, address: string, _storage: Storage|null) {
     let settings = configuration.receiver()
-    log.debug('Use settings for receiver', settings)
+    // log.debug('Use settings for receiver', settings)
     this.receiverAccount = account
     this.gatewayUri = urljoin(address, configuration.PAYWALL_PATH)
     let s: Storage = _storage || new Storage(web3, settings.databaseFile, 'receiver')
