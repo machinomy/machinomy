@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "@types/bignumber.js": "^4.0.2",
-    "@types/bluebird": "3.5.6",
+    "@types/bluebird": "3.5.8",
     "@types/body-parser": "^1.16.4",
     "@types/commander": "^2.9.1",
     "@types/cors": "^2.8.1",
@@ -59,7 +59,7 @@
     "@types/nedb": "^1.8.3",
     "@types/nock": "^8.2.1",
     "@types/node": "^8.0.9",
-    "@types/request": "^0.0.45",
+    "@types/request": "^2.0.0",
     "@types/tmp": "^0.0.33",
     "@types/url-join": "^0.8.2",
     "bluebird": "^3.5.0",
@@ -79,9 +79,9 @@
     "types-web3-provider-engine": "^0.0.2",
     "typescript": "^2.4.1",
     "typescript-logger": "^1.1.0",
-    "url-join": "^1.1.0",
-    "web3": "^0.19.0",
-    "web3-provider-engine": "^12.0.5",
+    "url-join": "^2.0.2",
+    "web3": "^0.20.1",
+    "web3-provider-engine": "^13.2.9",
     "web3-typescript-typings": "https://github.com/machinomy/web3-typescript-typings"
   },
   "devDependencies": {
