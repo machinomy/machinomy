@@ -1,6 +1,4 @@
-# Machinomy [![Build Status][travis-img]][travis] [![Coverage Status][coveralls-img]][coveralls] [![Chat][gitter-img]][gitter] 
-
-[![Greenkeeper badge](https://badges.greenkeeper.io/machinomy/machinomy.svg)](https://greenkeeper.io/)
+# Machinomy [![Build Status][travis-img]][travis] [![Coverage Status][coveralls-img]][coveralls] [![Greenkeeper badge](https://badges.greenkeeper.io/machinomy/machinomy.svg)](https://greenkeeper.io/) [![Chat][gitter-img]][gitter] 
  
 [travis]: https://travis-ci.org/machinomy/machinomy
 [travis-img]: https://img.shields.io/travis/machinomy/machinomy.svg
