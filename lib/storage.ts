@@ -201,7 +201,7 @@ export class ChannelsDatabase {
     log.info('ChannelsDatabase#allByQuery', query)
     let contract = channel.contract(this.web3)
     return Promise.map(this.engine.find(query), (doc: PaymentChannelJSON) => {
-      return contract.getState(doc.channelId.toString()).then(state => {
+      return contract.getState(doc.channelId).then(state => {
         return new channel.PaymentChannel(doc.sender, doc.receiver, doc.channelId, doc.value, doc.spent, state)
       })
     })
