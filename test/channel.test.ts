@@ -1,5 +1,6 @@
 import * as channel from '../lib/channel'
 import * as support from './support'
+import Payment from '../lib/Payment'
 
 const HEX_ADDRESS = 'eb61859a9d74f95bda8a6f9d3efcfe6478e49151'
 
@@ -39,7 +40,7 @@ describe('channel', () => {
     describe('.fromPaymentChannel', () => {
       it('build Payment object', () => {
         let channelId = channel.id(Buffer.from(support.randomInteger().toString()))
-        let payment = new channel.Payment({
+        let payment = new Payment({
           channelId: channelId.toString(),
           sender: 'sender',
           receiver: 'receiver',

@@ -2,6 +2,7 @@ import nock = require('nock')
 import * as channel from '../lib/channel'
 import * as transport from '../lib/transport'
 import { randomInteger } from './support'
+import Payment from '../lib/Payment'
 
 describe('transport', () => {
   describe('.build', () => {
@@ -50,7 +51,7 @@ describe('transport', () => {
 
     describe('#requestToken', () => {
       let channelId = channel.id(Buffer.from(randomInteger().toString()))
-      let payment = new channel.Payment({
+      let payment = new Payment({
         channelId: channelId.toString(),
         sender: 'sender',
         receiver: 'receiver',

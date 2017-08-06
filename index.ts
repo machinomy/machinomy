@@ -10,6 +10,7 @@ import Promise = require('bluebird')
 import { Log } from 'typescript-logger'
 import { PaymentPair, default as Sender } from './lib/sender'
 import { Logger } from 'typescript-logger/build/logger'
+import Payment from './lib/Payment'
 
 export const log: Logger<any> = Log.create('machinomy')
 
@@ -44,7 +45,7 @@ export default {
   transport: transport,
   contract: channel.contract,
   configuration: configuration,
-  Payment: channel.Payment,
+  Payment: Payment,
   storage: storage,
   channel: channel,
   log: log,

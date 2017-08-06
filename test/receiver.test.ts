@@ -3,6 +3,7 @@ import * as receiver from '../lib/receiver'
 import * as channel from '../lib/channel'
 import { randomStorage } from './support'
 import { PaymentChannel } from '../lib/channel'
+import Payment from '../lib/Payment'
 
 describe('receiver', () => {
   let web3 = support.fakeWeb3()
@@ -22,7 +23,7 @@ describe('receiver', () => {
     describe('#findPaymentChannel', () => {
       it('find a channel if saved before', done => {
         let channelId = support.randomChannelId()
-        let payment = new channel.Payment({
+        let payment = new Payment({
           channelId: channelId.toString(),
           sender: 'sender',
           receiver: 'receiver',
@@ -51,7 +52,7 @@ describe('receiver', () => {
     describe('#findPaymentChannel', () => {
       it('return null if not channel present', done => {
         let channelId = support.randomChannelId()
-        let payment = new channel.Payment({
+        let payment = new Payment({
           channelId: channelId.toString(),
           sender: 'sender',
           receiver: 'receiver',
@@ -71,7 +72,7 @@ describe('receiver', () => {
     })
     describe('#whenValidPayment', () => {
       let channelId = support.randomChannelId()
-      let payment = new channel.Payment({
+      let payment = new Payment({
         channelId: channelId.toString(),
         sender: 'sender',
         receiver: 'receiver',
@@ -125,7 +126,7 @@ describe('receiver', () => {
 
     describe('#acceptToken', () => {
       let channelId = support.randomChannelId()
-      let payment = new channel.Payment({
+      let payment = new Payment({
         channelId: channelId.toString(),
         sender: 'sender',
         receiver: 'receiver',
@@ -161,7 +162,7 @@ describe('receiver', () => {
 
     describe('#ensureCanAcceptPayment', () => {
       let channelId = support.randomChannelId()
-      let payment = new channel.Payment({
+      let payment = new Payment({
         channelId: channelId.toString(),
         sender: 'sender',
         receiver: 'receiver',
@@ -186,7 +187,7 @@ describe('receiver', () => {
     describe('#acceptPayment', () => {
       let channelId = support.randomChannelId()
       let receiverAccount = '0xdeadbeaf'
-      let payment = new channel.Payment({
+      let payment = new Payment({
         channelId: channelId.toString(),
         sender: 'sender',
         receiver: receiverAccount,

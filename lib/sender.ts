@@ -6,10 +6,11 @@ import Web3 = require('web3')
 import * as transport from './transport'
 import * as channel from './channel'
 import * as configuration from './configuration'
-import { ChannelContract, Payment, PaymentChannel } from './channel'
+import { ChannelContract, PaymentChannel } from './channel'
 import { PaymentRequired, RequestTokenOpts, Transport } from './transport'
 import Storage from './storage'
 import { RequestResponse } from 'request'
+import Payment from './Payment'
 
 const log = Log.create('sender')
 
@@ -72,7 +73,7 @@ export default class Sender {
    * @return {Promise<[Payment, Object]>}
    */
   existingChannel (uri: string, paymentRequired: PaymentRequired, paymentChannel: PaymentChannel, opts: RequestTokenOpts = {}): Promise<PaymentPair> {
-    return channel.Payment.fromPaymentChannel(this.web3, paymentChannel, paymentRequired.price).then(payment => {
+    return Payment.fromPaymentChannel(this.web3, paymentChannel, paymentRequired.price).then(payment => {
       let nextPaymentChannel = channel.PaymentChannel.fromPayment(payment)
       return this.storage.channels.saveOrUpdate(nextPaymentChannel).then(() => {
         return this.transport.requestToken(paymentRequired.gateway, payment, opts)

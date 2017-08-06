@@ -3,8 +3,9 @@ import { Log } from 'typescript-logger'
 import Web3 = require('web3')
 
 import * as channel from './channel'
-import { Payment, PaymentChannel } from './channel'
+import { PaymentChannel } from './channel'
 import Storage from './storage'
+import Payment from './Payment'
 
 const log = Log.create('sender')
 

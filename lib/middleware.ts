@@ -8,6 +8,7 @@ import Web3 = require('web3')
 
 import urljoin = require('url-join')
 import { Receiver } from './receiver'
+import Payment from './Payment'
 
 const log = Log.create('middleware')
 
@@ -111,7 +112,7 @@ export class Paywall {
 
   middleware () {
     let handler = (req: express.Request, res: express.Response) => {
-      let payment = new channel.Payment(req.body)
+      let payment = new Payment(req.body)
       this.server.acceptPayment(payment).then(token => {
         res.status(HTTP_CODE_ACCEPTED)
           .header('Paywall-Token', token)

@@ -4,7 +4,8 @@ import Promise = require('bluebird')
 import _ = require('lodash')
 import Datastore = require('nedb')
 import Web3 = require('web3')
-import { ChannelId, Payment, PaymentChannel, PaymentChannelJSON } from './channel'
+import { ChannelId, PaymentChannel, PaymentChannelJSON } from './channel'
+import Payment from './Payment'
 
 const log = Log.create('storage')
 

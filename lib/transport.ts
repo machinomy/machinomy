@@ -2,7 +2,7 @@ import Promise = require('bluebird')
 import { Log } from 'typescript-logger'
 import _ = require('lodash')
 import { RequestResponse, RequiredUriUrl, CoreOptions } from 'request'
-import { Payment } from './channel'
+import Payment from './Payment'
 const request: (opts: RequiredUriUrl & CoreOptions) => Promise<RequestResponse> = Promise.promisify(require('request'))
 
 const log = Log.create('transport')

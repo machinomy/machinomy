@@ -3,7 +3,7 @@ import Sender from '../lib/sender'
 import * as transport from '../lib/transport'
 import * as channel from '../lib/channel'
 import { randomStorage } from './support'
-
+import Payment from '../lib/Payment'
 import Promise = require('bluebird')
 
 const randomSender = (): Promise<Sender> => {
@@ -25,7 +25,7 @@ describe('sender', () => {
   describe('Sender', () => {
     describe('#canUseChannel', () => {
       let channelId = channel.id(Buffer.from(support.randomInteger().toString()))
-      let payment = new channel.Payment({
+      let payment = new Payment({
         channelId: channelId.toString(),
         sender: 'sender',
         receiver: 'receiver',

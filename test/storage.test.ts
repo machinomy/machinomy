@@ -4,6 +4,7 @@ import * as channel from '../lib/channel'
 
 import Web3 = require('web3')
 import Promise = require('bluebird')
+import Payment from '../lib/Payment'
 
 function databasePromise <A> (genDatabase: (engine: storage.Engine) => A): Promise<A> {
   return support.tmpFileName().then(filename => {
@@ -274,7 +275,7 @@ describe('storage', () => {
       it('match the data', done => {
         let randomToken = support.randomInteger().toString()
         let channelId = support.randomChannelId()
-        let payment = new channel.Payment({
+        let payment = new Payment({
           channelId: channelId.toString(),
           sender: 'sender',
           receiver: 'receiver',
