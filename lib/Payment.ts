@@ -64,6 +64,7 @@ export default class Payment {
     let validChannelId = paymentChannel.channelId === payment.channelId
     let validPaymentValue = paymentChannel.value <= payment.channelValue
     let validSender = paymentChannel.sender === payment.sender
+    let isPositive = payment.value >= 0 && payment.price >= 0
     let _digest = digest(paymentChannel.channelId, payment.value)
     return sign(web3, payment.sender, _digest).then(signature => {
       let validSignature = signature.v === payment.v &&
@@ -74,7 +75,8 @@ export default class Payment {
         validPaymentValue &&
         validSender &&
         validChannelId &&
-        validSignature
+        validSignature &&
+        isPositive
     })
   }
 
