@@ -1,6 +1,8 @@
 import Web3 = require('web3')
 import Promise = require('bluebird')
-import { PaymentChannel } from './channel'
+import * as util from 'ethereumjs-util'
+import { ChannelId, ethHash, PaymentChannel, Signature } from './channel'
+import { Buffer } from 'buffer'
 
 export interface PaymentJSON {
   channelId: string
@@ -12,6 +14,25 @@ export interface PaymentJSON {
   v: number|string
   r: string
   s: string
+}
+
+export function digest (channelId: string|ChannelId, value: number): Buffer {
+  const message = channelId.toString() + value.toString()
+  return Buffer.from(message)
+}
+
+export function sign (web3: Web3, sender: string, digest: Buffer): Promise<Signature> {
+  return new Promise<Signature>((resolve, reject) => {
+    const message = digest.toString()
+    const sha3 = ethHash(message)
+    web3.eth.sign(sender, sha3, (error, signature) => {
+      if (error) {
+        reject(error)
+      } else {
+        resolve(util.fromRpcSig(signature))
+      }
+    })
+  })
 }
 
 export default class Payment {
@@ -45,7 +66,8 @@ export default class Payment {
     if (override) { // FIXME
       value = paymentChannel.spent
     }
-    return paymentChannel.sign(web3, value).then((signature) => {
+    let paymentDigest = digest(paymentChannel.channelId, value)
+    return sign(web3, paymentChannel.sender, paymentDigest).then(signature => {
       return new Payment({
         channelId: paymentChannel.channelId,
         sender: paymentChannel.sender,
