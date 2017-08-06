@@ -395,8 +395,11 @@ export class Payment {
   /**
    * Build {Payment} based on PaymentChannel and monetary value to send.
    */
-  static fromPaymentChannel (web3: Web3, paymentChannel: PaymentChannel, price: number): Promise<Payment> {
-    const value = price + paymentChannel.spent
+  static fromPaymentChannel (web3: Web3, paymentChannel: PaymentChannel, price: number, override?: boolean): Promise<Payment> {
+    let value = price + paymentChannel.spent
+    if (override) { // FIXME
+      value = paymentChannel.spent
+    }
     return paymentChannel.sign(web3, value).then((signature) => {
       return new Payment({
         channelId: paymentChannel.channelId,
