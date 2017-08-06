@@ -183,30 +183,5 @@ describe('receiver', () => {
         })
       })
     })
-
-    describe('#acceptPayment', () => {
-      let channelId = support.randomChannelId()
-      let receiverAccount = '0xdeadbeaf'
-      let payment = new Payment({
-        channelId: channelId.toString(),
-        sender: 'sender',
-        receiver: receiverAccount,
-        price: 10,
-        value: 12,
-        channelValue: 10,
-        v: 1,
-        r: '0x2',
-        s: '0x3'
-      })
-
-      it('accept new payment, and return a token', done => {
-        randomStorage(web3).then(storage => {
-          let r = receiver.build(web3, receiverAccount, storage)
-          return r.acceptPayment(payment).then(token => {
-            expect(token).not.toBeNull()
-          })
-        }).then(done)
-      })
-    })
   })
 })

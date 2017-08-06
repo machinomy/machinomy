@@ -9,13 +9,6 @@ import Payment from './Payment'
 
 const log = Log.create('sender')
 
-const isPaymentValid = (payment: Payment, paymentChannel: PaymentChannel): boolean => {
-  let validIncrement = (paymentChannel.spent + payment.price) <= paymentChannel.value
-  let validChannelValue = paymentChannel.value === payment.channelValue
-  let validPaymentValue = paymentChannel.value <= payment.channelValue
-  return validIncrement && validChannelValue && validPaymentValue
-}
-
 export class Receiver {
   web3: Web3
   account: string
@@ -52,10 +45,16 @@ export class Receiver {
     this.ensureCanAcceptPayment(payment)
 
     return this.findPaymentChannel(payment).then(paymentChannel => {
-      if (paymentChannel && !isPaymentValid(payment, paymentChannel)) {
-        return this.whenInvalidPayment(payment, paymentChannel)
+      if (paymentChannel) {
+        return Payment.isValid(this.web3, payment, paymentChannel).then(isValid => {
+          if (isValid) {
+            return this.whenValidPayment(payment)
+          } else {
+            return this.whenInvalidPayment(payment, paymentChannel)
+          }
+        })
       } else {
-        return this.whenValidPayment(payment)
+        return Promise.reject(new Error(`Can not accept payment for an unknown channel ${payment.channelId}`))
       }
     })
   }

@@ -58,6 +58,26 @@ export default class Payment {
     this.s = options.s
   }
 
+  static isValid (web3: Web3, payment: Payment, paymentChannel: PaymentChannel): Promise<boolean> {
+    let validIncrement = (paymentChannel.spent + payment.price) <= paymentChannel.value
+    let validChannelValue = paymentChannel.value === payment.channelValue
+    let validChannelId = paymentChannel.channelId === payment.channelId
+    let validPaymentValue = paymentChannel.value <= payment.channelValue
+    let validSender = paymentChannel.sender === payment.sender
+    let _digest = digest(paymentChannel.channelId, payment.value)
+    return sign(web3, payment.sender, _digest).then(signature => {
+      let validSignature = signature.v === payment.v &&
+        util.bufferToHex(signature.r) === payment.r &&
+        util.bufferToHex(signature.s) === payment.s
+      return validIncrement &&
+        validChannelValue &&
+        validPaymentValue &&
+        validSender &&
+        validChannelId &&
+        validSignature
+    })
+  }
+
   /**
    * Build {Payment} based on PaymentChannel and monetary value to send.
    */
