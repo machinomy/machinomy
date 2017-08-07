@@ -135,7 +135,6 @@ export class ChannelsDatabase {
       receiver: paymentChannel.receiver,
       value: paymentChannel.value,
       spent: paymentChannel.spent,
-      nonce: paymentChannel.nonce,
       channelId: paymentChannel.channelId
     }
     return this.engine.insert(document)
