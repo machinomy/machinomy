@@ -86,7 +86,7 @@ export default class Payment {
   static fromPaymentChannel (web3: Web3, paymentChannel: PaymentChannel, price: number, override?: boolean): Promise<Payment> {
     let value = price + paymentChannel.spent
     if (override) { // FIXME
-      value = paymentChannel.spent
+      value = price
     }
     let paymentDigest = digest(paymentChannel.channelId, value)
     return sign(web3, paymentChannel.sender, paymentDigest).then(signature => {
