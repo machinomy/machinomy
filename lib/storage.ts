@@ -159,7 +159,7 @@ export class ChannelsDatabase {
     return this.engine.findOne<PaymentChannel>(query).then(document => {
       if (document) {
         return channel.contract(this.web3).getState(channelId.toString()).then(state => { // FIXME
-          return new channel.PaymentChannel(document.sender, document.receiver, document.channelId, document.value, document.spent, state)
+          return new channel.PaymentChannel(document.sender, document.receiver, document.channelId, document.value, document.spent, document.nonce, state)
         })
       } else {
         log.info(`ChannelsDatabase#findById Could not find document by id ${channelId.toString()}`)
@@ -203,7 +203,7 @@ export class ChannelsDatabase {
     let contract = channel.contract(this.web3)
     return Promise.map(this.engine.find(query), (doc: PaymentChannelJSON) => {
       return contract.getState(doc.channelId).then(state => {
-        return new channel.PaymentChannel(doc.sender, doc.receiver, doc.channelId, doc.value, doc.spent, state)
+        return new channel.PaymentChannel(doc.sender, doc.receiver, doc.channelId, doc.value, doc.spent, doc.nonce, state)
       })
     })
   }

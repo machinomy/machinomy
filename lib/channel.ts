@@ -72,6 +72,15 @@ const DEFAULT_CHANNEL_TTL = 20 * DAY_IN_SECONDS
  */
 const CREATE_CHANNEL_GAS = 300000
 
+const EXTRA_DIGITS = 3
+export function randomId () {
+  const datePart = new Date().getTime() * Math.pow(10, EXTRA_DIGITS)
+  // 3 random digits
+  const extraPart = Math.floor(Math.random() * Math.pow(10, EXTRA_DIGITS))
+  // 16 digits
+  return datePart + extraPart
+}
+
 export const ethHash = (message: string): string => {
   const buffer = Buffer.from('\x19Ethereum Signed Message:\n' + message.length + message)
   return '0x' + util.sha3(buffer).toString('hex')
@@ -83,6 +92,7 @@ export interface PaymentChannelJSON {
   channelId: string
   value: number
   spent: number
+  nonce: number
   state: number
 }
 
@@ -95,6 +105,7 @@ export class PaymentChannel {
   channelId: string
   value: number
   spent: number
+  nonce: number
   state: number
 
   /**
@@ -103,19 +114,21 @@ export class PaymentChannel {
    * @param channelId   Identifier of the channel.
    * @param value       Total value of the channel.
    * @param spent       Value sent by {sender} to {receiver}.
+   * @param nonce       Last payment nonce.
    * @param state       0 - 'open', 1 - 'settling', 2 - 'settled'
    */
-  constructor (sender: string, receiver: string, channelId: string, value: number, spent: number, state: number = 0) { // FIXME remove contract parameter
+  constructor (sender: string, receiver: string, channelId: string, value: number, spent: number, nonce: number, state: number) { // FIXME remove contract parameter
     this.sender = sender
     this.receiver = receiver
     this.channelId = channelId
     this.value = value
     this.spent = spent
-    this.state = state || 0
+    this.nonce = nonce
+    this.state = state
   }
 
   static fromPayment (payment: Payment): PaymentChannel {
-    return new PaymentChannel(payment.sender, payment.receiver, payment.channelId, payment.channelValue, payment.value)
+    return new PaymentChannel(payment.sender, payment.receiver, payment.channelId, payment.channelValue, payment.value, payment.nonce, 0)
   }
 
   static fromDocument (document: PaymentChannelJSON): PaymentChannel {
@@ -125,12 +138,14 @@ export class PaymentChannel {
         document.channelId,
         document.value,
         document.spent,
+        document.nonce,
         document.state
     )
   }
 
   toJSON (): PaymentChannelJSON {
     return {
+      nonce: this.nonce,
       state: this.state,
       spent: this.spent,
       value: this.value,
@@ -180,7 +195,7 @@ export class ChannelContract {
           } else {
             const channelId = result.args.channelId
             log.info('The channel ' + channelId + ' is created')
-            const paymentChannel = new PaymentChannel(sender, receiver, channelId, value, 0)
+            const paymentChannel = new PaymentChannel(sender, receiver, channelId, value, 0, randomId(), 0)
             didCreateChannelEvent.stopWatching(() => {
               log.info('No longer watching for DidCreateChannel event')
               if (error) {
