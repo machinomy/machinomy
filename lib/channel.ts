@@ -22,9 +22,9 @@ export namespace Broker {
     claim (channelId: string, value: number, h: string, v: number, r: string, s: string, options: any, callback: () => void): void
     finishSettle (channelId: string, options: any, callback: () => void): void
 
-    canClaim (channelId: string, h: string, v: number, r: string, s: string): boolean
+    canClaim (channelId: string, h: string, v: number, r: string, s: string, callback: (error: any|null, result?: boolean) => void): boolean
     canStartSettle (account: string, channelId: string, callback: (error: any|null, result?: boolean) => void): void
-    canFinishSettle (sender: string, channelId: string): boolean
+    canFinishSettle (sender: string, channelId: string, callback: (error: any|null, result?: boolean) => void): boolean
 
     getState (channelId: string, callback: (error: any|null, state?: number) => void): void
     getUntil (channelId: string, callback: (error: any|null, until?: number) => void): void
@@ -243,13 +243,29 @@ export class ChannelContract {
     return '0x' + util.sha3(buffer).toString('hex')
   }
 
-  canClaim (channelId: string, payment: BigNumber.BigNumber, v: number, r: string, s: string): boolean {
+  canClaim (channelId: string, payment: BigNumber.BigNumber, v: number, r: string, s: string): Promise<boolean> {
     const h = this.h(channelId, payment)
-    return this.contract.canClaim(channelId, h, v, r, s)
+    return new Promise((resolve, reject) => {
+      this.contract.canClaim(channelId, h, v, r, s, (error, result) => {
+        if (error) {
+          reject(error)
+        } else {
+          resolve(result)
+        }
+      })
+    })
   }
 
-  canFinishSettle (sender: string, channelId: string): boolean {
-    return this.contract.canFinishSettle(sender, channelId)
+  canFinishSettle (sender: string, channelId: string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      this.contract.canFinishSettle(sender, channelId, (error, result) => {
+        if (error) {
+          reject(error)
+        } else {
+          resolve(result)
+        }
+      })
+    })
   }
 
   getState (channelId: string): Promise<number> {
