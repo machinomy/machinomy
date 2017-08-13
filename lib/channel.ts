@@ -18,7 +18,7 @@ export interface Signature {
 export namespace Broker {
   export interface Contract {
     createChannel (receiver: string, duration: number, settlementPeriod: number, options: any, callback: () => void): void
-    startSettle (channelId: string, payment: BigNumber.BigNumber, options: any, callback: () => void): void
+    startSettle (channelId: string, payment: String, options: any, callback: () => void): void
     claim (channelId: string, value: number, h: string, v: number, r: string, s: string, options: any, callback: () => void): void
     finishSettle (channelId: string, options: any, callback: () => void): void
 
@@ -282,7 +282,8 @@ export class ChannelContract {
 
   startSettle (account: string, channelId: string, payment: BigNumber.BigNumber): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.contract.startSettle(channelId, payment, {from: account}, () => {
+      let paymentHex = '0x' + payment.toString(16)
+      this.contract.startSettle(channelId, paymentHex, {from: account}, () => {
         log.info('Triggered Start Settle on the contract for channel ' + channelId + ' from ' + account)
         const didStartSettleEvent = this.contract.DidStartSettle({channelId, payment})
         didStartSettleEvent.watch((error) => {
