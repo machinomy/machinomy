@@ -318,7 +318,7 @@ export class ChannelContract {
 
   finishSettle (account: string, channelId: string) {
     return new Promise((resolve, reject) => {
-      this.contract.finishSettle(channelId, {from: account}, () => {
+      this.contract.finishSettle(channelId, {from: account, gas: 400000}, () => {
         log.info('Triggered Finish Settle on the contract')
         const didSettle = this.contract.DidSettle({channelId})
         didSettle.watch<Broker.DidSettle>((error, result) => {
