@@ -5,10 +5,13 @@ import * as channel from '../lib/channel'
 import Web3 = require('web3')
 import Promise = require('bluebird')
 import Payment from '../lib/Payment'
+import mongo from '../lib/mongo'
+
+const engineName = process.env.engineName || 'nedb'
 
 function databasePromise <A> (genDatabase: (engine: storage.Engine) => A): Promise<A> {
   return support.tmpFileName().then(filename => {
-    let engine = storage.engine(filename, true)
+    let engine = storage.engine(filename, true, engineName)
     return genDatabase(engine)
   })
 }
@@ -27,12 +30,40 @@ const paymentsDatabase = () => databasePromise(engine => {
 })
 
 describe('storage', () => {
+  beforeAll((done) => {
+    if (process.env.engineName == 'mongo') {
+      mongo.connectToServer(() => {
+        done()
+      })
+    } else {
+      done()
+    }
+  })
+
+  beforeEach((done) => {
+    if (process.env.engineName === 'mongo') {
+      mongo.db().dropDatabase(() => {
+        done()
+      })
+    } else {
+      done()
+    }
+  })
+
+  afterAll((done) => {
+    if (process.env.engineName === 'mongo') {
+      mongo.db().close()
+    } else {
+      done()
+    }
+  })
+
   let web3 = support.fakeWeb3()
 
   describe('.engine', () => {
     it('return Engine instance', done => {
       support.tmpFileName().then(filename => {
-        let engine = storage.engine(filename, true)
+        let engine = storage.engine(filename, true, engineName)
         expect(typeof engine).toBe('object')
       }).then(done)
     })
@@ -41,7 +72,7 @@ describe('storage', () => {
   describe('.build', () => {
     it('return Storage', done => {
       support.tmpFileName().then(filename => {
-        let s = storage.build(web3, filename, 'namespace')
+        let s = storage.build(web3, filename, 'namespace', true, engineName)
         expect(typeof s).toBe('object')
       }).then(done)
     })
@@ -49,7 +80,7 @@ describe('storage', () => {
 
   describe('Engine', () => {
     let engine = support.tmpFileName().then(filename => {
-      return storage.engine(filename, true)
+      return storage.engine(filename, true, engineName)
     })
 
     describe('#insert and #find', () => {

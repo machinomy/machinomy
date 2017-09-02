@@ -94,9 +94,9 @@ export default class Sender {
   canUseChannel (paymentChannel: PaymentChannel, paymentRequired: PaymentRequired): Promise<boolean> {
     return this.contract.getState(paymentChannel.channelId).then(state => {
       let isOpen = state === 0 // FIXME Harmonize channel states
-      log.debug(`canUseChannel: isOpen: ${isOpen}`)
+      // log.debug(`canUseChannel: isOpen: ${isOpen}`)
       let funded = paymentChannel.value >= (paymentChannel.spent + paymentRequired.price)
-      log.debug(`canUseChannel: funded: ${funded}`)
+      // log.debug(`canUseChannel: funded: ${funded}`)
       return isOpen && funded
     })
   }

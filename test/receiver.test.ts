@@ -4,13 +4,44 @@ import * as channel from '../lib/channel'
 import { randomStorage } from './support'
 import { PaymentChannel } from '../lib/channel'
 import Payment from '../lib/Payment'
+import mongo from '../lib/mongo'
+
+const engine_name = process.env.ENGINE_NAME || 'nedb'
 
 describe('receiver', () => {
+  beforeAll((done) => {
+    if (process.env.ENGINE_NAME == 'mongo') {
+      mongo.connectToServer(() => {
+        done()
+      })
+    } else {
+      done()
+    }
+  })
+
+  beforeEach((done) => {
+    if (process.env.ENGINE_NAME == 'mongo') {
+      mongo.db().dropDatabase(() => {
+        done()
+      })
+    } else {
+      done()
+    }
+  })
+
+  afterAll((done) => {
+    if (process.env.ENGINE_NAME == 'mongo') {
+      mongo.db().close()
+    } else {
+      done()
+    }
+  })
+
   let web3 = support.fakeWeb3()
 
   describe('.build', () => {
     it('build Receiver', done => {
-      randomStorage(web3).then(storage => {
+      randomStorage(web3, engine_name).then(storage => {
         let result = receiver.build(support.fakeWeb3(), '0xdeadbeaf', storage)
         expect(typeof result).toBe('object')
       }).then(done)
@@ -35,7 +66,7 @@ describe('receiver', () => {
           s: '0x3'
         })
         let paymentChannel = channel.PaymentChannel.fromPayment(payment)
-        randomStorage(web3).then(storage => {
+        randomStorage(web3, engine_name).then(storage => {
           return storage.channels.save(paymentChannel).then(() => {
             return receiver.build(web3, '0xdeadbeaf', storage).findPaymentChannel(payment)
           }).then((found: PaymentChannel|null) => {
@@ -63,7 +94,7 @@ describe('receiver', () => {
           r: '0x2',
           s: '0x3'
         })
-        randomStorage(web3).then(storage => {
+        randomStorage(web3, engine_name).then(storage => {
           return receiver.build(web3, '0xdeadbeaf', storage).findPaymentChannel(payment).then(found => {
             expect(found).toBeNull()
           })
@@ -84,7 +115,7 @@ describe('receiver', () => {
         s: '0x3'
       })
       it('return token', done => {
-        randomStorage(web3).then(storage => {
+        randomStorage(web3, engine_name).then(storage => {
           return receiver.build(web3, '0xdeadbeaf', storage).whenValidPayment(payment).then(token => {
             expect(token).not.toBeNull()
           })
@@ -92,11 +123,11 @@ describe('receiver', () => {
       })
 
       it('save payment', () => {
-        return randomStorage(web3).then(storage => {
+        return randomStorage(web3, engine_name).then(storage => {
           return receiver.build(web3, '0xdeadbeaf', storage).whenValidPayment(payment).then(() => {
             return storage.payments.firstMaximum(payment.channelId)
           }).then(savedPayment => {
-            console.log(savedPayment)
+            // console.log(savedPayment)
             expect(savedPayment).not.toBeNull()
             if (savedPayment) {
               expect(payment.channelId).toBe(savedPayment.channelId)
@@ -114,7 +145,7 @@ describe('receiver', () => {
       })
 
       it('save token', done => {
-        randomStorage(web3).then(storage => {
+        randomStorage(web3, engine_name).then(storage => {
           return receiver.build(web3, '0xdeadbeaf', storage).whenValidPayment(payment).then(token => {
             return storage.tokens.isPresent(token)
           }).then(isPresent => {
@@ -139,7 +170,7 @@ describe('receiver', () => {
       })
 
       it('check if token is present', done => {
-        randomStorage(web3).then(storage => {
+        randomStorage(web3, engine_name).then(storage => {
           let r = receiver.build(web3, '0xdeadbeaf', storage)
           return r.whenValidPayment(payment).then(token => {
             return r.acceptToken(token)
@@ -151,7 +182,7 @@ describe('receiver', () => {
 
       it('check if token is absent', done => {
         let randomToken = support.randomInteger().toString()
-        randomStorage(web3).then(storage => {
+        randomStorage(web3, engine_name).then(storage => {
           let r = receiver.build(web3, '0xdeadbeaf', storage)
           return r.acceptToken(randomToken).then(isPresent => {
             expect(isPresent).toBeFalsy()
@@ -175,12 +206,37 @@ describe('receiver', () => {
       })
 
       it('throw an error if can not', () => {
-        randomStorage(web3).then(storage => {
+        randomStorage(web3, engine_name).then(storage => {
           let r = receiver.build(web3, '0xdeadbeaf', storage)
           expect(() => {
             r.ensureCanAcceptPayment(payment)
           }).toThrow()
         })
+      })
+    })
+
+    describe('#acceptPayment', () => {
+      let channelId = support.randomChannelId()
+      let receiverAccount = '0xdeadbeaf'
+      let payment = new Payment({
+        channelId: channelId.toString(),
+        sender: 'sender',
+        receiver: receiverAccount,
+        price: 10,
+        value: 12,
+        channelValue: 10,
+        v: 1,
+        r: '0x2',
+        s: '0x3'
+      })
+
+      it('accept new payment, and return a token', done => {
+        randomStorage(web3, engine_name).then(storage => {
+          let r = receiver.build(web3, receiverAccount, storage)
+          return r.acceptPayment(payment).then(token => {
+            expect(token).not.toBeNull()
+          })
+        }).then(done)
       })
     })
   })

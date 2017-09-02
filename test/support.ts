@@ -27,8 +27,8 @@ export function randomChannelId (): ChannelId {
   return channel.id(Buffer.from(randomInteger().toString()))
 }
 
-export function randomStorage (web3: Web3): Promise<Storage> {
+export function randomStorage (web3: Web3, engineName: string): Promise<Storage> {
   return tmpFileName().then(filename => {
-    return new Storage(web3, filename, null, true)
+    return new Storage(web3, filename, null, true, engineName)
   })
 }

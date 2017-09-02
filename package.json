@@ -14,7 +14,9 @@
     "url": "https://github.com/machinomy/machinomy.git"
   },
   "scripts": {
-    "test": "NODE_ENV=test jest",
+    "test_nedb": "NODE_ENV=test ENGINE_NAME=nedb jest --runInBand",
+    "test_mongo": "NODE_ENV=mongo ENGINE_NAME=mongo jest --runInBand",
+    "test": "yarn run test_nedb; yarn run test_mongo",
     "build": "tsc -p tsconfig.json",
     "lint": "tslint -t stylish --type-check --project 'tsconfig.json'",
     "prepublish": "yarn run build"
@@ -69,6 +71,7 @@
     "homedir": "https://github.com/ukstv/node-homedir",
     "lodash": "^4.17.4",
     "loglevel": "^1.4.1",
+    "mongodb": "^2.2.31",
     "nedb": "^1.8.0",
     "prompt": "^1.0.0",
     "request": "^2.76.0",
@@ -85,7 +88,7 @@
     "web3-typescript-typings": "https://github.com/machinomy/web3-typescript-typings"
   },
   "devDependencies": {
-    "@types/jest": "^20.0.4",
+    "@types/jest": "^20.0.7",
     "body-parser": "^1.15.2",
     "coveralls": "^2.12.0",
     "express": "^4.14.0",

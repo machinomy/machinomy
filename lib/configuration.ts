@@ -438,17 +438,20 @@ const databaseFilePath = (): string => {
 export interface IConfigurationOptions {
   account?: string
   password?: string
+  engine?: string
 }
 
 export class Configuration {
   public account?: string
   public password?: string
+  public engine?: string
   public databaseFile: string
   public path: string
 
   constructor (options: IConfigurationOptions) {
     this.account = options.account
     this.password = options.password
+    this.engine = options.engine
     this.databaseFile = databaseFilePath()
     this.path = configFilePath()
   }
@@ -472,7 +475,8 @@ export const sender = (): Configuration => {
     const options = configurationOptions()
     return new Configuration({
       account: process.env.MACHINOMY_SENDER_ACCOUNT || options.sender.account,
-      password: process.env.MACHINOMY_SENDER_PASSWORD || options.sender.password
+      password: process.env.MACHINOMY_SENDER_PASSWORD || options.sender.password,
+      engine: process.env.MACHINOMY_SENDER_ENGINE || options.sender.engine
     })
   } catch (error) {
     return new Configuration({})
@@ -484,7 +488,8 @@ export const receiver = (): Configuration => {
     const options = configurationOptions()
     return new Configuration({
       account: process.env.MACHINOMY_RECEIVER_ACCOUNT || options.receiver.account,
-      password: process.env.MACHINOMY_RECEIVER_PASSWORD || options.receiver.password
+      password: process.env.MACHINOMY_RECEIVER_PASSWORD || options.receiver.password,
+      engine: process.env.MACHINOMY_SENDER_ENGINE || options.sender.engine
     })
   } catch (error) {
     log.error(error)

@@ -5,6 +5,7 @@ import * as configuration from './configuration'
 import * as express from 'express'
 import { Log } from 'typescript-logger'
 import Web3 = require('web3')
+import mongo from './mongo'
 
 import urljoin = require('url-join')
 import { Receiver } from './receiver'
@@ -56,7 +57,7 @@ export class Paywall {
     // log.debug('Use settings for receiver', settings)
     this.receiverAccount = account
     this.gatewayUri = urljoin(address, configuration.PAYWALL_PATH)
-    let s: Storage = _storage || new Storage(web3, settings.databaseFile, 'receiver')
+    let s: Storage = _storage || new Storage(web3, settings.databaseFile, 'receiver', true, settings.engine)
     this.server = receiver.build(web3, account, s)
   }
 
@@ -131,6 +132,22 @@ export class Paywall {
         next()
       }
     }
+  }
+
+  static build = (web3: Web3, account: string, address: string, _storage: Storage|null) => {
+    return new Promise((resolve:any, reject:any) => {
+      let settings = configuration.receiver()
+      if (settings.engine == 'mongo') {
+        mongo.connectToServer((err:any)=>{
+          if (err) {
+            reject(err)
+          } else {
+            const paywall = new Paywall(web3, account, address, _storage)
+            resolve(paywall)
+          }
+        })
+      }
+    })
   }
 }
 

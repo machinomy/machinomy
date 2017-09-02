@@ -4,6 +4,7 @@ import Web3 = require('web3')
 import CommandPrompt from './CommandPrompt'
 import { ChannelContract, PaymentChannel } from '../lib/channel'
 import BigNumber = require('bignumber.js')
+import mongo from '../lib/mongo'
 
 let provider = machinomy.configuration.currentProvider()
 let web3 = new Web3(provider)
@@ -21,7 +22,7 @@ function claim (storage: Storage, contract: ChannelContract, paymentChannel: Pay
     } else {
       console.log('Can not claim ' + paymentDoc.value + ' from channel ' + channelId)
     }
-  }).catch((error: any)=> {
+  }).catch((error: any) => {
     throw error
   })
 }
@@ -70,42 +71,50 @@ function close (channelId: string, options: CommandPrompt): void {
     web3.personal.unlockAccount(settings.account, password, 1000)
   }
 
-  let s = new Storage(web3, settings.databaseFile, namespace)
+  let s = new Storage(web3, settings.databaseFile, namespace, true, settings.engine)
   let contract = machinomy.contract(web3)
-
-  s.channels.firstById(channelId).then(paymentChannel => {
-    if (paymentChannel) {
-      contract.getState(channelId).then(state => {
-        switch (state) {
-          case 0: // open
-            console.log('Channel ' + channelId + ' is open')
-            if (settings.account === paymentChannel.sender) {
-              startSettle(settings.account, contract, paymentChannel)
-            } else if (settings.account === paymentChannel.receiver) {
-              claim(s, contract, paymentChannel)
-            }
-            break
-          case 1: // settling
-            console.log('Channel ' + channelId + ' is settling')
-            if (settings.account === paymentChannel.sender) {
-              finishSettle(settings.account, contract, paymentChannel)
-            } else if (settings.account === paymentChannel.receiver) {
-              claim(s, contract, paymentChannel)
-            }
-            break
-          case 2: // settled, nothing to do
-            console.log('Channel ' + channelId + ' is settled')
-            break
-          default:
-            throw new Error('Unsupported channel state: ' + state)
-        }
-      })
-    } else {
-      // Do Nothing
-    }
-  }).catch(error => {
-    throw error
-  })
+  let startClose = () => {
+    s.channels.firstById(channelId).then(paymentChannel => {
+      if (paymentChannel) {
+        contract.getState(channelId).then(state => {
+          switch (state) {
+            case 0: // open
+              console.log('Channel ' + channelId + ' is open')
+              if (settings.account === paymentChannel.sender) {
+                startSettle(settings.account, contract, paymentChannel)
+              } else if (settings.account === paymentChannel.receiver) {
+                claim(s, contract, paymentChannel)
+              }
+              break
+            case 1: // settling
+              console.log('Channel ' + channelId + ' is settling')
+              if (settings.account === paymentChannel.sender) {
+                finishSettle(settings.account, contract, paymentChannel)
+              } else if (settings.account === paymentChannel.receiver) {
+                claim(s, contract, paymentChannel)
+              }
+              break
+            case 2: // settled, nothing to do
+              console.log('Channel ' + channelId + ' is settled')
+              break
+            default:
+              throw new Error('Unsupported channel state: ' + state)
+          }
+        })
+      } else {
+        // Do Nothing
+      }
+    }).catch(error => {
+      throw error
+    })
+  }
+  if (settings.engine === 'mongo'){
+    mongo.connectToServer(() => {
+      startClose()
+    })
+  } else {
+    startClose()
+  }
 }
 
 export default close

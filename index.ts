@@ -28,7 +28,7 @@ function buy (uri: string, account: string, password: string): Promise<string> {
   }
 
   let _transport = transport.build()
-  let _storage = storage.build(web3, settings.databaseFile, 'sender')
+  let _storage = storage.build(web3, settings.databaseFile, 'sender', false, settings.engine)
   let contract = channel.contract(web3)
   let client = new Sender(web3, account, contract, _transport, _storage)
   return client.buy({ uri: uri }).then((pair: PaymentPair) => {
