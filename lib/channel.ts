@@ -6,6 +6,7 @@ import { FilterResult } from 'web3'
 import Web3 = require('web3')
 import * as BigNumber from 'bignumber.js'
 import Payment from './Payment'
+import {sender} from "./configuration";
 
 const log = Log.create('channel')
 
@@ -21,10 +22,12 @@ export namespace Broker {
     startSettle (channelId: string, payment: String, options: any, callback: () => void): void
     claim (channelId: string, value: number, h: string, v: number, r: string, s: string, options: any, callback: () => void): void
     finishSettle (channelId: string, options: any, callback: () => void): void
+    deposit (channelId: string, options: any, callback: () => void): void
 
-    canClaim (channelId: string, h: string, v: number, r: string, s: string, callback: (error: any|null, result?: boolean) => void): boolean
+    canClaim (channelId: string, h: string, v: number, r: string, s: string, callback: (error: any|null, result?: boolean) => void): void
     canStartSettle (account: string, channelId: string, callback: (error: any|null, result?: boolean) => void): void
-    canFinishSettle (sender: string, channelId: string, callback: (error: any|null, result?: boolean) => void): boolean
+    canFinishSettle (sender: string, channelId: string, callback: (error: any|null, result?: boolean) => void): void
+    canDeposit (sender: string, channelId: string, callback: (error: any|null, result?: boolean) => void): void
 
     getState (channelId: string, callback: (error: any|null, state?: number) => void): void
     getUntil (channelId: string, callback: (error: any|null, until?: number) => void): void
@@ -32,8 +35,16 @@ export namespace Broker {
     DidSettle (query: {channelId: string}): FilterResult
     DidStartSettle (query: {channelId: string, payment: BigNumber.BigNumber}): FilterResult
     DidCreateChannel (query: {sender: string, receiver: string}): FilterResult
+    DidDeposit (query: {channelId: string, value: BigNumber.BigNumber}): FilterResult
   }
 
+  // event DidDeposit(bytes32 indexed channelId, uint256 value);
+  export interface DidDeposit {
+    channelId: string
+    value: BigNumber.BigNumber
+  }
+
+  // event DidSettle(bytes32 indexed channelId, uint256 payment, uint256 oddValue);
   export interface DidSettle {
     payment: BigNumber.BigNumber
     channelId: string
@@ -46,6 +57,7 @@ export namespace Broker {
     payment: BigNumber.BigNumber
   }
 
+  // event DidCreateChannel(address indexed sender, address indexed receiver, bytes32 channelId);
   export interface DidCreateChannel {
     sender: string
     receiver: string
@@ -214,6 +226,24 @@ export class ChannelContract {
     })
   }
 
+  deposit (sender: string, channelId: string): Promise<BigNumber.BigNumber> {
+    return new Promise<BigNumber.BigNumber>((resolve, reject) => {
+      this.contract.deposit(channelId, {from: sender}, () => {
+        const didDeposit = this.contract.DidDeposit({channelId})
+        didDeposit.watch<Broker.DidDeposit>((error, result) => {
+          didDeposit.stopWatching(() => {
+            if (error) {
+              reject(error)
+            } else {
+              log.info(`Deposited ${result.args.value} to ${result.args.channelId}`)
+              resolve(result.args.value)
+            }
+          })
+        })
+      })
+    })
+  }
+
   /**
    * @param {String} account
    * @param {String} channelId
@@ -259,6 +289,18 @@ export class ChannelContract {
   canFinishSettle (sender: string, channelId: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
       this.contract.canFinishSettle(sender, channelId, (error, result) => {
+        if (error) {
+          reject(error)
+        } else {
+          resolve(result)
+        }
+      })
+    })
+  }
+
+  canDeposit (sender: string, channelId: string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      this.contract.canDeposit(sender, channelId, (error, result) => {
         if (error) {
           reject(error)
         } else {
