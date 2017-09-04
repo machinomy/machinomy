@@ -35,7 +35,7 @@ export namespace Broker {
     DidSettle (query: {channelId: string}): FilterResult
     DidStartSettle (query: {channelId: string, payment: BigNumber.BigNumber}): FilterResult
     DidCreateChannel (query: {sender: string, receiver: string}): FilterResult
-    DidDeposit (query: {channelId: string, value: BigNumber.BigNumber}): FilterResult
+    DidDeposit (query: {channelId?: string, value?: BigNumber.BigNumber}): FilterResult
   }
 
   // event DidDeposit(bytes32 indexed channelId, uint256 value);
@@ -226,9 +226,14 @@ export class ChannelContract {
     })
   }
 
-  deposit (sender: string, channelId: string): Promise<BigNumber.BigNumber> {
+  deposit (sender: string, channelId: string, value: number): Promise<BigNumber.BigNumber> {
     return new Promise<BigNumber.BigNumber>((resolve, reject) => {
-      this.contract.deposit(channelId, {from: sender}, () => {
+      let options = {
+        from: sender,
+        value: value,
+        gas: CREATE_CHANNEL_GAS
+      }
+      this.contract.deposit(channelId, options, () => {
         const didDeposit = this.contract.DidDeposit({channelId})
         didDeposit.watch<Broker.DidDeposit>((error, result) => {
           didDeposit.stopWatching(() => {
