@@ -22,17 +22,34 @@ export function digest (channelId: string|ChannelId, value: number): Buffer {
 }
 
 export function sign (web3: Web3, sender: string, digest: Buffer): Promise<Signature> {
-  return new Promise<Signature>((resolve, reject) => {
-    const message = digest.toString()
-    const sha3 = ethHash(message)
-    web3.eth.sign(sender, sha3, (error, signature) => {
-      if (error) {
-        reject(error)
-      } else {
-        resolve(util.fromRpcSig(signature))
-      }
+  let isOnNodeJs = false
+  if (typeof process === 'object') {
+    isOnNodeJs = true
+  }
+  if (isOnNodeJs) {
+    return new Promise<Signature>((resolve, reject) => {
+
+      web3.eth.sign(sender, util.bufferToHex(digest), (error, signature) => {
+        if (error) {
+          reject(error)
+        } else {
+          resolve(util.fromRpcSig(signature))
+        }
+      })
     })
-  })
+  } else {
+    return new Promise<Signature>((resolve, reject) => {
+      const message = digest.toString()
+      const sha3 = ethHash(message)
+      web3.eth.sign(sender, sha3, (error, signature) => {
+        if (error) {
+          reject(error)
+        } else {
+          resolve(util.fromRpcSig(signature));
+        }
+      })
+    })
+  }
 }
 
 export default class Payment {
