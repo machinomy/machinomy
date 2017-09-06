@@ -18,10 +18,12 @@ function channels (command: CommandPrompt): void {
           if (state < 2) {
             paymentChannel.state = state
             console.log(paymentChannel)
-            mongo.db().close()
           }
         })
       })
+      if (settings.engine === 'mongo') {
+        mongo.db().close()
+      }
     })
   }
 
