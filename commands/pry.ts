@@ -16,8 +16,14 @@ const pry = (uri: string) => {
       let client = new Sender(web3, settings.account, contract, transport, storage)
       client.pry(uri).then(paymentRequired => {
         console.log(paymentRequired)
+        if (settings.engine === 'mongo') {
+          mongo.db().close()
+        }
       }).catch(error => {
         console.error(error)
+        if (settings.engine === 'mongo') {
+          mongo.db().close()
+        }
       })
     }
   }
