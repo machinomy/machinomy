@@ -6,7 +6,11 @@ import { FilterResult } from 'web3'
 import Web3 = require('web3')
 import * as BigNumber from 'bignumber.js'
 import Payment from './Payment'
-import {sender} from "./configuration";
+import { sender } from './configuration'
+import { PaymentRequired } from './transport'
+
+import { Broker, BrokerToken } from 'machinomy-contracts/types/index'
+import { BrokerContract, BrokerTokenContract, buildERC20Contract } from 'machinomy-contracts'
 
 const log = Log.create('channel')
 
@@ -14,55 +18,6 @@ export interface Signature {
   v: number
   r: Buffer
   s: Buffer
-}
-
-export namespace Broker {
-  export interface Contract {
-    createChannel (receiver: string, duration: number, settlementPeriod: number, options: any, callback: () => void): void
-    startSettle (channelId: string, payment: String, options: any, callback: () => void): void
-    claim (channelId: string, value: number, h: string, v: number, r: string, s: string, options: any, callback: () => void): void
-    finishSettle (channelId: string, options: any, callback: () => void): void
-    deposit (channelId: string, options: any, callback: () => void): void
-
-    canClaim (channelId: string, h: string, v: number, r: string, s: string, callback: (error: any|null, result?: boolean) => void): void
-    canStartSettle (account: string, channelId: string, callback: (error: any|null, result?: boolean) => void): void
-    canFinishSettle (sender: string, channelId: string, callback: (error: any|null, result?: boolean) => void): void
-    canDeposit (sender: string, channelId: string, callback: (error: any|null, result?: boolean) => void): void
-
-    getState (channelId: string, callback: (error: any|null, state?: number) => void): void
-    getUntil (channelId: string, callback: (error: any|null, until?: number) => void): void
-
-    DidSettle (query: {channelId: string}): FilterResult
-    DidStartSettle (query: {channelId: string, payment: BigNumber.BigNumber}): FilterResult
-    DidCreateChannel (query: {sender: string, receiver: string}): FilterResult
-    DidDeposit (query: {channelId?: string, value?: BigNumber.BigNumber}): FilterResult
-  }
-
-  // event DidDeposit(bytes32 indexed channelId, uint256 value);
-  export interface DidDeposit {
-    channelId: string
-    value: BigNumber.BigNumber
-  }
-
-  // event DidSettle(bytes32 indexed channelId, uint256 payment, uint256 oddValue);
-  export interface DidSettle {
-    payment: BigNumber.BigNumber
-    channelId: string
-    oddValue: BigNumber.BigNumber
-  }
-
-  // event DidStartSettle(bytes32 indexed channelId, uint256 payment);
-  export interface DidStartSettle {
-    channelId: string
-    payment: BigNumber.BigNumber
-  }
-
-  // event DidCreateChannel(address indexed sender, address indexed receiver, bytes32 channelId);
-  export interface DidCreateChannel {
-    sender: string
-    receiver: string
-    channelId: string
-  }
 }
 
 const DAY_IN_SECONDS = 86400
@@ -96,6 +51,7 @@ export interface PaymentChannelJSON {
   value: number
   spent: number
   state: number
+  contractAddress: string | undefined
 }
 
 /**
@@ -108,6 +64,7 @@ export class PaymentChannel {
   value: number
   spent: number
   state: number
+  contractAddress: string | undefined
 
   /**
    * @param sender      Ethereum address of the client.
@@ -117,17 +74,18 @@ export class PaymentChannel {
    * @param spent       Value sent by {sender} to {receiver}.
    * @param state       0 - 'open', 1 - 'settling', 2 - 'settled'
    */
-  constructor (sender: string, receiver: string, channelId: string, value: number, spent: number, state: number = 0) { // FIXME remove contract parameter
+  constructor (sender: string, receiver: string, channelId: string, value: number, spent: number, state: number = 0, contractAddress: string | undefined) { // FIXME remove contract parameter
     this.sender = sender
     this.receiver = receiver
     this.channelId = channelId
     this.value = value
     this.spent = spent
     this.state = state || 0
+    this.contractAddress = contractAddress
   }
 
   static fromPayment (payment: Payment): PaymentChannel {
-    return new PaymentChannel(payment.sender, payment.receiver, payment.channelId, payment.channelValue, payment.value)
+    return new PaymentChannel(payment.sender, payment.receiver, payment.channelId, payment.channelValue, payment.value, undefined, payment.contractAddress)
   }
 
   static fromDocument (document: PaymentChannelJSON): PaymentChannel {
@@ -137,7 +95,8 @@ export class PaymentChannel {
         document.channelId,
         document.value,
         document.spent,
-        document.state
+        document.state,
+        document.contractAddress
     )
   }
 
@@ -148,7 +107,8 @@ export class PaymentChannel {
       value: this.value,
       channelId: this.channelId,
       receiver: this.receiver,
-      sender: this.sender
+      sender: this.sender,
+      contractAddress: this.contractAddress
     }
   }
 }
@@ -170,10 +130,42 @@ export class ChannelContract {
     this.web3 = web3
   }
 
+  createChannel (paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: any): any {
+    return new Promise<PaymentChannel>((resolve, reject) => {
+      if (paymentRequired.contractAddress) {
+        const value = options['value']
+        delete options['value']
+        BrokerTokenContract.deployed().then((deployed: BrokerToken.Contract) => {
+          let instanceERC20 = buildERC20Contract(paymentRequired.contractAddress)
+          instanceERC20.deployed().then((deployedERC20: any) => {
+            deployedERC20.approve(deployed.address, value, options).then((res: any) => {
+              deployed.createChannel(paymentRequired.contractAddress, paymentRequired.receiver, duration, settlementPeriod, value, options).then((res: any) => {
+                const channelId = res.logs[0].args.channelId
+                resolve(channelId)
+              })
+            })
+          })
+        }).catch((e: Error) => {
+          reject(e)
+        })
+      } else {
+        BrokerContract.deployed().then((deployed: Broker.Contract) => {
+          deployed.createChannel(paymentRequired.receiver, duration, settlementPeriod, options).then((res: any) => {
+            const channelId = res.logs[0].args.channelId
+            resolve(channelId)
+          })
+        }).catch((e: Error) => {
+          reject(e)
+        })
+      }
+    })
+  }
+
   /**
    * Initiate payment channel between `sender` and `receiver`, with initial amount set to `value`.
    */
-  buildPaymentChannel (sender: string, receiver: string, value: number): Promise<PaymentChannel> {
+  buildPaymentChannel (sender: string, paymentRequired: PaymentRequired, value: number): Promise<PaymentChannel> {
+    const receiver = paymentRequired.receiver
     return new Promise<PaymentChannel>((resolve, reject) => {
       log.info('Building payment channel from ' + sender + ' to ' + receiver + ', initial amount set to ' + value)
       const settlementPeriod = DEFAULT_SETTLEMENT_PERIOD
@@ -183,26 +175,11 @@ export class ChannelContract {
         value,
         gas: CREATE_CHANNEL_GAS
       }
-      this.contract.createChannel(receiver, duration, settlementPeriod, options, () => {
-        const didCreateChannelEvent = this.contract.DidCreateChannel({sender, receiver})
-        didCreateChannelEvent.watch<Broker.DidCreateChannel>((error, result) => {
-          log.info('Waiting for the channel to be created on the blockchain: watching for DidCreateChannel event')
-          if (error) {
-            reject(error)
-          } else {
-            const channelId = result.args.channelId
-            log.info('The channel ' + channelId + ' is created')
-            const paymentChannel = new PaymentChannel(sender, receiver, channelId, value, 0)
-            didCreateChannelEvent.stopWatching(() => {
-              log.info('No longer watching for DidCreateChannel event')
-              if (error) {
-                reject(error)
-              } else {
-                resolve(paymentChannel)
-              }
-            })
-          }
-        })
+      this.createChannel(paymentRequired, duration, settlementPeriod, options).then((channelId: string) => {
+        const paymentChannel = new PaymentChannel(sender, receiver, channelId, value, 0, undefined, paymentRequired.contractAddress)
+        resolve(paymentChannel)
+      }).catch((e: Error) => {
+        reject(e)
       })
     })
   }

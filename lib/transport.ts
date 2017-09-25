@@ -19,6 +19,7 @@ export const STATUS_CODES = {
  * @return {string}
  */
 const extractPaywallToken = (response: RequestResponse): string => {
+  console.log(response.headers)
   let token = response.headers['paywall-token'] as string
   if (token) {
     log.info('Got token from the server')
@@ -100,18 +101,21 @@ export class PaymentRequired {
   receiver: string
   price: number
   gateway: string
+  contractAddress: string
 
-  constructor (receiver: string, price: number, gateway: string) {
+  constructor (receiver: string, price: number, gateway: string, contractAddress: string) {
     this.receiver = receiver
     this.price = price
     this.gateway = gateway
+    this.contractAddress = contractAddress
   }
 
   static parse = function (headers: any): PaymentRequired {
     let receiver = headers['paywall-address']
     let price = Number(headers['paywall-price'])
     let gateway = headers['paywall-gateway']
-    return new PaymentRequired(receiver, price, gateway)
+    let contractAddress = headers['paywall-token-address']
+    return new PaymentRequired(receiver, price, gateway, contractAddress)
   }
 }
 

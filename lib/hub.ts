@@ -26,7 +26,7 @@ export class Hub {
     this.server = receiver.build(web3, account, s)
   }
 
-  payment() {
+  payment () {
     return (req: express.Request, res: express.Response, next: Function) => {
       let payment = new Payment(req.body)
       this.server.acceptPayment(payment).then(token => {
@@ -40,20 +40,20 @@ export class Hub {
     }
   }
 
-  verify() {
-   return (req: express.Request, res: express.Response, next: express.NextFunction):any => {
-     let token = req.body.token
-     if (token) {
-       this.server.acceptToken(token).then(isOk => {
-         if (isOk) {
-           res.status(200).send({status: 'ok'});
-         } else {
-           res.status(500).send({status: 'token is invalid'});
-         }
-       })
-     } else {
-       res.status(500).json({status: 'no token accepted'});
-     }
-   }
+  verify () {
+    return (req: express.Request, res: express.Response, next: express.NextFunction):any => {
+      let token = req.body.token
+      if (token) {
+        this.server.acceptToken(token).then(isOk => {
+          if (isOk) {
+            res.status(200).send({status: 'ok'})
+          } else {
+            res.status(500).send({status: 'token is invalid'})
+          }
+        })
+      } else {
+        res.status(500).json({status: 'no token accepted'})
+      }
+    }
   }
 }

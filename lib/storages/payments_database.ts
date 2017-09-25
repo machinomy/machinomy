@@ -48,7 +48,8 @@ export default class PaymentsDatabase {
       channelValue: payment.channelValue,
       v: Number(payment.v),
       r: payment.r,
-      s: payment.s
+      s: payment.s,
+      contractAddress: payment.contractAddress
     }
     //log.info(`Saving payment for channel ${payment.channelId} and token ${token}`)
     return this.engine.insert(document)

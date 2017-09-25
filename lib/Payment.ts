@@ -14,6 +14,7 @@ export interface PaymentJSON {
   v: number|string
   r: string
   s: string
+  contractAddress: string | undefined
 }
 
 export function digest (channelId: string|ChannelId, value: number): Buffer {
@@ -62,6 +63,7 @@ export default class Payment {
   v: number
   r: string
   s: string
+  contractAddress: string | undefined
 
   constructor (options: PaymentJSON) {
     this.channelId = options.channelId
@@ -73,6 +75,7 @@ export default class Payment {
     this.v = Number(options.v)
     this.r = options.r
     this.s = options.s
+    this.contractAddress = options.contractAddress
   }
 
   static isValid (web3: Web3, payment: Payment, paymentChannel: PaymentChannel): Promise<boolean> {
@@ -116,7 +119,8 @@ export default class Payment {
         channelValue: paymentChannel.value,
         v: signature.v,
         r: '0x' + signature.r.toString('hex'),
-        s: '0x' + signature.s.toString('hex')
+        s: '0x' + signature.s.toString('hex'),
+        contractAddress: paymentChannel.contractAddress
       })
     })
   }

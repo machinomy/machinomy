@@ -55,7 +55,7 @@ export default class Sender {
     if (_.isFunction(opts.onWillOpenChannel)) {
       opts.onWillOpenChannel()
     }
-    return this.contract.buildPaymentChannel(this.account, paymentRequired.receiver, channelValue).then((paymentChannel: PaymentChannel) => {
+    return this.contract.buildPaymentChannel(this.account, paymentRequired, channelValue).then((paymentChannel: PaymentChannel) => {
       if (_.isFunction(opts.onDidOpenChannel)) {
         opts.onDidOpenChannel()
       }

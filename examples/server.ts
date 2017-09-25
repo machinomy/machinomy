@@ -11,7 +11,7 @@ const settings = machinomy.configuration.receiver()
 let provider = machinomy.configuration.currentProvider()
 let web3 = new Web3(provider)
 if (web3.personal && settings.account && settings.password) {
-  web3.personal.unlockAccount(settings.account, settings.password, 1000)
+  // web3.personal.unlockAccount(settings.account, settings.password, 1000)
 
   const app = express()
   app.use(bodyParser.json())

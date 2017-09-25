@@ -24,7 +24,7 @@ function buy (uri: string, account: string, password: string): Promise<string> {
   let web3 = new Web3()
   web3.setProvider(configuration.currentProvider())
   if (web3.personal) {
-    web3.personal.unlockAccount(account, password, UNLOCK_PERIOD) // FIXME
+    // web3.personal.unlockAccount(account, password, UNLOCK_PERIOD) // FIXME
   }
 
   let _transport = transport.build()
