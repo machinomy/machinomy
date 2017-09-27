@@ -1,17 +1,8 @@
-import * as channel from '../channel'
-import { Log } from 'typescript-logger'
 import Promise = require('bluebird')
 import _ = require('lodash')
-import Datastore = require('nedb')
-import Web3 = require('web3')
-
 import Engine from '../engines/engine'
-import EngineMongo from '../engines/engine_mongo'
-import EngineNedb from '../engines/engine_nedb'
-
-import { ChannelId, PaymentChannel, PaymentChannelJSON } from '../channel'
+import { ChannelId } from '../channel'
 import Payment from '../Payment'
-const log = Log.create('storage')
 
 const namespaced = (namespace: string|null|undefined, kind: string): string => {
   let result = kind
@@ -50,7 +41,7 @@ export default class PaymentsDatabase {
       r: payment.r,
       s: payment.s
     }
-    //log.info(`Saving payment for channel ${payment.channelId} and token ${token}`)
+    // log.info(`Saving payment for channel ${payment.channelId} and token ${token}`)
     return this.engine.insert(document)
   }
 
@@ -58,12 +49,12 @@ export default class PaymentsDatabase {
    * Find a payment with maximum value on it inside the channel.
    */
   firstMaximum (channelId: ChannelId|string): Promise<Payment|null> {
-    //log.info(`Trying to find last payment for channel ${channelId.toString()}`)
+    // log.info(`Trying to find last payment for channel ${channelId.toString()}`)
     let query = { kind: this.kind, channelId: channelId.toString() }
     return this.engine.find(query).then((documents: Array<Payment>) => {
-      //log.info(`Found ${documents.length} payment documents`)
+      // log.info(`Found ${documents.length} payment documents`)
       let maximum = _.maxBy(documents, (payment: Payment) => payment.value)
-      //log.info(`Found maximum payment for channel ${channelId}`, maximum)
+      // log.info(`Found maximum payment for channel ${channelId}`, maximum)
       if (maximum) {
         return maximum
       } else {

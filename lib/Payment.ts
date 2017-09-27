@@ -16,17 +16,22 @@ export interface PaymentJSON {
   s: string
 }
 
+function isNode () {
+  let result = false
+  let typeOfProcess = typeof process
+  if (typeOfProcess === 'object') {
+    result = true
+  }
+  return result
+}
+
 export function digest (channelId: string|ChannelId, value: number): Buffer {
   const message = channelId.toString() + value.toString()
   return Buffer.from(message)
 }
 
 export function sign (web3: Web3, sender: string, digest: Buffer): Promise<Signature> {
-  let isOnNodeJs = false
-  if (typeof process === 'object') {
-    isOnNodeJs = true
-  }
-  if (isOnNodeJs) {
+  if (isNode()) {
     return new Promise<Signature>((resolve, reject) => {
 
       web3.eth.sign(sender, util.bufferToHex(digest), (error, signature) => {
@@ -45,7 +50,7 @@ export function sign (web3: Web3, sender: string, digest: Buffer): Promise<Signa
         if (error) {
           reject(error)
         } else {
-          resolve(util.fromRpcSig(signature));
+          resolve(util.fromRpcSig(signature))
         }
       })
     })

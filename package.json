@@ -18,7 +18,7 @@
     "test_mongo": "NODE_ENV=mongo ENGINE_NAME=mongo jest --runInBand",
     "test": "yarn run test_nedb; yarn run test_mongo",
     "build": "tsc -p tsconfig.json",
-    "lint": "tslint -t stylish --type-check --project 'tsconfig.json'",
+    "lint": "tslint -t stylish --type-check --project 'tsconfig.json' --exclude node_modules/*",
     "prepublish": "yarn run build"
   },
   "main": "index.js",

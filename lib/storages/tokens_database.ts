@@ -1,18 +1,6 @@
-import * as channel from '../channel'
-import { Log } from 'typescript-logger'
 import Promise = require('bluebird')
-import _ = require('lodash')
-import Datastore = require('nedb')
-import Web3 = require('web3')
-
 import Engine from '../engines/engine'
-import EngineMongo from '../engines/engine_mongo'
-import EngineNedb from '../engines/engine_nedb'
-
-import { ChannelId, PaymentChannel, PaymentChannelJSON } from '../channel'
-import Payment from '../Payment'
-
-const log = Log.create('storage')
+import { ChannelId } from '../channel'
 
 const namespaced = (namespace: string|null|undefined, kind: string): string => {
   let result = kind
@@ -53,7 +41,7 @@ export default class TokensDatabase {
     let query = { kind: this.kind, token: token }
     return this.engine.findOne(query).then(document => {
       let result = Boolean(document)
-      //log.info(`Token ${token} is present: ${result}`)
+      // log.info(`Token ${token} is present: ${result}`)
       return result
     })
   }

@@ -1,12 +1,14 @@
 import Promise = require('bluebird')
-import mongo from '../mongo';
+import mongo from '../mongo'
 import Engine from './engine'
 
 /**
  * Database engine.
  */
 export default class EngineMongo implements Engine {
-  constructor (path: string, inMemoryOnly: boolean = false) {}
+  constructor (path: string, inMemoryOnly: boolean = false) {
+    // Do Nothing
+  }
 
   find<A> (query: {kind: string}): Promise<Array<A>> {
     let collection = query.kind || 'all'
@@ -32,7 +34,7 @@ export default class EngineMongo implements Engine {
     })
   }
 
-  insert(document: {kind: string}): Promise<void> {
+  insert (document: {kind: string}): Promise<void> {
     let collection = document.kind || 'all'
     return new Promise((resolve: Function, reject: Function) => {
       mongo.db().collection(collection).insert(document, (err: any, res: any) => {

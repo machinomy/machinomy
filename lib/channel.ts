@@ -6,7 +6,6 @@ import { FilterResult } from 'web3'
 import Web3 = require('web3')
 import * as BigNumber from 'bignumber.js'
 import Payment from './Payment'
-import {sender} from "./configuration";
 
 const log = Log.create('channel')
 

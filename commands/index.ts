@@ -2,7 +2,6 @@ import * as fs from 'fs'
 import path = require('path')
 import homedir = require('homedir')
 import commander = require('commander')
-import machinomy from './../index'
 import setup from './setup'
 import buy from './buy'
 import pry from './pry'

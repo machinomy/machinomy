@@ -1,11 +1,11 @@
 import Storage from './storage'
 import * as receiver from './receiver'
-import * as channel from './channel'
 import * as configuration from './configuration'
 import * as express from 'express'
 import { Log } from 'typescript-logger'
 import Web3 = require('web3')
 import mongo from './mongo'
+import Promise = require('bluebird')
 
 import urljoin = require('url-join')
 import { Receiver } from './receiver'
@@ -41,6 +41,18 @@ const parseToken = (req: express.Request, callback: GotTokenCallback) => {
 
 export type PriceFunction = (req: express.Request, callback: (fixedPrice: number) => void) => void
 
+/**
+ * Server-side headers that require payments.
+ */
+const paywallHeaders = (receiverAccount: string, gatewayUri: string, price: number): object => {
+  let headers: { [index: string]: string } = {}
+  headers['Paywall-Version'] = configuration.VERSION.toString()
+  headers['Paywall-Price'] = price.toString()
+  headers['Paywall-Address'] = receiverAccount
+  headers['Paywall-Gateway'] = gatewayUri
+  return headers
+}
+
 export class Paywall {
   receiverAccount: string
   gatewayUri: string
@@ -59,6 +71,22 @@ export class Paywall {
     this.gatewayUri = urljoin(address, configuration.PAYWALL_PATH)
     let s: Storage = _storage || new Storage(web3, settings.databaseFile, 'receiver', true, settings.engine)
     this.server = receiver.build(web3, account, s)
+  }
+
+  static build = (web3: Web3, account: string, address: string, _storage: Storage|null) => {
+    return new Promise((resolve, reject) => {
+      let settings = configuration.receiver()
+      if (settings.engine === 'mongo') {
+        mongo.connectToServer((err: any) => {
+          if (err) {
+            reject(err)
+          } else {
+            const paywall = new Paywall(web3, account, address, _storage)
+            resolve(paywall)
+          }
+        })
+      }
+    })
   }
 
   /**
@@ -133,32 +161,4 @@ export class Paywall {
       }
     }
   }
-
-  static build = (web3: Web3, account: string, address: string, _storage: Storage|null) => {
-    return new Promise((resolve:any, reject:any) => {
-      let settings = configuration.receiver()
-      if (settings.engine == 'mongo') {
-        mongo.connectToServer((err:any)=>{
-          if (err) {
-            reject(err)
-          } else {
-            const paywall = new Paywall(web3, account, address, _storage)
-            resolve(paywall)
-          }
-        })
-      }
-    })
-  }
-}
-
-/**
- * Server-side headers that require payments.
- */
-const paywallHeaders = (receiverAccount: string, gatewayUri: string, price: number): object => {
-  let headers: { [index: string]: string } = {}
-  headers['Paywall-Version'] = configuration.VERSION.toString()
-  headers['Paywall-Price'] = price.toString()
-  headers['Paywall-Address'] = receiverAccount
-  headers['Paywall-Gateway'] = gatewayUri
-  return headers
 }

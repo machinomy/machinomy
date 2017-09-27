@@ -108,7 +108,7 @@ function close (channelId: string, options: CommandPrompt): void {
       throw error
     })
   }
-  if (settings.engine === 'mongo'){
+  if (settings.engine === 'mongo') {
     mongo.connectToServer(() => {
       startClose()
     })

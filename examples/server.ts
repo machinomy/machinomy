@@ -1,5 +1,3 @@
-import * as fs from 'fs'
-import * as path from 'path'
 import cors = require('cors')
 import express = require('express')
 import bodyParser = require('body-parser')
@@ -27,7 +25,7 @@ if (web3.personal && settings.account && settings.password) {
     app.use(paywall.middleware())
 
     const COST = 61200000000
-    app.get('/outline', paywall.guard(COST, (req:any, res:any) => {
+    app.get('/outline', paywall.guard(COST, (req: any, res: any) => {
       /*
       let filepath = path.join(__dirname, 'response.txt')
       let content = fs.readFileSync(filepath).toString()
@@ -40,5 +38,7 @@ if (web3.personal && settings.account && settings.password) {
       console.log('Waiting at http://localhost:3000/outline')
     })
 
+  }).catch(reason => {
+    console.log('Oops, can not start paywall:', reason)
   })
 }
