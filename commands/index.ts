@@ -21,7 +21,7 @@ const baseDirPath = function (): string {
 
 const ensureBaseDirPresent = function (): void {
   if (!fs.existsSync(baseDirPath())) {
-    fs.mkdir(baseDirPath())
+    fs.mkdirSync(baseDirPath())
   }
 }
 

@@ -8,7 +8,7 @@ const setup = (command: CommandPrompt) => {
 
   let baseDirPath = machinomy.configuration.baseDirPath()
   if (!fs.existsSync(baseDirPath)) {
-    fs.mkdir(baseDirPath)
+    fs.mkdirSync(baseDirPath)
   }
 
   type Configuration = {
