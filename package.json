@@ -14,12 +14,12 @@
     "url": "https://github.com/machinomy/machinomy.git"
   },
   "scripts": {
-    "test_nedb": "NODE_ENV=test ENGINE_NAME=nedb jest --runInBand",
-    "test_mongo": "NODE_ENV=mongo ENGINE_NAME=mongo jest --runInBand",
-    "test": "yarn run test_nedb; yarn run test_mongo",
+    "test:nedb": "NODE_ENV=test ENGINE_NAME=nedb jest --runInBand",
+    "test:mongo": "NODE_ENV=test ENGINE_NAME=mongo jest --runInBand",
+    "test": "yarn run test:nedb && yarn run test:mongo",
     "build": "tsc -p tsconfig.json",
     "lint": "tslint -t stylish --type-check --project 'tsconfig.json' --exclude node_modules/*",
-    "prepublish": "yarn run build"
+    "prepublish": "yarn lint && yarn build"
   },
   "main": "index.js",
   "bin": {
@@ -94,6 +94,7 @@
     "express": "^4.14.0",
     "istanbul": "^0.4.5",
     "jest": "^21.0.0",
+    "jest-cli": "^21.2.0",
     "nock": "^9.0.9",
     "tmp": "0.0.33",
     "ts-jest": "^20.0.7",
