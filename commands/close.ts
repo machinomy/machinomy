@@ -6,72 +6,92 @@ import { ChannelContract, PaymentChannel } from '../lib/channel'
 import BigNumber = require('bignumber.js')
 import mongo from '../lib/mongo'
 
+
+
 import { Broker, BrokerToken } from 'machinomy-contracts/types/index'
 import { BrokerContract, BrokerTokenContract } from 'machinomy-contracts'
 
 let provider = machinomy.configuration.currentProvider()
 let web3 = new Web3(provider)
 
-function claim (storage: Storage, contract: ChannelContract, paymentChannel: PaymentChannel) {
-  let channelId = paymentChannel.channelId
-  storage.payments.firstMaximum(channelId).then((paymentDoc: any) => {
-    let canClaim = contract.canClaim(channelId, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s)
-    if (canClaim) {
-      contract.claim(paymentChannel.receiver, paymentChannel.channelId, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s).then(value => {
-        console.log('Claimed ' + value + ' out of ' + paymentChannel.value + ' from channel ' + channelId)
-      }).catch(error => {
-        throw error
-      })
-    } else {
-      console.log('Can not claim ' + paymentDoc.value + ' from channel ' + channelId)
-    }
-  }).catch((error: any) => {
-    throw error
-  })
-}
+// function claim (storage: Storage, contract: ChannelContract, paymentChannel: PaymentChannel) {
+//   let channelId = paymentChannel.channelId
+//   storage.payments.firstMaximum(channelId).then((paymentDoc: any) => {
+//     let canClaim = contract.canClaim(channelId, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s)
+//     if (canClaim) {
+//       contract.claim(paymentChannel.receiver, paymentChannel.channelId, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s).then(value => {
+//         console.log('Claimed ' + value + ' out of ' + paymentChannel.value + ' from channel ' + channelId)
+//       }).catch(error => {
+//         throw error
+//       })
+//     } else {
+//       console.log('Can not claim ' + paymentDoc.value + ' from channel ' + channelId)
+//     }
+//   }).catch((error: any) => {
+//     throw error
+//   })
+// }
 
 function startSettle (account: string, contract: ChannelContract, paymentChannel: PaymentChannel): void {
-  contract.canStartSettle(account, paymentChannel.channelId).then(canStartSettle => {
-    if (canStartSettle) {
-      let spent = new BigNumber(paymentChannel.spent)
-      // contract.startSettle(account, paymentChannel.channelId, spent).then(() => {
-      //   console.log('Start settling channel ' + paymentChannel.channelId)
-      // }).catch((error: any) => {
-      //   throw error
-      // })
-
-      if (paymentChannel.contractAddress) {
-        BrokerTokenContract.deployed().then((deployed: BrokerToken.Contract) => {
-          deployed.startSettle(account, paymentChannel.channelId, spent).then(() => {
-            console.log('Start settling channel ' + paymentChannel.channelId)
+  if (paymentChannel.contractAddress) {
+    BrokerTokenContract.deployed().then((deployed: BrokerToken.Contract) => {
+      deployed.canStartSettle(account, paymentChannel.channelId).then((result: any) => {
+        if (result) {
+          let paymentHex = '0x' + paymentChannel.spent.toString(16)
+          deployed.startSettle(paymentChannel.channelId, paymentHex, { from: paymentChannel.sender }).then((res: any) => {
+            console.log(res.logs)
+            // console.log('Start settling channel ' + paymentChannel.channelId)
           })
-        }).catch((e: Error) => {
-          throw e
-        })
-      } else {
-        BrokerContract.deployed().then((deployed: Broker.Contract) => {
-          console.log('Start settling channel ' + paymentChannel.channelId)
-        }).catch((e: Error) => {
-          throw e
-        })
-      }
-    } else {
-      console.log('Can not start settling channel ' + paymentChannel.channelId)
-    }
-  })
+        }
+      })
+    }).catch((e: Error) => {
+      throw e
+    })
+  } else {
+    BrokerContract.deployed().then((deployed: Broker.Contract) => {
+      console.log('Start settling channel ' + paymentChannel.channelId)
+    }).catch((e: Error) => {
+      throw e
+    })
+  }
+  // } else {
+  //   console.log('Can not start settling channel ' + paymentChannel.channelId)
+  // }
+  // })
 }
 
 const finishSettle = (account: string, contract: ChannelContract, paymentChannel: PaymentChannel) => {
-  if (contract.canFinishSettle(account, paymentChannel.channelId)) {
-    contract.finishSettle(account, paymentChannel.channelId).then(payment => {
-      console.log('Settled to pay ' + payment + ' to ' + paymentChannel.receiver)
-    }).catch((error: any) => {
-      throw error
+  if (paymentChannel.contractAddress) {
+    BrokerTokenContract.deployed().then((deployed: BrokerToken.Contract) => {
+      deployed.canFinishSettle(account, paymentChannel.channelId).then((result: any) => {
+        if (result) {
+          if (paymentChannel.contractAddress) {
+            deployed.finishSettle(paymentChannel.contractAddress, paymentChannel.channelId, { from: paymentChannel.sender }).then(() => {
+              console.log('ololo')
+            })
+          }
+        }
+      })
+    }).catch((e: Error) => {
+      throw e
     })
   } else {
-    let until = contract.getUntil(paymentChannel.channelId)
-    console.log('Can not finish settle until ' + until)
+    BrokerContract.deployed().then((deployed: Broker.Contract) => {
+      console.log('Start settling channel ' + paymentChannel.channelId)
+    }).catch((e: Error) => {
+      throw e
+    })
   }
+  // if (contract.canFinishSettle(account, paymentChannel.channelId)) {
+  // contract.finishSettle(account, paymentChannel.channelId).then(payment => {
+  //   console.log('Settled to pay ' + payment + ' to ' + paymentChannel.receiver)
+  // }).catch((error: any) => {
+  //   throw error
+  // })
+  // } else {
+  //   let until = contract.getUntil(paymentChannel.channelId)
+  //   console.log('Can not finish settle until ' + until)
+  // }
 }
 
 function close (channelId: string, options: CommandPrompt): void {
@@ -95,30 +115,36 @@ function close (channelId: string, options: CommandPrompt): void {
   let startClose = () => {
     s.channels.firstById(channelId).then(paymentChannel => {
       if (paymentChannel) {
-        contract.getState(channelId).then(state => {
-          switch (state) {
-            case 0: // open
-              console.log('Channel ' + channelId + ' is open')
-              if (settings.account === paymentChannel.sender) {
-                startSettle(settings.account, contract, paymentChannel)
-              } else if (settings.account === paymentChannel.receiver) {
-                claim(s, contract, paymentChannel)
-              }
-              break
-            case 1: // settling
-              console.log('Channel ' + channelId + ' is settling')
-              if (settings.account === paymentChannel.sender) {
-                finishSettle(settings.account, contract, paymentChannel)
-              } else if (settings.account === paymentChannel.receiver) {
-                claim(s, contract, paymentChannel)
-              }
-              break
-            case 2: // settled, nothing to do
-              console.log('Channel ' + channelId + ' is settled')
-              break
-            default:
-              throw new Error('Unsupported channel state: ' + state)
-          }
+        BrokerContract.deployed().then((deployed: Broker.Contract) => {
+          console.log('Start settling channel ' + paymentChannel.channelId)
+          deployed.getState(channelId).then((state: number) => {
+            state = Number(state)
+            state = 1
+            console.log(state)
+            switch (state) {
+              case 0: // open
+                console.log('Channel ' + channelId + ' is open')
+                if (settings.account === paymentChannel.sender) {
+                  startSettle(settings.account, contract, paymentChannel)
+                } else if (settings.account === paymentChannel.receiver) {
+                  // claim(s, contract, paymentChannel)
+                }
+                break
+              case 1: // settling
+                console.log('Channel ' + channelId + ' is settling')
+                if (settings.account === paymentChannel.sender) {
+                  finishSettle(settings.account, contract, paymentChannel)
+                } else if (settings.account === paymentChannel.receiver) {
+                  // claim(s, contract, paymentChannel)
+                }
+                break
+              case 2: // settled, nothing to do
+                console.log('Channel ' + channelId + ' is settled')
+                break
+              default:
+                throw new Error('Unsupported channel state: ' + state)
+            }
+          })
         })
       } else {
         // Do Nothing
@@ -127,7 +153,7 @@ function close (channelId: string, options: CommandPrompt): void {
       throw error
     })
   }
-  if (settings.engine === 'mongo'){
+  if (settings.engine === 'mongo') {
     mongo.connectToServer(() => {
       startClose()
     })

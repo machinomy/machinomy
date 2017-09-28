@@ -14,7 +14,7 @@ function channels (command: CommandPrompt): void {
   let showChannels = () => {
     machinomy.storage.channels(web3, engine, namespace).all().then(found => {
       _.each(found, paymentChannel => {
-        machinomy.contract(web3).getState(paymentChannel.channelId).then(state => {
+        machinomy.contract(web3).getState(paymentChannel).then(state => {
           if (state < 2) {
             paymentChannel.state = state
             console.log(paymentChannel)

@@ -40,7 +40,7 @@ export default class Sender {
   transport: Transport
   storage: Storage
 
-  constructor (web3: Web3, account: string, contract: ChannelContract, transport: Transport, storage: Storage) {
+  constructor(web3: Web3, account: string, contract: ChannelContract, transport: Transport, storage: Storage) {
     this.web3 = web3
     this.account = account
     this.contract = contract
@@ -51,7 +51,7 @@ export default class Sender {
   /**
    * Make request to +uri+ building a new payment channel. Returns HTTP response.
    */
-  freshChannel (uri: string, paymentRequired: PaymentRequired, channelValue: number, opts: FreshChannelOpts = {}): Promise<PaymentPair> {
+  freshChannel(uri: string, paymentRequired: PaymentRequired, channelValue: number, opts: FreshChannelOpts = {}): Promise<any> {
     if (_.isFunction(opts.onWillOpenChannel)) {
       opts.onWillOpenChannel()
     }
@@ -72,18 +72,13 @@ export default class Sender {
    * @param {{uri: string, headers: object, onWillPreflight: function, onDidPreflight: function, onWillOpenChannel: function, onDidOpenChannel: function, onWillSendPayment: function, onDidSendPayment: function, onWillLoad: function, onDidLoad: function}} opts
    * @return {Promise<[Payment, Object]>}
    */
-  existingChannel (uri: string, paymentRequired: PaymentRequired, paymentChannel: PaymentChannel, opts: RequestTokenOpts = {}): Promise<PaymentPair> {
+  existingChannel(uri: string, paymentRequired: PaymentRequired, paymentChannel: PaymentChannel, opts: RequestTokenOpts = {}): Promise<any> {
     return Payment.fromPaymentChannel(this.web3, paymentChannel, paymentRequired.price).then(payment => {
       let nextPaymentChannel = channel.PaymentChannel.fromPayment(payment)
       return this.storage.channels.saveOrUpdate(nextPaymentChannel).then(() => {
         return this.transport.requestToken(paymentRequired.gateway, payment, opts)
       }).then(token => {
-        return this.transport.getWithToken(uri, token).then(response => {
-          return {
-            payment: payment,
-            response: response
-          }
-        })
+        return {payment, token}
       })
     })
   }
@@ -91,8 +86,8 @@ export default class Sender {
   /**
    * Determine if channel can be used.
    */
-  canUseChannel (paymentChannel: PaymentChannel, paymentRequired: PaymentRequired): Promise<boolean> {
-    return this.contract.getState(paymentChannel.channelId).then(state => {
+  canUseChannel(paymentChannel: PaymentChannel, paymentRequired: PaymentRequired): Promise<boolean> {
+    return this.contract.getState(paymentChannel).then(state => {
       let isOpen = state === 0 // FIXME Harmonize channel states
       // log.debug(`canUseChannel: isOpen: ${isOpen}`)
       let funded = paymentChannel.value >= (paymentChannel.spent + paymentRequired.price)
@@ -101,7 +96,7 @@ export default class Sender {
     })
   }
 
-  extractPaymentRequired (response: RequestResponse): Promise<PaymentRequired> {
+  extractPaymentRequired(response: RequestResponse): Promise<PaymentRequired> {
     let version = response.headers['paywall-version']
     if (version === VERSION) {
       let paymentRequired = transport.PaymentRequired.parse(response.headers)
@@ -111,8 +106,8 @@ export default class Sender {
     }
   }
 
-  findOpenChannel (paymentRequired: PaymentRequired): Promise<PaymentChannel | undefined> {
-    return this.storage.channels.allByQuery({sender: this.account, receiver: paymentRequired.receiver}).then(paymentChannels => {
+  findOpenChannel(paymentRequired: PaymentRequired): Promise<PaymentChannel | undefined> {
+    return this.storage.channels.allByQuery({ sender: this.account, receiver: paymentRequired.receiver }).then(paymentChannels => {
       return Promise.filter(paymentChannels, paymentChannel => {
         return this.canUseChannel(paymentChannel, paymentRequired)
       }).then(openChannels => {
@@ -127,7 +122,7 @@ export default class Sender {
   /**
    * Select handler based on version returned by server.
    */
-  handlePaymentRequired (uri: string, preFlightResponse: RequestResponse, opts: FreshChannelOpts = {}): Promise<PaymentPair> {
+  handlePaymentRequired(uri: string, preFlightResponse: RequestResponse, opts: FreshChannelOpts = {}): Promise<any> {
     log.info('Handling 402 Payment Required response')
     return this.extractPaymentRequired(preFlightResponse).then(paymentRequired => {
       return this.findOpenChannel(paymentRequired).then(paymentChannel => {
@@ -135,6 +130,7 @@ export default class Sender {
           return this.existingChannel(uri, paymentRequired, paymentChannel)
         } else {
           let value = paymentRequired.price * 10 // FIXME Total value of the channel
+          console.log(228)
           return this.freshChannel(uri, paymentRequired, value, opts) // Build new channel
         }
       })
@@ -144,7 +140,7 @@ export default class Sender {
   /**
    * Get the payment required to access the resource.
    */
-  pry (uri: string): Promise<PaymentRequired> {
+  pry(uri: string): Promise<PaymentRequired> {
     return this.transport.get(uri).then(response => {
       switch (response.statusCode) {
         case transport.STATUS_CODES.PAYMENT_REQUIRED:
@@ -166,7 +162,7 @@ export default class Sender {
    * @param {{uri: string, headers: null|object, onWillPreflight: null|function, onDidPreflight: null|function, onWillOpenChannel: null|function, onDidOpenChannel: null|function, onWillSendPayment: null|function, onDidSendPayment: null|function, onWillLoad: null|function, onDidLoad: null|function}} opts
    * @return {Promise<[Payment, Object]>}
    */
-  buy (opts: BuyOpts): Promise<PaymentPair> {
+  buy(opts: BuyOpts): Promise<PaymentPair> {
     let uri = opts.uri
     let headers = opts.headers
     if (_.isFunction(opts.onWillPreflight)) {
@@ -178,9 +174,36 @@ export default class Sender {
       }
       switch (response.statusCode) {
         case transport.STATUS_CODES.PAYMENT_REQUIRED:
-          return this.handlePaymentRequired(uri, response, opts)
+          return this.handlePaymentRequired(uri, response, opts).then((res: any) => {
+            let payment = res.payment
+            let token = res.token
+            return this.transport.getWithToken(uri, token).then(response => {
+              return {
+                payment: payment,
+                response: response
+              }
+            })
+          })
         default:
           return Promise.reject(new Error(`Can not handle ${response.statusCode} response`))
+      }
+    })
+  }
+
+  buyMeta (options: any): any {
+    let uri = 'http://localhost:3000/paid/erc20'
+    let paymentRequired = new PaymentRequired(
+      options.receiver,
+      options.price,
+      options.gateway,
+      options.contractAddress)
+
+    return this.findOpenChannel(paymentRequired).then(paymentChannel => {
+      if (paymentChannel) {
+        return this.existingChannel(uri, paymentRequired, paymentChannel)
+      } else {
+        let value = paymentRequired.price * 10 // FIXME Total value of the channel
+        return this.freshChannel(uri, paymentRequired, value) // Build new channel
       }
     })
   }

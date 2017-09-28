@@ -19,7 +19,6 @@ export const STATUS_CODES = {
  * @return {string}
  */
 const extractPaywallToken = (response: RequestResponse): string => {
-  console.log(response.headers)
   let token = response.headers['paywall-token'] as string
   if (token) {
     log.info('Got token from the server')
@@ -78,6 +77,9 @@ export class Transport {
      * @return {Promise<string>}
      */
   requestToken (uri: string, payment: Payment, opts: RequestTokenOpts = {}): Promise<string> {
+    if (!payment.contractAddress) {
+      delete payment.contractAddress
+    }
     let options = {
       method: 'POST',
       uri: uri,

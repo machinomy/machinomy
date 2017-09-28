@@ -48,6 +48,7 @@
     "emitDecoratorMetadata": true             /* Enables experimental support for emitting type metadata for decorators. */
   },
   "files": [
+    "machinomy.ts",
     "index.ts",
     "bin/machinomy.ts",
     "commands/index.ts",

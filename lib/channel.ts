@@ -12,7 +12,11 @@ import { PaymentRequired } from './transport'
 import { Broker, BrokerToken } from 'machinomy-contracts/types/index'
 import { BrokerContract, BrokerTokenContract, buildERC20Contract } from 'machinomy-contracts'
 
+import { ChannelContractDefault } from './channel_contract_default'
+import { ChannelContractToken } from './channel_contract_token'
+
 const log = Log.create('channel')
+Log.setProductionMode()
 
 export interface Signature {
   v: number
@@ -74,7 +78,7 @@ export class PaymentChannel {
    * @param spent       Value sent by {sender} to {receiver}.
    * @param state       0 - 'open', 1 - 'settling', 2 - 'settled'
    */
-  constructor (sender: string, receiver: string, channelId: string, value: number, spent: number, state: number = 0, contractAddress: string | undefined) { // FIXME remove contract parameter
+  constructor(sender: string, receiver: string, channelId: string, value: number, spent: number, state: number = 0, contractAddress: string | undefined) { // FIXME remove contract parameter
     this.sender = sender
     this.receiver = receiver
     this.channelId = channelId
@@ -84,23 +88,23 @@ export class PaymentChannel {
     this.contractAddress = contractAddress
   }
 
-  static fromPayment (payment: Payment): PaymentChannel {
+  static fromPayment(payment: Payment): PaymentChannel {
     return new PaymentChannel(payment.sender, payment.receiver, payment.channelId, payment.channelValue, payment.value, undefined, payment.contractAddress)
   }
 
-  static fromDocument (document: PaymentChannelJSON): PaymentChannel {
+  static fromDocument(document: PaymentChannelJSON): PaymentChannel {
     return new PaymentChannel(
-        document.sender,
-        document.receiver,
-        document.channelId,
-        document.value,
-        document.spent,
-        document.state,
-        document.contractAddress
+      document.sender,
+      document.receiver,
+      document.channelId,
+      document.value,
+      document.spent,
+      document.state,
+      document.contractAddress
     )
   }
 
-  toJSON (): PaymentChannelJSON {
+  toJSON(): PaymentChannelJSON {
     return {
       state: this.state,
       spent: this.spent,
@@ -125,46 +129,31 @@ export class ChannelContract {
    * @param address   Address of the deployed contract.
    * @param abi       Interface of the deployed contract.
    */
-  constructor (web3: Web3, address: string, abi: Web3.AbiDefinition[]) {
-    this.contract = web3.eth.contract(abi).at(address) as Broker.Contract
-    this.web3 = web3
+  constructor() {
+    // this.contract = web3.eth.contract(abi).at(address) as Broker.Contract
+    // this.web3 = web3
   }
 
-  createChannel (paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: any): any {
+  createChannel(paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: any): any {
     return new Promise<PaymentChannel>((resolve, reject) => {
+      let channelContract
       if (paymentRequired.contractAddress) {
-        const value = options['value']
-        delete options['value']
-        BrokerTokenContract.deployed().then((deployed: BrokerToken.Contract) => {
-          let instanceERC20 = buildERC20Contract(paymentRequired.contractAddress)
-          instanceERC20.deployed().then((deployedERC20: any) => {
-            deployedERC20.approve(deployed.address, value, options).then((res: any) => {
-              deployed.createChannel(paymentRequired.contractAddress, paymentRequired.receiver, duration, settlementPeriod, value, options).then((res: any) => {
-                const channelId = res.logs[0].args.channelId
-                resolve(channelId)
-              })
-            })
-          })
-        }).catch((e: Error) => {
-          reject(e)
-        })
+        channelContract = new ChannelContractToken()
       } else {
-        BrokerContract.deployed().then((deployed: Broker.Contract) => {
-          deployed.createChannel(paymentRequired.receiver, duration, settlementPeriod, options).then((res: any) => {
-            const channelId = res.logs[0].args.channelId
-            resolve(channelId)
-          })
-        }).catch((e: Error) => {
-          reject(e)
-        })
+        channelContract = new ChannelContractDefault()
       }
+      channelContract.createChannel(paymentRequired, duration, settlementPeriod, options).then((channelId: any) => {
+        resolve(channelId)
+      }).catch((e: Error) => {
+        reject(e)
+      })
     })
   }
 
   /**
    * Initiate payment channel between `sender` and `receiver`, with initial amount set to `value`.
    */
-  buildPaymentChannel (sender: string, paymentRequired: PaymentRequired, value: number): Promise<PaymentChannel> {
+  buildPaymentChannel(sender: string, paymentRequired: PaymentRequired, value: number): Promise<PaymentChannel> {
     const receiver = paymentRequired.receiver
     return new Promise<PaymentChannel>((resolve, reject) => {
       log.info('Building payment channel from ' + sender + ' to ' + receiver + ', initial amount set to ' + value)
@@ -184,64 +173,53 @@ export class ChannelContract {
     })
   }
 
-  claim (receiver: string, channelId: string, value: number, v: number, r: string, s: string): Promise<BigNumber.BigNumber> {
-    return new Promise<BigNumber.BigNumber>((resolve, reject) => {
-      const h = ethHash(channelId.toString() + value.toString())
-      this.contract.claim(channelId, value, h, v, r, s, {from: receiver}, () => {
-        const didSettle = this.contract.DidSettle({channelId})
-        didSettle.watch<Broker.DidSettle>((error, result) => {
-          didSettle.stopWatching(() => {
-            if (error) {
-              reject(error)
-            } else {
-              log.info('Claimed ' + result.args.payment + ' from ' + result.args.channelId)
-              resolve(result.args.payment)
-            }
-          })
-        })
-      })
-    })
-  }
+  // claim (receiver: string, channelId: string, value: number, v: number, r: string, s: string): Promise<BigNumber.BigNumber> {
+  //   return new Promise<BigNumber.BigNumber>((resolve, reject) => {
+  //     const h = ethHash(channelId.toString() + value.toString())
+  //     this.contract.claim(channelId, value, h, v, r, s, {from: receiver}, () => {
+  //       const didSettle = this.contract.DidSettle({channelId})
+  //       didSettle.watch<Broker.DidSettle>((error, result) => {
+  //         didSettle.stopWatching(() => {
+  //           if (error) {
+  //             reject(error)
+  //           } else {
+  //             log.info('Claimed ' + result.args.payment + ' from ' + result.args.channelId)
+  //             resolve(result.args.payment)
+  //           }
+  //         })
+  //       })
+  //     })
+  //   })
+  // }
 
-  deposit (sender: string, channelId: string, value: number): Promise<BigNumber.BigNumber> {
-    return new Promise<BigNumber.BigNumber>((resolve, reject) => {
-      let options = {
-        from: sender,
-        value: value,
-        gas: CREATE_CHANNEL_GAS
-      }
-      this.contract.deposit(channelId, options, () => {
-        const didDeposit = this.contract.DidDeposit({channelId})
-        didDeposit.watch<Broker.DidDeposit>((error, result) => {
-          didDeposit.stopWatching(() => {
-            if (error) {
-              reject(error)
-            } else {
-              log.info(`Deposited ${result.args.value} to ${result.args.channelId}`)
-              resolve(result.args.value)
-            }
-          })
-        })
-      })
-    })
-  }
+  // deposit (sender: string, channelId: string, value: number): Promise<BigNumber.BigNumber> {
+  //   return new Promise<BigNumber.BigNumber>((resolve, reject) => {
+  //     let options = {
+  //       from: sender,
+  //       value: value,
+  //       gas: CREATE_CHANNEL_GAS
+  //     }
+  //     this.contract.deposit(channelId, options, () => {
+  //       const didDeposit = this.contract.DidDeposit({channelId})
+  //       didDeposit.watch<Broker.DidDeposit>((error, result) => {
+  //         didDeposit.stopWatching(() => {
+  //           if (error) {
+  //             reject(error)
+  //           } else {
+  //             log.info(`Deposited ${result.args.value} to ${result.args.channelId}`)
+  //             resolve(result.args.value)
+  //           }
+  //         })
+  //       })
+  //     })
+  //   })
+  // }
 
   /**
    * @param {String} account
    * @param {String} channelId
    * @returns Boolean
    */
-  canStartSettle (account: string, channelId: string): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
-      this.contract.canStartSettle(account, channelId, (error, result) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(result)
-        }
-      })
-    })
-  }
 
   /**
    * Overcome Ethereum Signed Message passing to EVM ecrecover.
@@ -249,130 +227,61 @@ export class ChannelContract {
    * @param payment
    * @return {string}
    */
-  h (channelId: string, payment: BigNumber.BigNumber) {
-    const message = channelId.toString() + payment.toString()
-    const buffer = Buffer.from('\x19Ethereum Signed Message:\n' + message.length + message)
-    return '0x' + util.sha3(buffer).toString('hex')
-  }
+  // h(channelId: string, payment: BigNumber.BigNumber) {
+  //   const message = channelId.toString() + payment.toString()
+  //   const buffer = Buffer.from('\x19Ethereum Signed Message:\n' + message.length + message)
+  //   return '0x' + util.sha3(buffer).toString('hex')
+  // }
 
-  canClaim (channelId: string, payment: BigNumber.BigNumber, v: number, r: string, s: string): Promise<boolean> {
-    const h = this.h(channelId, payment)
-    return new Promise((resolve, reject) => {
-      this.contract.canClaim(channelId, h, v, r, s, (error, result) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(result)
-        }
-      })
-    })
-  }
 
-  canFinishSettle (sender: string, channelId: string): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      this.contract.canFinishSettle(sender, channelId, (error, result) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(result)
-        }
-      })
-    })
-  }
-
-  canDeposit (sender: string, channelId: string): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      this.contract.canDeposit(sender, channelId, (error, result) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(result)
-        }
-      })
-    })
-  }
-
-  getState (channelId: string): Promise<number> {
+  getState(paymentChannel: PaymentChannel): Promise<number> {
     if (process.env.NODE_ENV === 'test') { // FIXME
       return Promise.resolve(0)
     } else {
-      return new Promise((resolve, reject) => {
-        this.contract.getState(channelId, (error, result) => {
-          if (error) {
-            reject(error)
-          } else {
-            resolve(Number(result))
-          }
-        })
-      })
+      let channelContract
+      if (paymentChannel.contractAddress) {
+        channelContract = new ChannelContractToken()
+      } else {
+        channelContract = new ChannelContractDefault()
+      }
+      return channelContract.getState(paymentChannel)
     }
   }
 
-  getUntil (channelId: string): Promise<number> {
-    return new Promise((resolve, reject) => {
-      this.contract.getUntil(channelId, (error, result) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(result)
-        }
-      })
-    })
+  startSettle(account: string, paymentChannel: PaymentChannel, payment: BigNumber.BigNumber): Promise<void> {
+    let channelContract
+    if (paymentChannel.contractAddress) {
+      channelContract = new ChannelContractToken()
+    } else {
+      channelContract = new ChannelContractDefault()
+    }
+    return channelContract.startSettle(account, paymentChannel, payment)
   }
 
-  startSettle (account: string, channelId: string, payment: BigNumber.BigNumber): Promise<void> {
-    return new Promise((resolve, reject) => {
-      let paymentHex = '0x' + payment.toString(16)
-      this.contract.startSettle(channelId, paymentHex, {from: account}, () => {
-        log.info('Triggered Start Settle on the contract for channel ' + channelId + ' from ' + account)
-        const didStartSettleEvent = this.contract.DidStartSettle({channelId, payment})
-        didStartSettleEvent.watch((error) => {
-          log.info('Received DidStartSettle event for channel ' + channelId)
-          didStartSettleEvent.stopWatching(() => {
-            if (error) {
-              reject(error)
-            } else {
-              resolve()
-            }
-          })
-        })
-      })
-    })
-  }
-
-  finishSettle (account: string, channelId: string) {
-    return new Promise((resolve, reject) => {
-      this.contract.finishSettle(channelId, {from: account, gas: 400000}, () => {
-        log.info('Triggered Finish Settle on the contract')
-        const didSettle = this.contract.DidSettle({channelId})
-        didSettle.watch<Broker.DidSettle>((error, result) => {
-          didSettle.stopWatching(() => {
-            log.info('Received DidSettle event for channel ' + channelId)
-            if (error) {
-              reject(error)
-            } else {
-              resolve(result.args.payment)
-            }
-          })
-        })
-      })
-    })
+  finishSettle(account: string, paymentChannel: PaymentChannel) {
+    let channelContract
+    if (paymentChannel.contractAddress) {
+      channelContract = new ChannelContractToken()
+    } else {
+      channelContract = new ChannelContractDefault()
+    }
+    return channelContract.finishSettle(account, paymentChannel)
   }
 }
 
 export class ChannelId {
   id: Buffer
 
-  constructor (buffer: Buffer) {
+  constructor(buffer: Buffer) {
     this.id = buffer
   }
 
-  toString () {
+  toString() {
     return '0x' + this.id.toString('hex')
   }
 }
 
-export function id (something: string|Buffer|ChannelId): ChannelId {
+export function id(something: string | Buffer | ChannelId): ChannelId {
   if (typeof something === 'string') {
     const noPrefix = something.replace('0x', '')
     const buffer = Buffer.from(noPrefix, 'HEX')
@@ -386,7 +295,7 @@ export function id (something: string|Buffer|ChannelId): ChannelId {
   }
 }
 
-export function contract (web3: Web3, _address?: string): ChannelContract {
+export function contract(web3: Web3, _address?: string): ChannelContract {
   const address = _address || configuration.contractAddress()
-  return new ChannelContract(web3, address, configuration.CONTRACT_INTERFACE)
+  return new ChannelContract()
 }
