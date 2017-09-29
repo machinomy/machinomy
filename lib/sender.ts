@@ -130,7 +130,6 @@ export default class Sender {
           return this.existingChannel(uri, paymentRequired, paymentChannel)
         } else {
           let value = paymentRequired.price * 10 // FIXME Total value of the channel
-          console.log(228)
           return this.freshChannel(uri, paymentRequired, value, opts) // Build new channel
         }
       })

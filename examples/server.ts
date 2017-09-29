@@ -4,7 +4,7 @@ import cors = require('cors')
 import express = require('express')
 import bodyParser = require('body-parser')
 import Web3 = require('web3')
-import machinomy from '../index'
+import machinomy from '../lib/buy'
 import { Paywall } from '../lib/middleware'
 
 const settings = machinomy.configuration.receiver()

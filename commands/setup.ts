@@ -1,4 +1,4 @@
-import machinomy from '../index'
+import machinomy from '../lib/buy'
 import * as fs from 'fs'
 import prompt = require('prompt')
 import CommandPrompt from './CommandPrompt'

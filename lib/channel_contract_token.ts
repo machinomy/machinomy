@@ -9,8 +9,7 @@ import Payment from './Payment'
 import { sender } from './configuration'
 import { PaymentRequired } from './transport'
 import { PaymentChannel, PaymentChannelJSON } from './payment_channel'
-import { Broker, BrokerToken } from 'machinomy-contracts/types/index'
-import { BrokerContract, BrokerTokenContract, buildERC20Contract } from 'machinomy-contracts'
+import { buildBrokerTokenContract, buildERC20Contract } from 'machinomy-contracts'
 
 export { PaymentChannel, PaymentChannelJSON }
 
@@ -40,30 +39,30 @@ const CREATE_CHANNEL_GAS = 300000
 
 export class ChannelContractToken {
   web3: Web3
-  contract: Broker.Contract
+  // contract: Broker.Contract
 
   /**
    * @param web3      Instance of Web3.
    * @param address   Address of the deployed contract.
    * @param abi       Interface of the deployed contract.
    */
-  constructor() {
+  constructor (web3: Web3) {
     // this.contract = web3.eth.contract(abi).at(address) as Broker.Contract
-    // this.web3 = web3
+    this.web3 = web3
   }
 
-  createChannel(paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: any): any {
+  createChannel (paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: any): any {
     return new Promise<PaymentChannel>((resolve, reject) => {
       const value = options['value']
       delete options['value']
-      console.log(options)
-      BrokerTokenContract.deployed().then((deployed: BrokerToken.Contract) => {
-        let instanceERC20 = buildERC20Contract(paymentRequired.contractAddress)
-        instanceERC20.deployed().then((deployedERC20: any) => {
-          deployedERC20.approve(deployed.address, value, options).then((res: any) => {
-            deployed.createChannel(paymentRequired.contractAddress, paymentRequired.receiver, duration, settlementPeriod, value, options).then((res: any) => {
-              const channelId = res.logs[0].args.channelId
-              resolve(channelId)
+      buildBrokerTokenContract(this.web3).deployed().then((deployed) => {
+        buildERC20Contract(paymentRequired.contractAddress, this.web3).then((instanceERC20) => {
+          instanceERC20.deployed().then((deployedERC20: any) => {
+            deployedERC20.approve(deployed.address, value, options).then((res: any) => {
+              deployed.createChannel(paymentRequired.contractAddress, paymentRequired.receiver, duration, settlementPeriod, value, options).then((res: any) => {
+                const channelId = res.logs[0].args.channelId
+                resolve(channelId)
+              })
             })
           })
         })
@@ -73,48 +72,49 @@ export class ChannelContractToken {
     })
   }
 
-  // claim (receiver: string, channelId: string, value: number, v: number, r: string, s: string): Promise<BigNumber.BigNumber> {
-  //   return new Promise<BigNumber.BigNumber>((resolve, reject) => {
-  //     const h = ethHash(channelId.toString() + value.toString())
-  //     this.contract.claim(channelId, value, h, v, r, s, {from: receiver}, () => {
-  //       const didSettle = this.contract.DidSettle({channelId})
-  //       didSettle.watch<Broker.DidSettle>((error, result) => {
-  //         didSettle.stopWatching(() => {
-  //           if (error) {
-  //             reject(error)
-  //           } else {
-  //             log.info('Claimed ' + result.args.payment + ' from ' + result.args.channelId)
-  //             resolve(result.args.payment)
-  //           }
-  //         })
-  //       })
-  //     })
-  //   })
-  // }
+  claim (receiver: string, paymentChannel: PaymentChannel, value: number, v: number, r: string, s: string): Promise<BigNumber.BigNumber> {
+    let channelId = paymentChannel.channelId
+    return new Promise<BigNumber.BigNumber>((resolve, reject) => {
+      return buildBrokerTokenContract(this.web3).deployed().then((deployed) => {
+        const h = ethHash(channelId.toString() + value.toString())
+        deployed.canClaim(channelId, h, Number(v), r, s).then((canClaim: any) => {
+          if (canClaim && paymentChannel.contractAddress) {
+            deployed.claim(paymentChannel.contractAddress, channelId, value, h, v, r, s, { from: receiver, gas: CREATE_CHANNEL_GAS }).then((res: any) => {
+              console.log(res)
+              resolve()
+            })
+          }
+        })
+      })
+    })
+  }
 
-  // deposit (sender: string, channelId: string, value: number): Promise<BigNumber.BigNumber> {
-  //   return new Promise<BigNumber.BigNumber>((resolve, reject) => {
-  //     let options = {
-  //       from: sender,
-  //       value: value,
-  //       gas: CREATE_CHANNEL_GAS
-  //     }
-  //     this.contract.deposit(channelId, options, () => {
-  //       const didDeposit = this.contract.DidDeposit({channelId})
-  //       didDeposit.watch<Broker.DidDeposit>((error, result) => {
-  //         didDeposit.stopWatching(() => {
-  //           if (error) {
-  //             reject(error)
-  //           } else {
-  //             log.info(`Deposited ${result.args.value} to ${result.args.channelId}`)
-  //             resolve(result.args.value)
-  //           }
-  //         })
-  //       })
-  //     })
-  //   })
-  // }
-
+  deposit (sender: string, paymentChannel: PaymentChannel, value: number): Promise<BigNumber.BigNumber> {
+    return new Promise<BigNumber.BigNumber>((resolve, reject) => {
+      let options = {
+        from: sender,
+        gas: CREATE_CHANNEL_GAS
+      }
+      const channelId = paymentChannel.channelId
+      buildBrokerTokenContract(this.web3).deployed().then((deployed) => {
+        deployed.canDeposit(sender, channelId).then((canDeposit: any) => {
+          if (canDeposit && paymentChannel.contractAddress) {
+            buildERC20Contract(paymentChannel.contractAddress, this.web3).then((instanceERC20) => {
+              instanceERC20.deployed().then((deployedERC20: any) => {
+                deployedERC20.approve(deployed.address, value, options).then((res: any) => {
+                  if (paymentChannel.contractAddress) {
+                    deployed.deposit(paymentChannel.contractAddress, channelId, value, options).then((result: any) => {
+                      resolve(result)
+                    })
+                  }
+                })
+              })
+            })
+          }
+        })
+      })
+    })
+  }
 
   /**
    * Overcome Ethereum Signed Message passing to EVM ecrecover.
@@ -122,18 +122,18 @@ export class ChannelContractToken {
    * @param payment
    * @return {string}
    */
-  h(channelId: string, payment: BigNumber.BigNumber) {
+  h (channelId: string, payment: BigNumber.BigNumber) {
     const message = channelId.toString() + payment.toString()
     const buffer = Buffer.from('\x19Ethereum Signed Message:\n' + message.length + message)
     return '0x' + util.sha3(buffer).toString('hex')
   }
 
-  getState(paymentChannel: PaymentChannel): Promise<number> {
+  getState (paymentChannel: PaymentChannel): Promise<number> {
     if (process.env.NODE_ENV === 'test') { // FIXME
       return Promise.resolve(0)
     } else {
       return new Promise((resolve, reject) => {
-        BrokerTokenContract.deployed().then((deployed: Broker.Contract) => {
+        buildBrokerTokenContract(this.web3).deployed().then((deployed) => {
           deployed.getState(paymentChannel.channelId).then((result: any) => {
             resolve(Number(result))
           })
@@ -144,9 +144,9 @@ export class ChannelContractToken {
     }
   }
 
-  startSettle(account: string, paymentChannel: PaymentChannel, payment: BigNumber.BigNumber): Promise<void> {
+  startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber.BigNumber): Promise<void> {
     return new Promise((resolve, reject) => {
-      BrokerTokenContract.deployed().then((deployed: BrokerToken.Contract) => {
+      buildBrokerTokenContract(this.web3).deployed().then((deployed) => {
         deployed.canStartSettle(account, paymentChannel.channelId).then((result: any) => {
           if (result) {
             let paymentHex = '0x' + paymentChannel.spent.toString(16)
@@ -162,9 +162,9 @@ export class ChannelContractToken {
     })
   }
 
-  finishSettle(account: string, paymentChannel: PaymentChannel) {
+  finishSettle (account: string, paymentChannel: PaymentChannel) {
     return new Promise((resolve, reject) => {
-      BrokerTokenContract.deployed().then((deployed: BrokerToken.Contract) => {
+      buildBrokerTokenContract(this.web3).deployed().then((deployed) => {
         deployed.canFinishSettle(account, paymentChannel.channelId).then((result: any) => {
           if (result && paymentChannel.contractAddress) {
             deployed.finishSettle(paymentChannel.contractAddress, paymentChannel.channelId, { from: paymentChannel.sender }).then(() => {

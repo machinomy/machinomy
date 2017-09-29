@@ -9,9 +9,6 @@ import Payment from './Payment'
 import { sender } from './configuration'
 import { PaymentRequired } from './transport'
 
-import { Broker, BrokerToken } from 'machinomy-contracts/types/index'
-import { BrokerContract, BrokerTokenContract, buildERC20Contract } from 'machinomy-contracts'
-
 import { ChannelContractDefault } from './channel_contract_default'
 import { ChannelContractToken } from './channel_contract_token'
 
@@ -78,7 +75,7 @@ export class PaymentChannel {
    * @param spent       Value sent by {sender} to {receiver}.
    * @param state       0 - 'open', 1 - 'settling', 2 - 'settled'
    */
-  constructor(sender: string, receiver: string, channelId: string, value: number, spent: number, state: number = 0, contractAddress: string | undefined) { // FIXME remove contract parameter
+  constructor (sender: string, receiver: string, channelId: string, value: number, spent: number, state: number = 0, contractAddress: string | undefined) { // FIXME remove contract parameter
     this.sender = sender
     this.receiver = receiver
     this.channelId = channelId
@@ -88,11 +85,11 @@ export class PaymentChannel {
     this.contractAddress = contractAddress
   }
 
-  static fromPayment(payment: Payment): PaymentChannel {
+  static fromPayment (payment: Payment): PaymentChannel {
     return new PaymentChannel(payment.sender, payment.receiver, payment.channelId, payment.channelValue, payment.value, undefined, payment.contractAddress)
   }
 
-  static fromDocument(document: PaymentChannelJSON): PaymentChannel {
+  static fromDocument (document: PaymentChannelJSON): PaymentChannel {
     return new PaymentChannel(
       document.sender,
       document.receiver,
@@ -104,7 +101,7 @@ export class PaymentChannel {
     )
   }
 
-  toJSON(): PaymentChannelJSON {
+  toJSON (): PaymentChannelJSON {
     return {
       state: this.state,
       spent: this.spent,
@@ -122,25 +119,25 @@ export class PaymentChannel {
  */
 export class ChannelContract {
   web3: Web3
-  contract: Broker.Contract
+  // contract: Broker.Contract
 
   /**
    * @param web3      Instance of Web3.
    * @param address   Address of the deployed contract.
    * @param abi       Interface of the deployed contract.
    */
-  constructor() {
+  constructor (web3: Web3) {
     // this.contract = web3.eth.contract(abi).at(address) as Broker.Contract
-    // this.web3 = web3
+    this.web3 = web3
   }
 
-  createChannel(paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: any): any {
+  createChannel (paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: any): any {
     return new Promise<PaymentChannel>((resolve, reject) => {
       let channelContract
       if (paymentRequired.contractAddress) {
-        channelContract = new ChannelContractToken()
+        channelContract = new ChannelContractToken(this.web3)
       } else {
-        channelContract = new ChannelContractDefault()
+        channelContract = new ChannelContractDefault(this.web3)
       }
       channelContract.createChannel(paymentRequired, duration, settlementPeriod, options).then((channelId: any) => {
         resolve(channelId)
@@ -153,7 +150,7 @@ export class ChannelContract {
   /**
    * Initiate payment channel between `sender` and `receiver`, with initial amount set to `value`.
    */
-  buildPaymentChannel(sender: string, paymentRequired: PaymentRequired, value: number): Promise<PaymentChannel> {
+  buildPaymentChannel (sender: string, paymentRequired: PaymentRequired, value: number): Promise<PaymentChannel> {
     const receiver = paymentRequired.receiver
     return new Promise<PaymentChannel>((resolve, reject) => {
       log.info('Building payment channel from ' + sender + ' to ' + receiver + ', initial amount set to ' + value)
@@ -173,66 +170,25 @@ export class ChannelContract {
     })
   }
 
-  // claim (receiver: string, channelId: string, value: number, v: number, r: string, s: string): Promise<BigNumber.BigNumber> {
-  //   return new Promise<BigNumber.BigNumber>((resolve, reject) => {
-  //     const h = ethHash(channelId.toString() + value.toString())
-  //     this.contract.claim(channelId, value, h, v, r, s, {from: receiver}, () => {
-  //       const didSettle = this.contract.DidSettle({channelId})
-  //       didSettle.watch<Broker.DidSettle>((error, result) => {
-  //         didSettle.stopWatching(() => {
-  //           if (error) {
-  //             reject(error)
-  //           } else {
-  //             log.info('Claimed ' + result.args.payment + ' from ' + result.args.channelId)
-  //             resolve(result.args.payment)
-  //           }
-  //         })
-  //       })
-  //     })
-  //   })
-  // }
+  claim (receiver: string, paymentChannel: PaymentChannel, value: number, v: number, r: string, s: string): Promise<any> {
+    let channelContract
+    if (paymentChannel.contractAddress) {
+      channelContract = new ChannelContractToken(this.web3)
+    } else {
+      channelContract = new ChannelContractDefault(this.web3)
+    }
+    return channelContract.claim(receiver, paymentChannel, value, v, r, s)
+  }
 
-  // deposit (sender: string, channelId: string, value: number): Promise<BigNumber.BigNumber> {
-  //   return new Promise<BigNumber.BigNumber>((resolve, reject) => {
-  //     let options = {
-  //       from: sender,
-  //       value: value,
-  //       gas: CREATE_CHANNEL_GAS
-  //     }
-  //     this.contract.deposit(channelId, options, () => {
-  //       const didDeposit = this.contract.DidDeposit({channelId})
-  //       didDeposit.watch<Broker.DidDeposit>((error, result) => {
-  //         didDeposit.stopWatching(() => {
-  //           if (error) {
-  //             reject(error)
-  //           } else {
-  //             log.info(`Deposited ${result.args.value} to ${result.args.channelId}`)
-  //             resolve(result.args.value)
-  //           }
-  //         })
-  //       })
-  //     })
-  //   })
-  // }
-
-  /**
-   * @param {String} account
-   * @param {String} channelId
-   * @returns Boolean
-   */
-
-  /**
-   * Overcome Ethereum Signed Message passing to EVM ecrecover.
-   * @param channelId
-   * @param payment
-   * @return {string}
-   */
-  // h(channelId: string, payment: BigNumber.BigNumber) {
-  //   const message = channelId.toString() + payment.toString()
-  //   const buffer = Buffer.from('\x19Ethereum Signed Message:\n' + message.length + message)
-  //   return '0x' + util.sha3(buffer).toString('hex')
-  // }
-
+  deposit (sender: string, paymentChannel: PaymentChannel, value: number): Promise<BigNumber.BigNumber> {
+    let channelContract
+    if (paymentChannel.contractAddress) {
+      channelContract = new ChannelContractToken(this.web3)
+    } else {
+      channelContract = new ChannelContractDefault(this.web3)
+    }
+    return channelContract.deposit(sender, paymentChannel, value)
+  }
 
   getState(paymentChannel: PaymentChannel): Promise<number> {
     if (process.env.NODE_ENV === 'test') { // FIXME
@@ -240,30 +196,30 @@ export class ChannelContract {
     } else {
       let channelContract
       if (paymentChannel.contractAddress) {
-        channelContract = new ChannelContractToken()
+        channelContract = new ChannelContractToken(this.web3)
       } else {
-        channelContract = new ChannelContractDefault()
+        channelContract = new ChannelContractDefault(this.web3)
       }
       return channelContract.getState(paymentChannel)
     }
   }
 
-  startSettle(account: string, paymentChannel: PaymentChannel, payment: BigNumber.BigNumber): Promise<void> {
+  startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber.BigNumber): Promise<void> {
     let channelContract
     if (paymentChannel.contractAddress) {
-      channelContract = new ChannelContractToken()
+      channelContract = new ChannelContractToken(this.web3)
     } else {
-      channelContract = new ChannelContractDefault()
+      channelContract = new ChannelContractDefault(this.web3)
     }
     return channelContract.startSettle(account, paymentChannel, payment)
   }
 
-  finishSettle(account: string, paymentChannel: PaymentChannel) {
+  finishSettle (account: string, paymentChannel: PaymentChannel) {
     let channelContract
     if (paymentChannel.contractAddress) {
-      channelContract = new ChannelContractToken()
+      channelContract = new ChannelContractToken(this.web3)
     } else {
-      channelContract = new ChannelContractDefault()
+      channelContract = new ChannelContractDefault(this.web3)
     }
     return channelContract.finishSettle(account, paymentChannel)
   }
@@ -281,7 +237,7 @@ export class ChannelId {
   }
 }
 
-export function id(something: string | Buffer | ChannelId): ChannelId {
+export function id (something: string | Buffer | ChannelId): ChannelId {
   if (typeof something === 'string') {
     const noPrefix = something.replace('0x', '')
     const buffer = Buffer.from(noPrefix, 'HEX')
@@ -297,5 +253,5 @@ export function id(something: string | Buffer | ChannelId): ChannelId {
 
 export function contract(web3: Web3, _address?: string): ChannelContract {
   const address = _address || configuration.contractAddress()
-  return new ChannelContract()
+  return new ChannelContract(web3)
 }
