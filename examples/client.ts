@@ -1,6 +1,6 @@
 'use strict'
 
-import machinomy from '../index'
+import machinomy from '../lib/buy'
 
 const uri = process.argv.pop() as string
 

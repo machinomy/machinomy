@@ -6,6 +6,7 @@ import { randomStorage } from './support'
 import Payment from '../lib/Payment'
 import Promise = require('bluebird')
 const engineName = process.env.ENGINE_NAME || 'nedb'
+let expect = require('expect')
 
 const randomSender = (): Promise<Sender> => {
   let web3 = support.fakeWeb3()

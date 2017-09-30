@@ -52,13 +52,16 @@
     "bin/machinomy.ts",
     "commands/index.ts",
     "examples/server.ts",
-    "examples/client.ts"
+    "examples/client.ts",
+    "examples/machinomy.ts"
   ],
   "include": [
     "node_modules/*/index.d.ts",
     "node_modules/*/index.d.ts",
     "src/globals.d.ts",
     "src/**/*.ts",
-    "types/*/index.d.ts"
+    "lib/*.ts",
+    "types/*/index.d.ts",
+    "test/*.ts"
   ]
 }

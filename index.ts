@@ -1,54 +1,110 @@
-import * as channel from './lib/channel'
-import * as middleware from './lib/middleware'
-import * as transport from './lib/transport'
-import * as sender from './lib/sender'
-import * as storage from './lib/storage'
-import * as configuration from './lib/configuration'
 import Web3 = require('web3')
-import Promise = require('bluebird')
-
-import { Log } from 'typescript-logger'
+import machinomyIndex from './index'
+import * as transport from './lib/transport'
+import * as storage from './lib/storage'
+import * as channel from './lib/channel'
 import { PaymentPair, default as Sender } from './lib/sender'
-import { Logger } from 'typescript-logger/build/logger'
-import Payment from './lib/Payment'
+import * as BigNumber from 'bignumber.js'
+import { ChannelContract, contract } from './lib/channel'
 
-export const log: Logger<any> = Log.create('machinomy')
+class Machinomy {
+  account: string
+  web3: Web3
+  engine: string
+  databaseFile: string
 
-const UNLOCK_PERIOD = 1000
-
-/**
- * Shortcut for Sender.buy.
- */
-function buy (uri: string, account: string, password: string): Promise<string> {
-  let settings = configuration.sender()
-  let web3 = new Web3()
-  web3.setProvider(configuration.currentProvider())
-  if (web3.personal) {
-    web3.personal.unlockAccount(account, password, UNLOCK_PERIOD) // FIXME
+  constructor (account: string, web3: Web3, options: any) {
+    this.account = account
+    this.web3 = web3
+    this.engine = options.engine
+    this.databaseFile = options.databaseFile
   }
 
-  let _transport = transport.build()
-  let _storage = storage.build(web3, settings.databaseFile, 'sender', false, settings.engine)
-  let contract = channel.contract(web3)
-  let client = new Sender(web3, account, contract, _transport, _storage)
-  return client.buy({ uri: uri }).then((pair: PaymentPair) => {
-    let response = pair.response
-    return response.body
-  })
+  buy (options: any): Promise<any> {
+    let _transport = transport.build()
+    let contract = channel.contract(this.web3)
+    let s = storage.build(this.web3, this.databaseFile, 'sender', false, this.engine)
+    let client = new Sender(this.web3, this.account, contract, _transport, s)
+    return client.buyMeta(options).then((res: any) => {
+      return { channelId: res.payment.channelId, token: res.token }
+    })
+  }
+
+  deposit (channelId: string, value: number) {
+    let channelContract = contract(this.web3)
+    return new Promise((resolve, reject) => {
+      let engine = storage.engine(this.databaseFile, true, this.engine)
+      let s = storage.build(this.web3, this.databaseFile, 'sender', false, this.engine)
+      s.channels.firstById(channelId).then((paymentChannel) => {
+        if (paymentChannel) {
+          channelContract.deposit(this.account, paymentChannel, value).then(() => {
+            resolve()
+          })
+        }
+      })
+    })
+  }
+
+  channels (): Promise<any> {
+    const namespace = 'sender'
+    return new Promise((resolve, reject) => {
+      let _storage = storage.build(this.web3, this.databaseFile, 'sender', false, this.engine)
+      let engine = storage.engine(this.databaseFile, true, this.engine)
+      storage.channels(this.web3, engine, namespace).all().then(found => {
+        found.forEach((paymentChannel) => {
+          channel.contract(this.web3).getState(paymentChannel).then(state => {
+            if (state < 2) {
+              paymentChannel.state = state
+              resolve(paymentChannel)
+            }
+          })
+        })
+      })
+    })
+  }
+
+  close (channelId: string) {
+    let channelContract = contract(this.web3)
+    return new Promise((resolve, reject) => {
+      let s = storage.build(this.web3, this.databaseFile, 'sender', false, this.engine)
+      s.channels.firstById(channelId).then((paymentChannel) => {
+        if (paymentChannel) {
+          if (paymentChannel.sender === this.account) {
+            this.settle(channelContract, paymentChannel, resolve)
+          } else if (paymentChannel.receiver === this.account) {
+            this.claim(channelContract, paymentChannel, resolve)
+          }
+        }
+      })
+    })
+  }
+
+  settle (channelContract: ChannelContract, paymentChannel: any, resolve: Function) {
+    channelContract.getState(paymentChannel).then((state) => {
+      if (state === 0) {
+        // let spent = new BigNumber(paymentChannel.spent)
+        channelContract.startSettle(this.account, paymentChannel, paymentChannel.spent).then(() => {
+          console.log('startSettle is finished')
+          resolve()
+        })
+      } else if (state === 1) {
+        channelContract.finishSettle(this.account, paymentChannel).then(() => {
+          console.log('finishSettle is finished')
+          resolve()
+        })
+      }
+    })
+  }
+
+  claim (channelContract: ChannelContract, paymentChannel: any, resolve: Function) {
+    const channelId = paymentChannel.channelId
+    let s = storage.build(this.web3, this.databaseFile, 'receiver', false, this.engine)
+    s.payments.firstMaximum(channelId).then((paymentDoc: any) => {
+      channelContract.claim(paymentChannel.receiver, paymentChannel, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s).then(value => {
+        resolve()
+      })
+    })
+  }
 }
 
-export default {
-  NAME: 'machinomy',
-  VERSION: '0.1.5',
-  Paywall: middleware.Paywall,
-  Transport: transport.Transport,
-  transport: transport,
-  contract: channel.contract,
-  configuration: configuration,
-  Payment: Payment,
-  storage: storage,
-  channel: channel,
-  log: log,
-  buy: buy,
-  sender: sender
-}
+export default Machinomy

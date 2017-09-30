@@ -1,4 +1,4 @@
-import machinomy from '../index'
+import machinomy from '../lib/buy'
 import * as fs from 'fs'
 import prompt = require('prompt')
 import CommandPrompt from './CommandPrompt'
@@ -8,7 +8,7 @@ const setup = (command: CommandPrompt) => {
 
   let baseDirPath = machinomy.configuration.baseDirPath()
   if (!fs.existsSync(baseDirPath)) {
-    fs.mkdir(baseDirPath)
+    fs.mkdirSync(baseDirPath)
   }
 
   type Configuration = {
