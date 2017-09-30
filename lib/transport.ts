@@ -103,9 +103,9 @@ export class PaymentRequired {
   receiver: string
   price: number
   gateway: string
-  contractAddress: string
+  contractAddress?: string
 
-  constructor (receiver: string, price: number, gateway: string, contractAddress: string) {
+  constructor (receiver: string, price: number, gateway: string, contractAddress?: string) {
     this.receiver = receiver
     this.price = price
     this.gateway = gateway

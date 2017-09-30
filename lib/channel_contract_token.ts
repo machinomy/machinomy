@@ -56,7 +56,7 @@ export class ChannelContractToken {
       const value = options['value']
       delete options['value']
       buildBrokerTokenContract(this.web3).deployed().then((deployed) => {
-        buildERC20Contract(paymentRequired.contractAddress, this.web3).then((instanceERC20) => {
+        buildERC20Contract(paymentRequired.contractAddress as string, this.web3).then((instanceERC20) => {
           instanceERC20.deployed().then((deployedERC20: any) => {
             deployedERC20.approve(deployed.address, value, options).then((res: any) => {
               deployed.createChannel(paymentRequired.contractAddress, paymentRequired.receiver, duration, settlementPeriod, value, options).then((res: any) => {

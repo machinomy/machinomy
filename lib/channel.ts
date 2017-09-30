@@ -190,7 +190,7 @@ export class ChannelContract {
     return channelContract.deposit(sender, paymentChannel, value)
   }
 
-  getState(paymentChannel: PaymentChannel): Promise<number> {
+  getState (paymentChannel: PaymentChannel): Promise<number> {
     if (process.env.NODE_ENV === 'test') { // FIXME
       return Promise.resolve(0)
     } else {

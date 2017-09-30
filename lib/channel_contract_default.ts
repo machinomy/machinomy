@@ -40,7 +40,7 @@ const CREATE_CHANNEL_GAS = 300000
 
 export class ChannelContractDefault {
   web3: Web3
-  contract: Broker.Contract
+  // contract: Broker.Contract
 
   /**
    * @param web3      Instance of Web3.
@@ -139,15 +139,15 @@ export class ChannelContractDefault {
     return '0x' + util.sha3(buffer).toString('hex')
   }
 
-  canFinishSettle (sender: string, channelId: string): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      return buildBrokerContract(this.web3).deployed().then((deployed) => {
-        this.contract.canFinishSettle(sender, channelId).then((result: any) => {
-          resolve(result)
-        })
-      })
-    })
-  }
+  // canFinishSettle (sender: string, channelId: string): Promise<boolean> {
+  //   return new Promise((resolve, reject) => {
+  //     return buildBrokerContract(this.web3).deployed().then((deployed) => {
+  //       this.contract.canFinishSettle(sender, channelId).then((result: any) => {
+  //         resolve(result)
+  //       })
+  //     })
+  //   })
+  // }
 
   getState (paymentChannel: PaymentChannel): Promise<number> {
     if (process.env.NODE_ENV === 'test') { // FIXME

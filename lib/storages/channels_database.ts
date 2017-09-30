@@ -107,7 +107,6 @@ export default class ChannelsDatabase {
    */
   allByQuery (q: object): Promise<Array<PaymentChannel>> {
     let query = Object.assign({kind: this.kind}, q)
-    //log.info('ChannelsDatabase#allByQuery', query)
     let contract = channel.contract(this.web3)
     return Promise.map(this.engine.find(query), (doc: PaymentChannelJSON) => {
       let paymentChannel = PaymentChannel.fromDocument(doc)

@@ -14,7 +14,7 @@ export interface PaymentJSON {
   v: number|string
   r: string
   s: string
-  contractAddress: string | undefined
+  contractAddress?: string
 }
 
 export function digest (channelId: string|ChannelId, value: number): Buffer {
@@ -46,7 +46,7 @@ export function sign (web3: Web3, sender: string, digest: Buffer): Promise<Signa
         if (error) {
           reject(error)
         } else {
-          resolve(util.fromRpcSig(signature));
+          resolve(util.fromRpcSig(signature))
         }
       })
     })
