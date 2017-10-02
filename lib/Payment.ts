@@ -18,12 +18,15 @@ export interface PaymentJSON {
 }
 
 function isNode () {
-  let result = false
-  let typeOfProcess = typeof process
-  if (typeOfProcess === 'object') {
-    result = true
+  let isNode = false
+  if (typeof process === 'object') {
+    if (typeof process.versions === 'object') {
+      if (typeof process.versions.node !== 'undefined') {
+        isNode = true
+      }
+    }
   }
-  return result
+  return isNode
 }
 
 export function digest (channelId: string|ChannelId, value: number): Buffer {
