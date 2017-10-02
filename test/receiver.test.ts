@@ -5,11 +5,12 @@ import { randomStorage } from './support'
 import { PaymentChannel } from '../lib/channel'
 import Payment from '../lib/Payment'
 import mongo from '../lib/mongo'
+let expect = require('expect')
 
 const engine_name = process.env.ENGINE_NAME || 'nedb'
 
 describe('receiver', () => {
-  beforeAll((done) => {
+  before((done) => {
     if (process.env.ENGINE_NAME == 'mongo') {
       mongo.connectToServer(() => {
         done()
@@ -29,12 +30,11 @@ describe('receiver', () => {
     }
   })
 
-  afterAll((done) => {
-    if (process.env.ENGINE_NAME == 'mongo') {
+  after((done) => {
+    if (process.env.ENGINE_NAME === 'mongo') {
       mongo.db().close()
-    } else {
-      done()
     }
+    done()
   })
 
   let web3 = support.fakeWeb3()

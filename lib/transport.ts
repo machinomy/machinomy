@@ -77,6 +77,9 @@ export class Transport {
      * @return {Promise<string>}
      */
   requestToken (uri: string, payment: Payment, opts: RequestTokenOpts = {}): Promise<string> {
+    if (!payment.contractAddress) {
+      delete payment.contractAddress
+    }
     let options = {
       method: 'POST',
       uri: uri,
@@ -100,18 +103,21 @@ export class PaymentRequired {
   receiver: string
   price: number
   gateway: string
+  contractAddress?: string
 
-  constructor (receiver: string, price: number, gateway: string) {
+  constructor (receiver: string, price: number, gateway: string, contractAddress?: string) {
     this.receiver = receiver
     this.price = price
     this.gateway = gateway
+    this.contractAddress = contractAddress
   }
 
   static parse = function (headers: any): PaymentRequired {
     let receiver = headers['paywall-address']
     let price = Number(headers['paywall-price'])
     let gateway = headers['paywall-gateway']
-    return new PaymentRequired(receiver, price, gateway)
+    let contractAddress = headers['paywall-token-address']
+    return new PaymentRequired(receiver, price, gateway, contractAddress)
   }
 }
 

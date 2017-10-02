@@ -1,4 +1,4 @@
-import machinomy from '../index'
+import machinomy from '../lib/buy'
 import CommandPrompt from './CommandPrompt'
 
 function configuration (options: CommandPrompt) {

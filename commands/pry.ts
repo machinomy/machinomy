@@ -1,4 +1,4 @@
-import machinomy from '../index'
+import machinomy from '../lib/buy'
 import Storage from '../lib/storage'
 import Sender from '../lib/sender'
 import Web3 = require('web3')

@@ -33,7 +33,8 @@ export default class ChannelsDatabase {
       receiver: paymentChannel.receiver,
       value: paymentChannel.value,
       spent: paymentChannel.spent,
-      channelId: paymentChannel.channelId
+      channelId: paymentChannel.channelId,
+      contractAddress: paymentChannel.contractAddress
     }
     return this.engine.insert(document)
   }
@@ -56,8 +57,8 @@ export default class ChannelsDatabase {
     // log.info(`ChannelsDatabase#findById Trying to find channel by id ${channelId.toString()}`)
     return this.engine.findOne<PaymentChannel>(query).then(document => {
       if (document) {
-        return channel.contract(this.web3).getState(channelId.toString()).then(state => { // FIXME
-          return new channel.PaymentChannel(document.sender, document.receiver, document.channelId, document.value, document.spent, state)
+        return channel.contract(this.web3).getState(document).then(state => { // FIXME
+          return new channel.PaymentChannel(document.sender, document.receiver, document.channelId, document.value, document.spent, state, document.contractAddress)
         })
       } else {
         // log.info(`ChannelsDatabase#findById Could not find document by id ${channelId.toString()}`)
@@ -97,11 +98,11 @@ export default class ChannelsDatabase {
    */
   allByQuery (q: object): Promise<Array<PaymentChannel>> {
     let query = Object.assign({kind: this.kind}, q)
-    // log.info('ChannelsDatabase#allByQuery', query)
     let contract = channel.contract(this.web3)
     return Promise.map(this.engine.find(query), (doc: PaymentChannelJSON) => {
-      return contract.getState(doc.channelId).then(state => {
-        return new channel.PaymentChannel(doc.sender, doc.receiver, doc.channelId, doc.value, doc.spent, state)
+      let paymentChannel = PaymentChannel.fromDocument(doc)
+      return contract.getState(paymentChannel).then(state => {
+        return new channel.PaymentChannel(doc.sender, doc.receiver, doc.channelId, doc.value, doc.spent, state, doc.contractAddress)
       })
     })
   }

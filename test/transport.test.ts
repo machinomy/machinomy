@@ -3,6 +3,7 @@ import * as channel from '../lib/channel'
 import * as transport from '../lib/transport'
 import { randomInteger } from './support'
 import Payment from '../lib/Payment'
+let expect = require('expect')
 
 describe('transport', () => {
   describe('.build', () => {
