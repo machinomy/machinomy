@@ -59,7 +59,7 @@ export class ChannelContractToken {
         buildERC20Contract(paymentRequired.contractAddress as string, this.web3).then((instanceERC20) => {
           instanceERC20.deployed().then((deployedERC20: any) => {
             deployedERC20.approve(deployed.address, value, options).then((res: any) => {
-              deployed.createChannel(paymentRequired.contractAddress, paymentRequired.receiver, duration, settlementPeriod, value, options).then((res: any) => {
+              deployed.createChannel(paymentRequired.contractAddress as string, paymentRequired.receiver, duration, settlementPeriod, value, options).then((res: any) => {
                 const channelId = res.logs[0].args.channelId
                 resolve(channelId)
               })
