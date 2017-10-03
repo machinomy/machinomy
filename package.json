@@ -74,6 +74,7 @@
     "homedir": "https://github.com/ukstv/node-homedir",
     "lodash": "^4.17.4",
     "loglevel": "^1.4.1",
+    "machinomy-contracts": "https://github.com/machinomy/machinomy-contracts",
     "mongodb": "^2.2.31",
     "nedb": "^1.8.0",
     "prompt": "^1.0.0",
