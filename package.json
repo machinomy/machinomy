@@ -59,7 +59,6 @@
     "@types/expect": "^1.20.2",
     "@types/express": "^4.0.36",
     "@types/lodash": "^4.14.68",
-    "@types/mocha": "^2.2.43",
     "@types/nedb": "^1.8.3",
     "@types/nock": "^8.2.1",
     "@types/node": "^8.0.9",
@@ -92,6 +91,7 @@
     "web3-typescript-typings": "https://github.com/machinomy/web3-typescript-typings"
   },
   "devDependencies": {
+    "@types/mocha": "^2.2.43",
     "body-parser": "^1.15.2",
     "coveralls": "^2.12.0",
     "express": "^4.14.0",
