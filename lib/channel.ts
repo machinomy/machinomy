@@ -38,7 +38,7 @@ const DEFAULT_CHANNEL_TTL = 20 * DAY_IN_SECONDS
  * Cost of creating a channel.
  * @type {number}
  */
-const CREATE_CHANNEL_GAS = 300000
+const CREATE_CHANNEL_GAS = 400000
 
 export const ethHash = (message: string): string => {
   const buffer = Buffer.from('\x19Ethereum Signed Message:\n' + message.length + message)
