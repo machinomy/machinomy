@@ -38,7 +38,7 @@ const DEFAULT_CHANNEL_TTL = 20 * DAY_IN_SECONDS
  * Cost of creating a channel.
  * @type {number}
  */
-const CREATE_CHANNEL_GAS = 400000
+const CREATE_CHANNEL_GAS = 500000
 
 export const ethHash = (message: string): string => {
   const buffer = Buffer.from('\x19Ethereum Signed Message:\n' + message.length + message)
@@ -161,6 +161,7 @@ export class ChannelContract {
         value,
         gas: CREATE_CHANNEL_GAS
       }
+      console.log(options)
       this.createChannel(paymentRequired, duration, settlementPeriod, options).then((channelId: string) => {
         const paymentChannel = new PaymentChannel(sender, receiver, channelId, value, 0, undefined, paymentRequired.contractAddress)
         resolve(paymentChannel)
