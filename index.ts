@@ -49,16 +49,24 @@ class Machinomy {
     const namespace = 'sender'
     return new Promise((resolve, reject) => {
       let _storage = storage.build(this.web3, this.databaseFile, 'sender', false, this.engine)
-      let engine = storage.engine(this.databaseFile, true, this.engine)
+      let engine = storage.engine(this.databaseFile, false, this.engine)
       storage.channels(this.web3, engine, namespace).all().then(found => {
-        found.forEach((paymentChannel) => {
-          channel.contract(this.web3).getState(paymentChannel).then(state => {
-            if (state < 2) {
-              paymentChannel.state = state
-              resolve(paymentChannel)
-            }
-          })
+        found = found.filter((ch) => {
+          if (ch.state < 2) {
+            return true
+          } else {
+            return false
+          }
         })
+        resolve(found)
+        // found.forEach((paymentChannel) => {
+        //   channel.contract(this.web3).getState(paymentChannel).then(state => {
+        //     if (state < 2) {
+        //       paymentChannel.state = state
+        //       resolve(paymentChannel)
+        //     }
+        //   })
+        // })
       })
     })
   }
