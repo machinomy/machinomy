@@ -18,7 +18,7 @@
     "test_mongo": "NODE_ENV=test ENGINE_NAME=mongo mocha",
     "test": "yarn run test_nedb; yarn run test_mongo",
     "build": "tsc -p tsconfig.json",
-    "lint": "tslint -t stylish --type-check --project 'tsconfig.json' --exclude node_modules/*",
+    "lint": "tslint -t stylish --type-check --project '.' --exclude node_modules/*",
     "prepublish": "yarn lint && yarn build"
   },
   "main": "index.js",
@@ -94,6 +94,7 @@
     "@types/mocha": "^2.2.43",
     "body-parser": "^1.15.2",
     "coveralls": "^2.12.0",
+    "ethereumjs-testrpc": "^4.1.3",
     "express": "^4.14.0",
     "istanbul": "^0.4.5",
     "jest": "^21.0.0",

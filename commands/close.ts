@@ -1,4 +1,4 @@
-import machinomyIndex from '../lib/buy'
+import * as configuration from '../lib/configuration'
 import Storage from '../lib/storage'
 import Web3 = require('web3')
 import CommandPrompt from './CommandPrompt'
@@ -7,14 +7,14 @@ import BigNumber = require('bignumber.js')
 import mongo from '../lib/mongo'
 import Machinomy from '../index'
 
-let provider = machinomyIndex.configuration.currentProvider()
+let provider = configuration.currentProvider()
 let web3 = new Web3(provider)
 
 function close (channelId: string, options: CommandPrompt): void {
   let namespace = options.namespace || 'sender'
-  let settings = machinomyIndex.configuration.sender()
+  let settings = configuration.sender()
   if (namespace === 'receiver') {
-    settings = machinomyIndex.configuration.receiver()
+    settings = configuration.receiver()
   }
 
   let password = settings.password
@@ -23,11 +23,10 @@ function close (channelId: string, options: CommandPrompt): void {
   }
 
   if (web3.personal && settings.account) {
-    // web3.personal.unlockAccount(settings.account, password, 1000)
+    web3.personal.unlockAccount(settings.account, password, 1000)
   }
 
   let s = new Storage(web3, settings.databaseFile, namespace, true, settings.engine)
-  let contract = machinomyIndex.contract(web3)
 
   if (settings.account) {
     let account = settings.account

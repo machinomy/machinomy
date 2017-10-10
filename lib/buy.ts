@@ -14,12 +14,12 @@ import Payment from './Payment'
 
 export const log: Logger<any> = Log.create('machinomy')
 
-const UNLOCK_PERIOD = 1000
+// const UNLOCK_PERIOD = 1000
 
 /**
  * Shortcut for Sender.buy.
  */
-function buy (uri: string, account: string, password: string): Promise<string> {
+export function buyContent (uri: string, account: string, password: string): Promise<string> {
   let settings = configuration.sender()
   let web3 = new Web3()
   web3.setProvider(configuration.currentProvider())
@@ -50,6 +50,6 @@ export default {
   storage: storage,
   channel: channel,
   log: log,
-  buy: buy,
+  buy: buyContent,
   sender: sender
 }

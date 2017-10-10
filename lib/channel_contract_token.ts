@@ -80,7 +80,6 @@ export class ChannelContractToken {
         deployed.canClaim(channelId, h, Number(v), r, s).then((canClaim: any) => {
           if (canClaim && paymentChannel.contractAddress) {
             deployed.claim(paymentChannel.contractAddress, channelId, value, h, v, r, s, { from: receiver, gas: CREATE_CHANNEL_GAS }).then((res: any) => {
-              console.log(res)
               resolve()
             })
           }

@@ -59,14 +59,6 @@ class Machinomy {
           }
         })
         resolve(found)
-        // found.forEach((paymentChannel) => {
-        //   channel.contract(this.web3).getState(paymentChannel).then(state => {
-        //     if (state < 2) {
-        //       paymentChannel.state = state
-        //       resolve(paymentChannel)
-        //     }
-        //   })
-        // })
       })
     })
   }
@@ -90,7 +82,6 @@ class Machinomy {
   settle (channelContract: ChannelContract, paymentChannel: any, resolve: Function) {
     channelContract.getState(paymentChannel).then((state) => {
       if (state === 0) {
-        // let spent = new BigNumber(paymentChannel.spent)
         channelContract.startSettle(this.account, paymentChannel, paymentChannel.spent).then(() => {
           console.log('startSettle is finished')
           resolve()

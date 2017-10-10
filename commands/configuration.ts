@@ -1,11 +1,11 @@
-import machinomy from '../lib/buy'
+import * as conf from '../lib/configuration'
 import CommandPrompt from './CommandPrompt'
 
 function configuration (options: CommandPrompt) {
   let namespace = options.namespace || 'sender'
-  let configuration = machinomy.configuration.sender()
+  let configuration = conf.sender()
   if (namespace === 'receiver') {
-    configuration = machinomy.configuration.receiver()
+    configuration = conf.receiver()
   }
 
   console.log(configuration)

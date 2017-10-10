@@ -161,7 +161,6 @@ export class ChannelContract {
         value,
         gas: CREATE_CHANNEL_GAS
       }
-      console.log(options)
       this.createChannel(paymentRequired, duration, settlementPeriod, options).then((channelId: string) => {
         const paymentChannel = new PaymentChannel(sender, receiver, channelId, value, 0, undefined, paymentRequired.contractAddress)
         resolve(paymentChannel)

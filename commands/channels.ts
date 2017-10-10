@@ -1,5 +1,5 @@
 import CommandPrompt from './CommandPrompt'
-import machinomyIndex from '../lib/buy'
+import * as configuration from '../lib/configuration'
 import _ = require('lodash')
 import Web3 = require('web3')
 import mongo from '../lib/mongo'
@@ -7,8 +7,8 @@ import Machinomy from '../index'
 
 function channels (command: CommandPrompt): void {
   let namespace = command.namespace || 'sender'
-  let settings = machinomyIndex.configuration.sender()
-  let provider = machinomyIndex.configuration.currentProvider()
+  let settings = configuration.sender()
+  let provider = configuration.currentProvider()
   let web3 = new Web3(provider)
 
   if (settings.account) {
