@@ -105,6 +105,8 @@ export class Paywall {
             log.warn('Got invalid paywall token')
             this.paymentInvalid(fixedPrice, req, res)
           }
+        }).catch((e: Error) => {
+          console.log(e)
         })
       }
     }

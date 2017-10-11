@@ -36,9 +36,9 @@ class Machinomy {
         if (paymentChannel) {
           channelContract.deposit(this.account, paymentChannel, value).then(() => {
             resolve()
-          })
+          }).catch(reject)
         }
-      })
+      }).catch(reject)
     })
   }
 
@@ -56,7 +56,7 @@ class Machinomy {
           }
         })
         resolve(found)
-      })
+      }).catch(reject)
     })
   }
 
@@ -72,7 +72,7 @@ class Machinomy {
             this.claim(channelContract, paymentChannel, resolve)
           }
         }
-      })
+      }).catch(reject)
     })
   }
 
@@ -82,13 +82,19 @@ class Machinomy {
         channelContract.startSettle(this.account, paymentChannel, paymentChannel.spent).then(() => {
           console.log('startSettle is finished')
           resolve()
+        }).catch((e: Error) => {
+          console.log(e)
         })
       } else if (state === 1) {
         channelContract.finishSettle(this.account, paymentChannel).then(() => {
           console.log('finishSettle is finished')
           resolve()
+        }).catch((e: Error) => {
+          console.log(e)
         })
       }
+    }).catch((e: Error) => {
+      console.log(e)
     })
   }
 
@@ -98,7 +104,11 @@ class Machinomy {
     s.payments.firstMaximum(channelId).then((paymentDoc: any) => {
       channelContract.claim(paymentChannel.receiver, paymentChannel, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s).then(value => {
         resolve()
+      }).catch((e: Error) => {
+        console.log(e)
       })
+    }).catch((e: Error) => {
+      console.log(e)
     })
   }
 }
