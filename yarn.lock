@@ -3394,9 +3394,9 @@ ltgt@~2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/ltgt/-/ltgt-2.2.0.tgz#b65ba5fcb349a29924c8e333f7c6a5562f2e4842"
 
-"machinomy-contracts@https://github.com/machinomy/machinomy-contracts":
-  version "1.0.0"
-  resolved "https://github.com/machinomy/machinomy-contracts#c5048302741573d468b259c38079bd195fe100ba"
+machinomy-contracts@^0.0.1-alpha:
+  version "0.0.1-alpha"
+  resolved "https://registry.yarnpkg.com/machinomy-contracts/-/machinomy-contracts-0.0.1-alpha.tgz#01788852543c35b9523b3a81f1708df185a0b882"
   dependencies:
     "@types/bignumber.js" "^4.0.3"
     "@types/node" "^8.0.28"
