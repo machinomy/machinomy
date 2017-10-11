@@ -1,4 +1,4 @@
-import Promise = require('bluebird')
+import Bluebird = require('bluebird')
 import { Log } from 'typescript-logger'
 import _ = require('lodash')
 import Web3 = require('web3')
@@ -108,7 +108,7 @@ export default class Sender {
 
   findOpenChannel (paymentRequired: PaymentRequired): Promise<PaymentChannel | undefined> {
     return this.storage.channels.allByQuery({ sender: this.account, receiver: paymentRequired.receiver }).then(paymentChannels => {
-      return Promise.filter(paymentChannels, paymentChannel => {
+      return Bluebird.filter(paymentChannels, paymentChannel => {
         return this.canUseChannel(paymentChannel, paymentRequired)
       }).then(openChannels => {
         if (openChannels.length > 1) {

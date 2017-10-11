@@ -1,5 +1,4 @@
 import * as channel from '../channel'
-import Promise = require('bluebird')
 import Web3 = require('web3')
 import Engine from '../engines/engine'
 import { ChannelId, PaymentChannel, PaymentChannelJSON } from '../channel'
@@ -99,11 +98,15 @@ export default class ChannelsDatabase {
   allByQuery (q: object): Promise<Array<PaymentChannel>> {
     let query = Object.assign({kind: this.kind}, q)
     let contract = channel.contract(this.web3)
-    return Promise.map(this.engine.find(query), (doc: PaymentChannelJSON) => {
-      let paymentChannel = PaymentChannel.fromDocument(doc)
-      return contract.getState(paymentChannel).then(state => {
-        return new channel.PaymentChannel(doc.sender, doc.receiver, doc.channelId, doc.value, doc.spent, state, doc.contractAddress)
+
+    return this.engine.find<PaymentChannelJSON>(query).then(arr => {
+      let promises: Array<Promise<channel.PaymentChannel>> = arr.map(doc => {
+        let paymentChannel = PaymentChannel.fromDocument(doc)
+        return contract.getState(paymentChannel).then(state => {
+          return new channel.PaymentChannel(doc.sender, doc.receiver, doc.channelId, doc.value, doc.spent, state, doc.contractAddress)
+        })
       })
+      return Promise.all<channel.PaymentChannel>(promises)
     })
   }
 }

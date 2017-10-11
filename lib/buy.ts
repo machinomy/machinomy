@@ -3,7 +3,6 @@ import * as transport from './transport'
 import * as storage from './storage'
 import * as configuration from './configuration'
 import Web3 = require('web3')
-import Promise = require('bluebird')
 import { PaymentPair, default as Sender } from './sender'
 
 // const UNLOCK_PERIOD = 1000

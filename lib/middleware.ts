@@ -5,7 +5,6 @@ import * as express from 'express'
 import { Log } from 'typescript-logger'
 import Web3 = require('web3')
 import mongo from './mongo'
-import Promise = require('bluebird')
 
 import urljoin = require('url-join')
 import { Receiver } from './receiver'

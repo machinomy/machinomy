@@ -1,9 +1,19 @@
-import Promise = require('bluebird')
 import { Log } from 'typescript-logger'
 import _ = require('lodash')
 import { RequestResponse, RequiredUriUrl, CoreOptions } from 'request'
 import Payment from './Payment'
-const request: (opts: RequiredUriUrl & CoreOptions) => Promise<RequestResponse> = Promise.promisify(require('request'))
+let req = require('request')
+
+const request: (opts: RequiredUriUrl & CoreOptions) => Promise<RequestResponse> = (opts: RequiredUriUrl & CoreOptions) => {
+  return new Promise((resolve: Function, reject: Function) => {
+    req(opts, (err: Error, res: any) => {
+      if (err) {
+        reject(err)
+      }
+      resolve(res)
+    })
+  })
+}
 
 const log = Log.create('transport')
 

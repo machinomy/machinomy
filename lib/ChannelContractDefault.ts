@@ -1,4 +1,3 @@
-import Promise = require('bluebird')
 import * as util from 'ethereumjs-util'
 import Web3 = require('web3')
 import * as BigNumber from 'bignumber.js'
@@ -42,12 +41,11 @@ export class ChannelContractDefault {
    * @param abi       Interface of the deployed contract.
    */
   constructor (web3: Web3) {
-    // this.contract = web3.eth.contract(abi).at(address) as Broker.Contract
     this.web3 = web3
   }
 
-  createChannel (paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: any): any {
-    return new Promise<PaymentChannel>((resolve, reject) => {
+  createChannel (paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: any): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
       buildBrokerContract(this.web3).deployed().then((deployed) => {
         deployed.createChannel(paymentRequired.receiver, duration, settlementPeriod, options).then((res: any) => {
           const channelId = res.logs[0].args.channelId

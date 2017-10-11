@@ -1,5 +1,4 @@
 import Web3 = require('web3')
-import Promise = require('bluebird')
 import * as util from 'ethereumjs-util'
 import { ChannelId, ethHash, PaymentChannel, Signature } from './channel'
 import { Buffer } from 'buffer'

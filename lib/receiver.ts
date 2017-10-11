@@ -1,4 +1,3 @@
-import Promise = require('bluebird')
 import { Log } from 'typescript-logger'
 import Web3 = require('web3')
 

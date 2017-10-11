@@ -1,5 +1,4 @@
 import Web3 = require('web3')
-import machinomyIndex from './index'
 import * as transport from './lib/transport'
 import * as storage from './lib/storage'
 import * as channel from './lib/channel'
