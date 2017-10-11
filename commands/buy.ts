@@ -16,6 +16,7 @@ function buy (uri: string, command: CommandPrompt): void {
       return
     }
     buyContent(uri, settings.account, password).then(contents => {
+      console.log(contents)
       if (settings.engine === 'mongo') {
         mongo.db().close()
       }
