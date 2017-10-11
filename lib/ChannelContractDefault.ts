@@ -158,6 +158,8 @@ export class ChannelContractDefault {
               resolve()
             })
           }
+        }).catch((e: Error) => {
+          console.log(e)
         })
       })
     })

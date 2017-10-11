@@ -49,6 +49,8 @@ export class Hub {
           } else {
             res.status(500).send({status: 'token is invalid'})
           }
+        }).catch((e: Error) => {
+          console.log(e)
         })
       } else {
         res.status(500).json({status: 'no token accepted'})
