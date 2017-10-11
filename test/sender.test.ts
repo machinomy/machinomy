@@ -11,7 +11,7 @@ let expect = require('expect')
 const randomSender = (): Promise<Sender> => {
   let web3 = support.fakeWeb3()
   return randomStorage(web3, engineName).then(storage => {
-    return new Sender(web3, "0xdeadbeaf", channel.contract(web3), transport.build(), storage)
+    return new Sender(web3, '0xdeadbeaf', channel.contract(web3), transport.build(), storage)
   })
 }
 

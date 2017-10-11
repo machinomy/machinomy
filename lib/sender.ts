@@ -1,4 +1,4 @@
-import Promise = require('bluebird')
+import Bluebird = require('bluebird')
 import { Log } from 'typescript-logger'
 import _ = require('lodash')
 import Web3 = require('web3')
@@ -40,7 +40,7 @@ export default class Sender {
   transport: Transport
   storage: Storage
 
-  constructor(web3: Web3, account: string, contract: ChannelContract, transport: Transport, storage: Storage) {
+  constructor (web3: Web3, account: string, contract: ChannelContract, transport: Transport, storage: Storage) {
     this.web3 = web3
     this.account = account
     this.contract = contract
@@ -51,7 +51,7 @@ export default class Sender {
   /**
    * Make request to +uri+ building a new payment channel. Returns HTTP response.
    */
-  freshChannel(uri: string, paymentRequired: PaymentRequired, channelValue: number, opts: FreshChannelOpts = {}): Promise<any> {
+  freshChannel (uri: string, paymentRequired: PaymentRequired, channelValue: number, opts: FreshChannelOpts = {}): Promise<any> {
     if (_.isFunction(opts.onWillOpenChannel)) {
       opts.onWillOpenChannel()
     }
@@ -72,7 +72,7 @@ export default class Sender {
    * @param {{uri: string, headers: object, onWillPreflight: function, onDidPreflight: function, onWillOpenChannel: function, onDidOpenChannel: function, onWillSendPayment: function, onDidSendPayment: function, onWillLoad: function, onDidLoad: function}} opts
    * @return {Promise<[Payment, Object]>}
    */
-  existingChannel(uri: string, paymentRequired: PaymentRequired, paymentChannel: PaymentChannel, opts: RequestTokenOpts = {}): Promise<any> {
+  existingChannel (uri: string, paymentRequired: PaymentRequired, paymentChannel: PaymentChannel, opts: RequestTokenOpts = {}): Promise<any> {
     return Payment.fromPaymentChannel(this.web3, paymentChannel, paymentRequired.price).then(payment => {
       let nextPaymentChannel = channel.PaymentChannel.fromPayment(payment)
       return this.storage.channels.saveOrUpdate(nextPaymentChannel).then(() => {
@@ -86,7 +86,7 @@ export default class Sender {
   /**
    * Determine if channel can be used.
    */
-  canUseChannel(paymentChannel: PaymentChannel, paymentRequired: PaymentRequired): Promise<boolean> {
+  canUseChannel (paymentChannel: PaymentChannel, paymentRequired: PaymentRequired): Promise<boolean> {
     return this.contract.getState(paymentChannel).then(state => {
       let isOpen = state === 0 // FIXME Harmonize channel states
       // log.debug(`canUseChannel: isOpen: ${isOpen}`)
@@ -96,7 +96,7 @@ export default class Sender {
     })
   }
 
-  extractPaymentRequired(response: RequestResponse): Promise<PaymentRequired> {
+  extractPaymentRequired (response: RequestResponse): Promise<PaymentRequired> {
     let version = response.headers['paywall-version']
     if (version === VERSION) {
       let paymentRequired = transport.PaymentRequired.parse(response.headers)
@@ -106,9 +106,9 @@ export default class Sender {
     }
   }
 
-  findOpenChannel(paymentRequired: PaymentRequired): Promise<PaymentChannel | undefined> {
+  findOpenChannel (paymentRequired: PaymentRequired): Promise<PaymentChannel | undefined> {
     return this.storage.channels.allByQuery({ sender: this.account, receiver: paymentRequired.receiver }).then(paymentChannels => {
-      return Promise.filter(paymentChannels, paymentChannel => {
+      return Bluebird.filter(paymentChannels, paymentChannel => {
         return this.canUseChannel(paymentChannel, paymentRequired)
       }).then(openChannels => {
         if (openChannels.length > 1) {
@@ -122,7 +122,7 @@ export default class Sender {
   /**
    * Select handler based on version returned by server.
    */
-  handlePaymentRequired(uri: string, preFlightResponse: RequestResponse, opts: FreshChannelOpts = {}): Promise<any> {
+  handlePaymentRequired (uri: string, preFlightResponse: RequestResponse, opts: FreshChannelOpts = {}): Promise<any> {
     log.info('Handling 402 Payment Required response')
     return this.extractPaymentRequired(preFlightResponse).then(paymentRequired => {
       return this.findOpenChannel(paymentRequired).then(paymentChannel => {
@@ -139,7 +139,7 @@ export default class Sender {
   /**
    * Get the payment required to access the resource.
    */
-  pry(uri: string): Promise<PaymentRequired> {
+  pry (uri: string): Promise<PaymentRequired> {
     return this.transport.get(uri).then(response => {
       switch (response.statusCode) {
         case transport.STATUS_CODES.PAYMENT_REQUIRED:
@@ -161,7 +161,7 @@ export default class Sender {
    * @param {{uri: string, headers: null|object, onWillPreflight: null|function, onDidPreflight: null|function, onWillOpenChannel: null|function, onDidOpenChannel: null|function, onWillSendPayment: null|function, onDidSendPayment: null|function, onWillLoad: null|function, onDidLoad: null|function}} opts
    * @return {Promise<[Payment, Object]>}
    */
-  buy(opts: BuyOpts): Promise<PaymentPair> {
+  buy (opts: BuyOpts): Promise<PaymentPair> {
     let uri = opts.uri
     let headers = opts.headers
     if (_.isFunction(opts.onWillPreflight)) {

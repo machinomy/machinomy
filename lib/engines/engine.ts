@@ -1,4 +1,3 @@
-import Promise = require('bluebird')
 
 export default interface Engine {
   find<A> (query: {}): Promise<Array<A>>

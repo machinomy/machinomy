@@ -1,10 +1,8 @@
 import Web3 = require('web3')
-import machinomyIndex from './index'
 import * as transport from './lib/transport'
 import * as storage from './lib/storage'
 import * as channel from './lib/channel'
-import { PaymentPair, default as Sender } from './lib/sender'
-import * as BigNumber from 'bignumber.js'
+import { default as Sender } from './lib/sender'
 import { ChannelContract, contract } from './lib/channel'
 
 class Machinomy {
@@ -33,7 +31,6 @@ class Machinomy {
   deposit (channelId: string, value: number) {
     let channelContract = contract(this.web3)
     return new Promise((resolve, reject) => {
-      let engine = storage.engine(this.databaseFile, true, this.engine)
       let s = storage.build(this.web3, this.databaseFile, 'sender', false, this.engine)
       s.channels.firstById(channelId).then((paymentChannel) => {
         if (paymentChannel) {
@@ -59,14 +56,6 @@ class Machinomy {
           }
         })
         resolve(found)
-        // found.forEach((paymentChannel) => {
-        //   channel.contract(this.web3).getState(paymentChannel).then(state => {
-        //     if (state < 2) {
-        //       paymentChannel.state = state
-        //       resolve(paymentChannel)
-        //     }
-        //   })
-        // })
       })
     })
   }
@@ -90,7 +79,6 @@ class Machinomy {
   settle (channelContract: ChannelContract, paymentChannel: any, resolve: Function) {
     channelContract.getState(paymentChannel).then((state) => {
       if (state === 0) {
-        // let spent = new BigNumber(paymentChannel.spent)
         channelContract.startSettle(this.account, paymentChannel, paymentChannel.spent).then(() => {
           console.log('startSettle is finished')
           resolve()

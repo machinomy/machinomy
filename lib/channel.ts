@@ -1,16 +1,11 @@
-import Promise = require('bluebird')
 import * as util from 'ethereumjs-util'
 import { Log } from 'typescript-logger'
-import * as configuration from './configuration'
-import { FilterResult } from 'web3'
 import Web3 = require('web3')
 import * as BigNumber from 'bignumber.js'
 import Payment from './Payment'
-import { sender } from './configuration'
 import { PaymentRequired } from './transport'
-
-import { ChannelContractDefault } from './channel_contract_default'
-import { ChannelContractToken } from './channel_contract_token'
+import { ChannelContractDefault } from './ChannelContractDefault'
+import { ChannelContractToken } from './ChannelContractToken'
 
 const log = Log.create('channel')
 Log.setProductionMode()
@@ -161,7 +156,6 @@ export class ChannelContract {
         value,
         gas: CREATE_CHANNEL_GAS
       }
-      console.log(options)
       this.createChannel(paymentRequired, duration, settlementPeriod, options).then((channelId: string) => {
         const paymentChannel = new PaymentChannel(sender, receiver, channelId, value, 0, undefined, paymentRequired.contractAddress)
         resolve(paymentChannel)
@@ -229,11 +223,11 @@ export class ChannelContract {
 export class ChannelId {
   id: Buffer
 
-  constructor(buffer: Buffer) {
+  constructor (buffer: Buffer) {
     this.id = buffer
   }
 
-  toString() {
+  toString () {
     return '0x' + this.id.toString('hex')
   }
 }
@@ -252,7 +246,6 @@ export function id (something: string | Buffer | ChannelId): ChannelId {
   }
 }
 
-export function contract(web3: Web3, _address?: string): ChannelContract {
-  const address = _address || configuration.contractAddress()
+export function contract (web3: Web3, _address?: string): ChannelContract {
   return new ChannelContract(web3)
 }

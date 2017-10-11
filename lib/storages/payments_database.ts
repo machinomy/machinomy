@@ -1,4 +1,3 @@
-import Promise = require('bluebird')
 import _ = require('lodash')
 import Engine from '../engines/engine'
 import { ChannelId } from '../channel'

@@ -1,5 +1,3 @@
-
-import Promise = require('bluebird')
 import Datastore = require('nedb')
 import Engine from './engine'
 /**
@@ -7,32 +5,52 @@ import Engine from './engine'
  */
 export default class EngineNedb implements Engine {
   datastore: Datastore
-  _find: (query: any) => Promise<any[]>
-  _findOne: (query: any) => Promise<any>
-  _insert: (document: any) => Promise<void>
-  _update: (query: any, update: any, option: object) => Promise<void>
 
   constructor (path: string, inMemoryOnly: boolean = false) {
     this.datastore = new Datastore({ filename: path, autoload: true, inMemoryOnly: inMemoryOnly })
-    this._find = Promise.promisify(this.datastore.find, { context: this.datastore })
-    this._findOne = Promise.promisify(this.datastore.findOne, { context: this.datastore })
-    this._insert = Promise.promisify(this.datastore.insert, { context: this.datastore })
-    this._update = Promise.promisify(this.datastore.update, { context: this.datastore })
   }
 
   find<A> (query: object): Promise<Array<A>> {
-    return this._find(query)
+    return new Promise((resolve: Function, reject: Function) => {
+      this.datastore.find(query, (err: Error, res: Array<A>) => {
+        if (err) {
+          return reject(err)
+        }
+        resolve(res)
+      })
+    })
   }
 
   findOne<A> (query: object): Promise<A|null> {
-    return this._findOne(query)
+    return new Promise((resolve: Function, reject: Function) => {
+      this.datastore.findOne(query, (err: Error, res: A) => {
+        if (err) {
+          return reject(err)
+        }
+        resolve(res)
+      })
+    })
   }
 
   insert (document: object): Promise<void> {
-    return this._insert(document)
+    return new Promise((resolve: Function, reject: Function) => {
+      this.datastore.insert(document, (err: Error, res: any) => {
+        if (err) {
+          return reject(err)
+        }
+        resolve(res)
+      })
+    })
   }
 
   update (query: object, update: object): Promise<void> {
-    return this._update(query, update, {})
+    return new Promise((resolve: Function, reject: Function) => {
+      this.datastore.update(query, update, {}, (err: Error, res: any) => {
+        if (err) {
+          return reject(err)
+        }
+        resolve(res)
+      })
+    })
   }
 }

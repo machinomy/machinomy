@@ -1,14 +1,12 @@
 import CommandPrompt from './CommandPrompt'
-import machinomyIndex from '../lib/buy'
-import _ = require('lodash')
+import * as configuration from '../lib/configuration'
 import Web3 = require('web3')
 import mongo from '../lib/mongo'
 import Machinomy from '../index'
 
 function channels (command: CommandPrompt): void {
-  let namespace = command.namespace || 'sender'
-  let settings = machinomyIndex.configuration.sender()
-  let provider = machinomyIndex.configuration.currentProvider()
+  let settings = configuration.sender()
+  let provider = configuration.currentProvider()
   let web3 = new Web3(provider)
 
   if (settings.account) {
@@ -19,12 +17,16 @@ function channels (command: CommandPrompt): void {
         machinomy.channels().then((channels: any) => {
           console.log(channels)
           mongo.db().close()
+        }).catch((e: Error) => {
+          console.log(e)
         })
       })
     } else {
       let machinomy = new Machinomy(account, web3, { engine: settings.engine })
       machinomy.channels().then((channels: any) => {
         console.log(channels)
+      }).catch((e: Error) => {
+        console.log(e)
       })
     }
   }

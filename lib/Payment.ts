@@ -1,5 +1,4 @@
 import Web3 = require('web3')
-import Promise = require('bluebird')
 import * as util from 'ethereumjs-util'
 import { ChannelId, ethHash, PaymentChannel, Signature } from './channel'
 import { Buffer } from 'buffer'
@@ -19,12 +18,8 @@ export interface PaymentJSON {
 
 function isNode () {
   let isNode = false
-  if (typeof process === 'object') {
-    if (typeof process.versions === 'object') {
-      if (typeof process.versions.node !== 'undefined') {
-        isNode = true
-      }
-    }
+  if (process && process.versions && process.versions.node) {
+    isNode = true
   }
   return isNode
 }

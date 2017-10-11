@@ -1,4 +1,3 @@
-import Promise = require('bluebird')
 import mongo from '../mongo'
 import Engine from './engine'
 

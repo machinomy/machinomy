@@ -1,9 +1,10 @@
-import machinomy from '../lib/buy'
+import { buyContent } from '../lib/buy'
 import CommandPrompt from './CommandPrompt'
 import mongo from '../lib/mongo'
+import * as configuration from '../lib/configuration'
 
 function buy (uri: string, command: CommandPrompt): void {
-  let settings = machinomy.configuration.sender()
+  let settings = configuration.sender()
   let password: string = settings.password || ''
   if (command.parent && command.parent.password) {
     password = command.parent.password
@@ -14,7 +15,7 @@ function buy (uri: string, command: CommandPrompt): void {
       console.error('Sender account is not defined')
       return
     }
-    machinomy.buy(uri, settings.account, password).then(contents => {
+    buyContent(uri, settings.account, password).then(contents => {
       if (settings.engine === 'mongo') {
         mongo.db().close()
       }

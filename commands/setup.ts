@@ -1,12 +1,12 @@
-import machinomy from '../lib/buy'
+// import machinomy from '../lib/buy'
+import * as config from '../lib/configuration'
 import * as fs from 'fs'
 import prompt = require('prompt')
 import CommandPrompt from './CommandPrompt'
-
 const setup = (command: CommandPrompt) => {
   let namespace = command.namespace || 'sender'
 
-  let baseDirPath = machinomy.configuration.baseDirPath()
+  let baseDirPath = config.baseDirPath()
   if (!fs.existsSync(baseDirPath)) {
     fs.mkdirSync(baseDirPath)
   }
@@ -18,7 +18,7 @@ const setup = (command: CommandPrompt) => {
   let configuration: {[namespace: string]: Configuration}
 
   try {
-    configuration = machinomy.configuration.configurationOptions()
+    configuration = config.configurationOptions()
   } catch (ex) {
     configuration = {}
   }
@@ -37,7 +37,7 @@ const setup = (command: CommandPrompt) => {
     console.log('Full configuration:')
     console.log(configuration)
     let configurationString = JSON.stringify(configuration, null, 4)
-    fs.writeFileSync(machinomy.configuration.configFilePath(), configurationString)
+    fs.writeFileSync(config.configFilePath(), configurationString)
   })
 }
 
