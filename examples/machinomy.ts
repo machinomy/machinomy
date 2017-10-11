@@ -7,10 +7,8 @@ import Machinomy from '../index'
 let sender = '0x5bf66080c92b81173f470e25f9a12fc146278429'
 let receiver = '0xebeab176c2ca2ae72f11abb1cecad5df6ccb8dfe'
 
-const { spawn, exec } = require('child_process')
-
 let getBalance = async (web3: Web3, account: string) => {
-  return Number(await web3.eth.getBalance(account))
+  return Number(web3.eth.getBalance(account))
 }
 
 let checkBalance = async (message: string, web3: Web3, sender: string, cb: Function) => {
@@ -26,24 +24,13 @@ let checkBalance = async (message: string, web3: Web3, sender: string, cb: Funct
   return result
 }
 
-// const GAS_BUY = 158228
-// const GAS_DEPOSIT = 31357
-// const GAS_SETTLE_FIRST = 72130
-// const GAS_SETTLE_SECOND = 38176
-// const GAS_CLAIM = 65891
-
 mongo.connectToServer(async () => {
   await mongo.db().dropDatabase()
-
   let provider = configuration.currentProvider()
   let web3 = new Web3(provider)
-  // console.log('gasPrice:')
-  // console.log(Number(web3.eth.gasPrice))
 
   const price = Number(web3.toWei(1, 'ether'))
   let machinomy = new Machinomy(sender, web3, { engine: 'mongo' })
-
-  let balanceBefore = await getBalance(web3, sender)
 
   // contractAddress: '0x8ad5c3cd38676d630b060a09baa40b0a3cb0b4b5'
   let message = 'This is first buy:'

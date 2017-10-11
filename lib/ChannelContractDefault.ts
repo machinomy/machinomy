@@ -1,15 +1,9 @@
 import Promise = require('bluebird')
 import * as util from 'ethereumjs-util'
-import { Log } from 'typescript-logger'
-import * as configuration from './configuration'
-import { FilterResult } from 'web3'
 import Web3 = require('web3')
 import * as BigNumber from 'bignumber.js'
-import Payment from './Payment'
-import { sender } from './configuration'
 import { PaymentRequired } from './transport'
-import { PaymentChannel, PaymentChannelJSON } from './payment_channel'
-// import { Broker } from 'machinomy-contracts/types/index'
+import { PaymentChannel, PaymentChannelJSON } from './paymentChannel'
 import { buildBrokerContract } from 'machinomy-contracts'
 
 export { PaymentChannel, PaymentChannelJSON }
@@ -138,16 +132,6 @@ export class ChannelContractDefault {
     const buffer = Buffer.from('\x19Ethereum Signed Message:\n' + message.length + message)
     return '0x' + util.sha3(buffer).toString('hex')
   }
-
-  // canFinishSettle (sender: string, channelId: string): Promise<boolean> {
-  //   return new Promise((resolve, reject) => {
-  //     return buildBrokerContract(this.web3).deployed().then((deployed) => {
-  //       this.contract.canFinishSettle(sender, channelId).then((result: any) => {
-  //         resolve(result)
-  //       })
-  //     })
-  //   })
-  // }
 
   getState (paymentChannel: PaymentChannel): Promise<number> {
     if (process.env.NODE_ENV === 'test') { // FIXME

@@ -15,10 +15,6 @@ export const PAYWALL_PATH = 'api/paywall/' + PROTOCOL
 
 const log = Log.create('configuration')
 
-const CONTRACTS_TOKEN = {
-  ropsten: '0x744760947cad061e431e618d90a59b1ddfbc7b91'
-}
-
 const CONTRACTS = {
   development: '0xede26550428812f833ad7a8d1a9019561d243d6c',
   ropsten: '0xc365a7c7d222b781e7b50a95e005d89243fc650d'

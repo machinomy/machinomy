@@ -3,8 +3,7 @@ import machinomyIndex from './index'
 import * as transport from './lib/transport'
 import * as storage from './lib/storage'
 import * as channel from './lib/channel'
-import { PaymentPair, default as Sender } from './lib/sender'
-import * as BigNumber from 'bignumber.js'
+import { default as Sender } from './lib/sender'
 import { ChannelContract, contract } from './lib/channel'
 
 class Machinomy {
@@ -33,7 +32,6 @@ class Machinomy {
   deposit (channelId: string, value: number) {
     let channelContract = contract(this.web3)
     return new Promise((resolve, reject) => {
-      let engine = storage.engine(this.databaseFile, true, this.engine)
       let s = storage.build(this.web3, this.databaseFile, 'sender', false, this.engine)
       s.channels.firstById(channelId).then((paymentChannel) => {
         if (paymentChannel) {

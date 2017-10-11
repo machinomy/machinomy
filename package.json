@@ -18,7 +18,7 @@
     "test_mongo": "NODE_ENV=test ENGINE_NAME=mongo mocha",
     "test": "yarn run test_nedb; yarn run test_mongo",
     "build": "tsc -p tsconfig.json",
-    "lint": "tslint -t stylish --type-check --project '.' --exclude node_modules/*",
+    "lint": "tslint -t stylish --type-check -p '.' -e './node_modules/**/*.ts'",
     "prepublish": "yarn lint && yarn build"
   },
   "main": "index.js",

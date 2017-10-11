@@ -1,19 +1,19 @@
 import Promise = require('bluebird')
 import * as util from 'ethereumjs-util'
-import { Log } from 'typescript-logger'
-import * as configuration from './configuration'
-import { FilterResult } from 'web3'
+// import { Log } from 'typescript-logger'
+// import * as configuration from './configuration'
+// import { FilterResult } from 'web3'
 import Web3 = require('web3')
 import * as BigNumber from 'bignumber.js'
-import Payment from './Payment'
-import { sender } from './configuration'
+// import Payment from './Payment'
+// import { sender } from './configuration'
 import { PaymentRequired } from './transport'
-import { PaymentChannel, PaymentChannelJSON } from './payment_channel'
+import { PaymentChannel, PaymentChannelJSON } from './paymentChannel'
 import { buildBrokerTokenContract, buildERC20Contract } from 'machinomy-contracts'
 
 export { PaymentChannel, PaymentChannelJSON }
 
-const DAY_IN_SECONDS = 0
+// const DAY_IN_SECONDS = 0
 // const DAY_IN_SECONDS = 86400
 
 export const ethHash = (message: string): string => {
@@ -23,13 +23,13 @@ export const ethHash = (message: string): string => {
 /**
  * Default settlement period for a payment channel
  */
-const DEFAULT_SETTLEMENT_PERIOD = 2 * DAY_IN_SECONDS
+// const DEFAULT_SETTLEMENT_PERIOD = 2 * DAY_IN_SECONDS
 
 /**
  * Default duration of a payment channel.
  * @type {number}
  */
-const DEFAULT_CHANNEL_TTL = 20 * DAY_IN_SECONDS
+// const DEFAULT_CHANNEL_TTL = 20 * DAY_IN_SECONDS
 
 /**
  * Cost of creating a channel.
@@ -65,6 +65,8 @@ export class ChannelContractToken {
               })
             })
           })
+        }).catch((e: Error) => {
+          reject(e)
         })
       }).catch((e: Error) => {
         reject(e)
@@ -108,9 +110,13 @@ export class ChannelContractToken {
                   }
                 })
               })
+            }).catch((e: Error) => {
+              reject(e)
             })
           }
         })
+      }).catch((e: Error) => {
+        reject(e)
       })
     })
   }

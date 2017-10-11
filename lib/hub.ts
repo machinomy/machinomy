@@ -1,6 +1,5 @@
 import Storage from './storage'
 import * as receiver from './receiver'
-import * as channel from './channel'
 import * as configuration from './configuration'
 import * as express from 'express'
 import Web3 = require('web3')
@@ -41,7 +40,7 @@ export class Hub {
   }
 
   verify () {
-    return (req: express.Request, res: express.Response, next: express.NextFunction):any => {
+    return (req: express.Request, res: express.Response, next: express.NextFunction): any => {
       let token = req.body.token
       if (token) {
         this.server.acceptToken(token).then(isOk => {

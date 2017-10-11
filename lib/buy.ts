@@ -1,18 +1,10 @@
 import * as channel from './channel'
-import * as middleware from './middleware'
 import * as transport from './transport'
-import * as sender from './sender'
 import * as storage from './storage'
 import * as configuration from './configuration'
 import Web3 = require('web3')
 import Promise = require('bluebird')
-
-import { Log } from 'typescript-logger'
 import { PaymentPair, default as Sender } from './sender'
-import { Logger } from 'typescript-logger/build/logger'
-import Payment from './Payment'
-
-export const log: Logger<any> = Log.create('machinomy')
 
 // const UNLOCK_PERIOD = 1000
 
@@ -36,20 +28,4 @@ export function buyContent (uri: string, account: string, password: string): Pro
     let response = pair.response
     return response.body
   })
-}
-
-export default {
-  NAME: 'machinomy',
-  VERSION: '0.1.5',
-  Paywall: middleware.Paywall,
-  Transport: transport.Transport,
-  transport: transport,
-  contract: channel.contract,
-  configuration: configuration,
-  Payment: Payment,
-  storage: storage,
-  channel: channel,
-  log: log,
-  buy: buyContent,
-  sender: sender
 }
