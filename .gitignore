@@ -6,3 +6,5 @@ build/
 **/*.js
 **/*.js.map
 .vscode/
+documentation
+.DS_Store
