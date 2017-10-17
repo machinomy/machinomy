@@ -1,4 +1,8 @@
 {
   "defaultSeverity": "error",
-  "extends": "tslint-config-standard"
+  "extends": "tslint-config-standard",
+  "rules": {
+    "no-trailing-whitespace": [true, "ignore-jsdoc"],
+    "indent": [true, "spaces", 2]
+  }
 }
