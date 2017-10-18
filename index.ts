@@ -16,23 +16,23 @@ export interface BuyOptions {
   /** Price of content in wei. */
   price: number
   /** Endpoint for offchain payment that Machinomy send via HTTP.
-   * The payment signed by web3 inside Machinomy. 
+   * The payment signed by web3 inside Machinomy.
    */
   gateway: string
 }
 
 /**
- * Params returned by buy operation. Generated channel id (or already exists opened channel) 
+ * Params returned by buy operation. Generated channel id (or already exists opened channel)
  * and token as a proof of purchase.
  */
 export interface BuyResult {
-  channelId: string
+  channelId: channel.ChannelId
   token: string
 }
 
 /**
  * Params for Machinomy. Currenty Machinomy supports mongodb and nedb as a database engine.
- * Nedb is a default engine. 
+ * Nedb is a default engine.
  */
 export interface MachinomyOptions {
   /** "nedb" or "mongo". */
@@ -42,22 +42,22 @@ export interface MachinomyOptions {
 }
 
 /**
- * Machinomy is a library for micropayments in Ether (and ERC20 tokens) over HTTP. 
+ * Machinomy is a library for micropayments in Ether (and ERC20 tokens) over HTTP.
  * Machinomy provides API to send and receive a minuscule amount of money instantly.
  * Core method is [buy]{@link Machinomy.buy}. The method does all the heavy lifting providing an easy interface
  * for micropayments.
- * 
+ *
  * NB. All monetary values below are denominated in Wei, including: [buy]{@link Machinomy.buy} and
  * [deposit]{@link Machinomy.deposit} methods.
- * 
- * 
+ *
+ *
  * @example <caption>Buying with Machinomy.</caption>
  * <pre><code>const sender = '0x5bf66080c92b81173f470e25f9a12fc146278429'
  * const provider = new Web3.providers.HttpProvider("http://localhost:8545")
  * let web3 = new Web3(provider)
  *
  * let machinomy = new Machinomy(sender, web3, { engine: 'nedb' })
- * 
+ *
  * const price = Number(web3.toWei(1, 'ether'))
  * const receiver = '0xebeab176c2ca2ae72f11abb1cecad5df6ccb8dfe'
  * const result = await machinomy.buy({
@@ -81,14 +81,14 @@ export default class Machinomy {
 
   /**
    * Create an instance of Machinomy.
-   * 
+   *
    * @example <caption>Instantiating Machinomy.</caption>
    * <pre><code>const sender = '0x5bf66080c92b81173f470e25f9a12fc146278429'
    * const provider = new Web3.providers.HttpProvider("http://localhost:8545")
    * let web3 = new Web3(provider)
    *
    * let machinomy = new Machinomy(sender, web3, { engine: 'nedb' })</code></pre>
-   * 
+   *
    * @param account - Ethereum account address that sends the money. Make sure it is managed by Web3 instance passed as `web3` param.
    * @param web3 - Prebuilt web3 instance that manages the account and signs payments.
    */
@@ -105,12 +105,12 @@ export default class Machinomy {
 
   /**
    * Entrypoint for a purchasing.
-   * 
+   *
    * Wnen you `buy` for the first time from the same receiver, the method opens a channel with a deposit equal to `price`✕10.
-   * Next method call forms a payment and sends it via http to `gateway` url. 
-   * 
+   * Next method call forms a payment and sends it via http to `gateway` url.
+   *
    * The method then returns a token and channel id, in form of {@link BuyResult}.
-   * 
+   *
    * @example
    * <pre><code>machinomy.buy({
    *   receiver: receiver,
@@ -131,13 +131,13 @@ export default class Machinomy {
 
   /**
    * Put more money into the channel.
-   * 
+   *
    * @example
    * <pre><code>
    * let channelId = '0x0bf080aeb3ed7ea6f9174d804bd242f0b31ff1ea24800344abb580cd87f61ca7'
    * machinomy.deposit(channelId, web3.toWei(1, "ether").toNumber(())) // Put 1 Ether more
    * </code></pre>
-   * 
+   *
    * @param channelId - Channel id.
    * @param value - Size of deposit in Wei.
    */
@@ -178,12 +178,12 @@ export default class Machinomy {
 
   /**
    * Share the money between sender and reciver according to payments made.
-   * 
+   *
    * For example a channel was opened with 10 Ether. Sender makes 6 purchases, 1 Ether each.
    * Total value transferred is 6 Ether.
    * If a party closes the channel, the money deposited to the channel are split.
    * The receiver gets 6 Ether. 4 unspent Ethers return to the sender.
-   * 
+   *
    * A channel can be closed in two ways, according to what party initiates that.
    * The method nicely abstracts over that, so you do not need to know what is really going on under the hood.
    * For more details on how payment channels work refer to a website.
