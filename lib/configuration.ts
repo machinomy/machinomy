@@ -97,7 +97,7 @@ export const receiver = (): Configuration => {
     return new Configuration({
       account: process.env.MACHINOMY_RECEIVER_ACCOUNT || options.receiver.account,
       password: process.env.MACHINOMY_RECEIVER_PASSWORD || options.receiver.password,
-      engine: process.env.MACHINOMY_SENDER_ENGINE || options.sender.engine
+      engine: process.env.MACHINOMY_SENDER_ENGINE || options.receiver.engine
     })
   } catch (error) {
     log.error(error)
