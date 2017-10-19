@@ -18,7 +18,8 @@ export interface BuyOptions {
   /** Endpoint for offchain payment that Machinomy send via HTTP.
    * The payment signed by web3 inside Machinomy.
    */
-  gateway: string
+  gateway: string,
+  contractAddress?: string
 }
 
 /**
