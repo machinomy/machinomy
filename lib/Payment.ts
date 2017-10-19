@@ -16,44 +16,21 @@ export interface PaymentJSON {
   contractAddress?: string
 }
 
-function isNode () {
-  let isNode = false
-  if (process && process.versions && process.versions.node) {
-    isNode = true
-  }
-  return isNode
+export function digest (channelId: string|ChannelId, value: number): string {
+  return channelId.toString() + value.toString()
 }
 
-export function digest (channelId: string|ChannelId, value: number): Buffer {
-  const message = channelId.toString() + value.toString()
-  return Buffer.from(message)
-}
-
-export function sign (web3: Web3, sender: string, digest: Buffer): Promise<Signature> {
-  if (isNode()) {
-    return new Promise<Signature>((resolve, reject) => {
-
-      web3.eth.sign(sender, util.bufferToHex(digest), (error, signature) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(util.fromRpcSig(signature))
-        }
-      })
+export function sign (web3: Web3, sender: string, digest: string): Promise<Signature> {
+  return new Promise<Signature>((resolve, reject) => {
+    const sha3 = ethHash(digest)
+    web3.eth.sign(sender, sha3, (error, signature) => {
+      if (error) {
+        reject(error)
+      } else {
+        resolve(util.fromRpcSig(signature))
+      }
     })
-  } else {
-    return new Promise<Signature>((resolve, reject) => {
-      const message = digest.toString()
-      const sha3 = ethHash(message)
-      web3.eth.sign(sender, sha3, (error, signature) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(util.fromRpcSig(signature))
-        }
-      })
-    })
-  }
+  })
 }
 
 export default class Payment {
