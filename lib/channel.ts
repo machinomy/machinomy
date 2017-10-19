@@ -2,11 +2,11 @@ import * as util from 'ethereumjs-util'
 import { Log } from 'typescript-logger'
 import Web3 = require('web3')
 import * as BigNumber from 'bignumber.js'
-import Payment from './Payment'
 import { PaymentRequired } from './transport'
 import { ChannelContractDefault } from './ChannelContractDefault'
 import { ChannelContractToken } from './ChannelContractToken'
-
+import { PaymentChannelJSON, PaymentChannel } from './paymentChannel'
+export { PaymentChannelJSON, PaymentChannel }
 const log = Log.create('channel')
 Log.setProductionMode()
 
@@ -18,21 +18,13 @@ export interface Signature {
 
 const DAY_IN_SECONDS = 86400
 
-/**
- * Default settlement period for a payment channel
- */
+/** efault settlement period for a payment channel */
 const DEFAULT_SETTLEMENT_PERIOD = 2 * DAY_IN_SECONDS
 
-/**
- * Default duration of a payment channel.
- * @type {number}
- */
+/** Default duration of a payment channel. */
 const DEFAULT_CHANNEL_TTL = 20 * DAY_IN_SECONDS
 
-/**
- * Cost of creating a channel.
- * @type {number}
- */
+/** Cost of creating a channel. */
 const CREATE_CHANNEL_GAS = 500000
 
 export const ethHash = (message: string): string => {
@@ -40,100 +32,20 @@ export const ethHash = (message: string): string => {
   return '0x' + util.sha3(buffer).toString('hex')
 }
 
-export interface PaymentChannelJSON {
-  sender: string
-  receiver: string
-  channelId: string
-  value: number
-  spent: number
-  state: number
-  contractAddress: string | undefined
-}
-
-/**
- * The Payment Channel
- */
-export class PaymentChannel {
-  sender: string
-  receiver: string
-  channelId: string
-  value: number
-  spent: number
-  state: number
-  contractAddress: string | undefined
-
-  /**
-   * @param sender      Ethereum address of the client.
-   * @param receiver    Ethereum address of the server.
-   * @param channelId   Identifier of the channel.
-   * @param value       Total value of the channel.
-   * @param spent       Value sent by {sender} to {receiver}.
-   * @param state       0 - 'open', 1 - 'settling', 2 - 'settled'
-   */
-  constructor (sender: string, receiver: string, channelId: string, value: number, spent: number, state: number = 0, contractAddress: string | undefined) { // FIXME remove contract parameter
-    this.sender = sender
-    this.receiver = receiver
-    this.channelId = channelId
-    this.value = value
-    this.spent = spent
-    this.state = state || 0
-    this.contractAddress = contractAddress
-  }
-
-  static fromPayment (payment: Payment): PaymentChannel {
-    return new PaymentChannel(payment.sender, payment.receiver, payment.channelId, payment.channelValue, payment.value, undefined, payment.contractAddress)
-  }
-
-  static fromDocument (document: PaymentChannelJSON): PaymentChannel {
-    return new PaymentChannel(
-      document.sender,
-      document.receiver,
-      document.channelId,
-      document.value,
-      document.spent,
-      document.state,
-      document.contractAddress
-    )
-  }
-
-  toJSON (): PaymentChannelJSON {
-    return {
-      state: this.state,
-      spent: this.spent,
-      value: this.value,
-      channelId: this.channelId,
-      receiver: this.receiver,
-      sender: this.sender,
-      contractAddress: this.contractAddress
-    }
-  }
-}
-
-/**
- * Wrapper for the payment channel contract.
- */
+/** Wrapper for the payment channel contract. */
 export class ChannelContract {
   web3: Web3
-  // contract: Broker.Contract
 
   /**
-   * @param web3      Instance of Web3.
-   * @param address   Address of the deployed contract.
-   * @param abi       Interface of the deployed contract.
+   * @param web3 - Instance of Web3.
    */
   constructor (web3: Web3) {
-    // this.contract = web3.eth.contract(abi).at(address) as Broker.Contract
     this.web3 = web3
   }
 
   createChannel (paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: any): any {
     return new Promise<PaymentChannel>((resolve, reject) => {
-      let channelContract
-      if (paymentRequired.contractAddress) {
-        channelContract = new ChannelContractToken(this.web3)
-      } else {
-        channelContract = new ChannelContractDefault(this.web3)
-      }
+      let channelContract = this.buildChannelContract(paymentRequired)
       channelContract.createChannel(paymentRequired, duration, settlementPeriod, options).then((channelId: any) => {
         resolve(channelId)
       }).catch((e: Error) => {
@@ -142,9 +54,14 @@ export class ChannelContract {
     })
   }
 
-  /**
-   * Initiate payment channel between `sender` and `receiver`, with initial amount set to `value`.
-   */
+  buildChannelContract (paymentRequired: PaymentRequired | PaymentChannel) {
+    if (paymentRequired.contractAddress) {
+      return new ChannelContractToken(this.web3)
+    } else {
+      return new ChannelContractDefault(this.web3)
+    }
+  }
+
   buildPaymentChannel (sender: string, paymentRequired: PaymentRequired, value: number): Promise<PaymentChannel> {
     const receiver = paymentRequired.receiver
     return new Promise<PaymentChannel>((resolve, reject) => {
@@ -156,7 +73,8 @@ export class ChannelContract {
         value,
         gas: CREATE_CHANNEL_GAS
       }
-      this.createChannel(paymentRequired, duration, settlementPeriod, options).then((channelId: string) => {
+      this.createChannel(paymentRequired, duration, settlementPeriod, options).then((res: any) => {
+        const channelId = res.logs[0].args.channelId
         const paymentChannel = new PaymentChannel(sender, receiver, channelId, value, 0, undefined, paymentRequired.contractAddress)
         resolve(paymentChannel)
       }).catch((e: Error) => {
@@ -166,22 +84,12 @@ export class ChannelContract {
   }
 
   claim (receiver: string, paymentChannel: PaymentChannel, value: number, v: number, r: string, s: string): Promise<any> {
-    let channelContract
-    if (paymentChannel.contractAddress) {
-      channelContract = new ChannelContractToken(this.web3)
-    } else {
-      channelContract = new ChannelContractDefault(this.web3)
-    }
+    let channelContract = this.buildChannelContract(paymentChannel)
     return channelContract.claim(receiver, paymentChannel, value, v, r, s)
   }
 
-  deposit (sender: string, paymentChannel: PaymentChannel, value: number): Promise<BigNumber.BigNumber> {
-    let channelContract
-    if (paymentChannel.contractAddress) {
-      channelContract = new ChannelContractToken(this.web3)
-    } else {
-      channelContract = new ChannelContractDefault(this.web3)
-    }
+  deposit (sender: string, paymentChannel: PaymentChannel, value: number): Promise<void> {
+    let channelContract = this.buildChannelContract(paymentChannel)
     return channelContract.deposit(sender, paymentChannel, value)
   }
 
@@ -189,33 +97,18 @@ export class ChannelContract {
     if (process.env.NODE_ENV === 'test') { // FIXME
       return Promise.resolve(0)
     } else {
-      let channelContract
-      if (paymentChannel.contractAddress) {
-        channelContract = new ChannelContractToken(this.web3)
-      } else {
-        channelContract = new ChannelContractDefault(this.web3)
-      }
+      let channelContract = this.buildChannelContract(paymentChannel)
       return channelContract.getState(paymentChannel)
     }
   }
 
   startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber.BigNumber): Promise<void> {
-    let channelContract
-    if (paymentChannel.contractAddress) {
-      channelContract = new ChannelContractToken(this.web3)
-    } else {
-      channelContract = new ChannelContractDefault(this.web3)
-    }
+    let channelContract = this.buildChannelContract(paymentChannel)
     return channelContract.startSettle(account, paymentChannel, payment)
   }
 
-  finishSettle (account: string, paymentChannel: PaymentChannel) {
-    let channelContract
-    if (paymentChannel.contractAddress) {
-      channelContract = new ChannelContractToken(this.web3)
-    } else {
-      channelContract = new ChannelContractDefault(this.web3)
-    }
+  finishSettle (account: string, paymentChannel: PaymentChannel): Promise<void> {
+    let channelContract = this.buildChannelContract(paymentChannel)
     return channelContract.finishSettle(account, paymentChannel)
   }
 }

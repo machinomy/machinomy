@@ -7,128 +7,52 @@ import { buildBrokerContract } from 'machinomy-contracts'
 
 export { PaymentChannel, PaymentChannelJSON }
 
-const DAY_IN_SECONDS = 0
-// const DAY_IN_SECONDS = 86400
-
 export const ethHash = (message: string): string => {
   const buffer = Buffer.from('\x19Ethereum Signed Message:\n' + message.length + message)
   return '0x' + util.sha3(buffer).toString('hex')
 }
-/**
- * Default settlement period for a payment channel
- */
-const DEFAULT_SETTLEMENT_PERIOD = 2 * DAY_IN_SECONDS
 
-/**
- * Default duration of a payment channel.
- * @type {number}
- */
-const DEFAULT_CHANNEL_TTL = 20 * DAY_IN_SECONDS
-
-/**
- * Cost of creating a channel.
- * @type {number}
- */
 const CREATE_CHANNEL_GAS = 300000
 
 export class ChannelContractDefault {
   web3: Web3
-  // contract: Broker.Contract
 
-  /**
-   * @param web3      Instance of Web3.
-   * @param address   Address of the deployed contract.
-   * @param abi       Interface of the deployed contract.
-   */
   constructor (web3: Web3) {
     this.web3 = web3
   }
 
-  createChannel (paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: any): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-      buildBrokerContract(this.web3).deployed().then((deployed) => {
-        deployed.createChannel(paymentRequired.receiver, duration, settlementPeriod, options).then((res: any) => {
-          const channelId = res.logs[0].args.channelId
-          resolve(channelId)
-        })
-      }).catch((e: Error) => {
-        reject(e)
-      })
-    })
+  async createChannel (paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: any): Promise<any> {
+    let deployed = await buildBrokerContract(this.web3).deployed()
+    return deployed.createChannel(paymentRequired.receiver, duration, settlementPeriod, options)
   }
 
-  /**
-   * Initiate payment channel between `sender` and `receiver`, with initial amount set to `value`.
-   */
-  buildPaymentChannel (sender: string, paymentRequired: PaymentRequired, value: number): Promise<PaymentChannel> {
-    const receiver = paymentRequired.receiver
-    return new Promise<PaymentChannel>((resolve, reject) => {
-      const settlementPeriod = DEFAULT_SETTLEMENT_PERIOD
-      const duration = DEFAULT_CHANNEL_TTL
-      const options = {
-        from: sender,
-        value,
-        gas: CREATE_CHANNEL_GAS
-      }
-      this.createChannel(paymentRequired, duration, settlementPeriod, options).then((channelId: string) => {
-        const paymentChannel = new PaymentChannel(sender, receiver, channelId, value, 0, undefined, paymentRequired.contractAddress)
-        resolve(paymentChannel)
-      }).catch((e: Error) => {
-        reject(e)
-      })
-    })
-  }
-
-  claim (receiver: string, paymentChannel: PaymentChannel, value: number, v: number, r: string, s: string): Promise<BigNumber.BigNumber> {
+  async claim (receiver: string, paymentChannel: PaymentChannel, value: number, v: number, r: string, s: string): Promise<void> {
     let channelId = paymentChannel.channelId
-    return new Promise<BigNumber.BigNumber>((resolve, reject) => {
-      return buildBrokerContract(this.web3).deployed().then((deployed) => {
-        const h = ethHash(channelId.toString() + value.toString())
-        deployed.canClaim(channelId, h, Number(v), r, s).then((canClaim: any) => {
-          if (canClaim) {
-            deployed.claim(channelId, value, h, v, r, s, { from: receiver }).then((res: any) => {
-              resolve()
-            })
-          }
-        })
-      })
-    })
+    let deployed = await buildBrokerContract(this.web3).deployed()
+    const h = ethHash(channelId.toString() + value.toString())
+    let canClaim = await deployed.canClaim(channelId, h, Number(v), r, s)
+    if (canClaim) {
+      return deployed.claim(channelId, value, h, v, r, s, { from: receiver })
+    }
   }
 
-  deposit (sender: string, paymentChannel: PaymentChannel, value: number): Promise<BigNumber.BigNumber> {
-    return new Promise<BigNumber.BigNumber>((resolve, reject) => {
-      let options = {
-        from: sender,
-        value: value,
-        gas: CREATE_CHANNEL_GAS
-      }
-      const channelId = paymentChannel.channelId
-      return buildBrokerContract(this.web3).deployed().then((deployed) => {
-        deployed.canDeposit(sender, channelId).then((canDeposit: any) => {
-          if (canDeposit) {
-            deployed.deposit(channelId, options).then((result: any) => {
-              resolve(result)
-            })
-          }
-        })
-      })
-    })
+  async deposit (sender: string, paymentChannel: PaymentChannel, value: number): Promise<void> {
+    let options = {
+      from: sender,
+      value: value,
+      gas: CREATE_CHANNEL_GAS
+    }
+    const channelId = paymentChannel.channelId
+    let deployed = await buildBrokerContract(this.web3).deployed()
+    let canDeposit = await deployed.canDeposit(sender, channelId)
+    if (canDeposit) {
+      return deployed.deposit(channelId, options)
+    }
   }
 
-  canStartSettle (account: string, channelId: string): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      return buildBrokerContract(this.web3).deployed().then((deployed) => {
-        deployed.canStartSettle(account, channelId).then((result: any) => {
-          resolve(result)
-        })
-      })
-    })
-  }
-
-  h (channelId: string, payment: BigNumber.BigNumber) {
-    const message = channelId.toString() + payment.toString()
-    const buffer = Buffer.from('\x19Ethereum Signed Message:\n' + message.length + message)
-    return '0x' + util.sha3(buffer).toString('hex')
+  async canStartSettle (account: string, channelId: string): Promise<boolean> {
+    let deployed = await buildBrokerContract(this.web3).deployed()
+    return deployed.canStartSettle(account, channelId)
   }
 
   getState (paymentChannel: PaymentChannel): Promise<number> {
@@ -147,36 +71,22 @@ export class ChannelContractDefault {
     }
   }
 
-  startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber.BigNumber): Promise<void> {
+  async startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber.BigNumber): Promise<void> {
+    let deployed = await buildBrokerContract(this.web3).deployed()
     const channelId = paymentChannel.channelId
-    return new Promise((resolve, reject) => {
+    let canStart = await this.canStartSettle(account, channelId)
+    if (canStart) {
       let paymentHex = '0x' + payment.toString(16)
-      return buildBrokerContract(this.web3).deployed().then((deployed) => {
-        this.canStartSettle(account, channelId).then((canStart: boolean) => {
-          if (canStart) {
-            deployed.startSettle(channelId, paymentHex, { from: account }).then((result: any) => {
-              resolve()
-            })
-          }
-        }).catch((e: Error) => {
-          console.log(e)
-        })
-      })
-    })
+      return deployed.startSettle(channelId, paymentHex, { from: account })
+    }
   }
 
-  finishSettle (account: string, paymentChannel: PaymentChannel) {
+  async finishSettle (account: string, paymentChannel: PaymentChannel): Promise<void> {
     const channelId = paymentChannel.channelId
-    return new Promise((resolve, reject) => {
-      return buildBrokerContract(this.web3).deployed().then((deployed) => {
-        deployed.canFinishSettle(account, channelId).then((canFinish: boolean) => {
-          if (canFinish) {
-            deployed.finishSettle(channelId, { from: account, gas: 400000 }).then((result: any) => {
-              resolve()
-            })
-          }
-        })
-      })
-    })
+    let deployed = await buildBrokerContract(this.web3).deployed()
+    let canFinish = deployed.canFinishSettle(account, channelId)
+    if (canFinish) {
+      return deployed.finishSettle(channelId, { from: account, gas: 400000 })
+    }
   }
 }
