@@ -12,7 +12,7 @@ const engineName = process.env.ENGINE_NAME || 'nedb'
 describe('receiver', () => {
   before((done) => {
     if (process.env.ENGINE_NAME === 'mongo') {
-      mongo.connectToServer(() => {
+      mongo.connectToServer().then(() => {
         done()
       })
     } else {

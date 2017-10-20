@@ -127,7 +127,7 @@ export default class Machinomy {
   buy (options: BuyOptions): Promise<BuyResult> {
     let _transport = transport.build()
     let contract = channel.contract(this.web3)
-    let s = storage.build(this.web3, this.databaseFile, 'sender', false, this.engine)
+    let s = storage.build(this.web3, this.databaseFile, 'shared', false, this.engine)
     let client = new Sender(this.web3, this.account, contract, _transport, s)
     return client.buyMeta(options).then((res: any) => {
       return { channelId: res.payment.channelId, token: res.token }
@@ -149,7 +149,7 @@ export default class Machinomy {
   deposit (channelId: string, value: number): Promise<void> {
     let channelContract = contract(this.web3)
     return new Promise((resolve, reject) => {
-      let s = storage.build(this.web3, this.databaseFile, 'sender', false, this.engine)
+      let s = storage.build(this.web3, this.databaseFile, 'shared', false, this.engine)
       s.channels.firstById(channelId).then((paymentChannel) => {
         if (paymentChannel) {
           channelContract.deposit(this.account, paymentChannel, value).then(() => {
@@ -164,9 +164,9 @@ export default class Machinomy {
    * Returns the list of opened channels.
    */
   channels (): Promise<PaymentChannel[]> {
-    const namespace = 'sender'
+    const namespace = 'shared'
     return new Promise((resolve, reject) => {
-      let _storage = storage.build(this.web3, this.databaseFile, 'sender', false, this.engine)
+      let _storage = storage.build(this.web3, this.databaseFile, 'shared', false, this.engine)
       let engine = storage.engine(this.databaseFile, false, this.engine)
       storage.channels(this.web3, engine, namespace).all().then(found => {
         found = found.filter((ch) => {
@@ -196,7 +196,7 @@ export default class Machinomy {
   close (channelId: string): Promise<void> {
     let channelContract = contract(this.web3)
     return new Promise((resolve, reject) => {
-      let s = storage.build(this.web3, this.databaseFile, 'sender', false, this.engine)
+      let s = storage.build(this.web3, this.databaseFile, 'shared', false, this.engine)
       s.channels.firstById(channelId).then((paymentChannel) => {
         if (paymentChannel) {
           if (paymentChannel.sender === this.account) {
@@ -210,13 +210,13 @@ export default class Machinomy {
   }
 
   acceptPayment (payment: Payment): Promise <string> {
-    let s = storage.build(this.web3, this.databaseFile, 'receiver', false, this.engine)
+    let s = storage.build(this.web3, this.databaseFile, 'shared', false, this.engine)
     let server = receiver.build(this.web3, this.account, s)
     return server.acceptPayment(payment)
   }
 
   verifyToken (token: string): Promise <boolean> {
-    let s = storage.build(this.web3, this.databaseFile, 'receiver', false, this.engine)
+    let s = storage.build(this.web3, this.databaseFile, 'shared', false, this.engine)
     let server = receiver.build(this.web3, this.account, s)
     return server.acceptToken(token)
   }
@@ -249,7 +249,7 @@ export default class Machinomy {
   private claim (channelContract: ChannelContract, paymentChannel: PaymentChannel): Promise<void> {
     return new Promise((resolve, reject) => {
       const channelId = paymentChannel.channelId
-      let s = storage.build(this.web3, this.databaseFile, 'receiver', false, this.engine)
+      let s = storage.build(this.web3, this.databaseFile, 'shared', false, this.engine)
       s.payments.firstMaximum(channelId).then((paymentDoc: any) => {
         channelContract.claim(paymentChannel.receiver, paymentChannel, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s).then(value => {
           resolve()

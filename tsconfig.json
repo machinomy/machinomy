@@ -52,7 +52,6 @@
     "bin/machinomy.ts",
     "commands/index.ts",
     "examples/server.ts",
-    "examples/client.ts",
     "examples/machinomy.ts"
   ],
   "include": [

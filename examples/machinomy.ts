@@ -25,13 +25,13 @@ let checkBalance = async (message: string, web3: Web3, sender: string, cb: Funct
   return result
 }
 
-mongo.connectToServer(async () => {
+mongo.connectToServer().then( async () => {
   await mongo.db().dropDatabase()
   let provider = configuration.currentProvider()
   let web3 = new Web3(provider)
 
   const price = Number(web3.toWei(1, 'ether'))
-  let machinomy = new Machinomy(sender, web3, { engine: 'mongo' })
+  let machinomy = new Machinomy(sender, web3, { engine: 'nedb' })
 
   let message = 'This is first buy:'
   let resultFirst = await checkBalance(message, web3, sender, async () => {
@@ -93,89 +93,89 @@ mongo.connectToServer(async () => {
   console.log('ChannelId after second buy:', resultSecond.channelId)
   console.log('ChannelId after once more buy:', resultThird.channelId)
 
-  /////// ERC20
-  console.log('================================')
-  console.log('================================')
-  console.log('ERC20')
-  await mongo.db().dropDatabase()
+  // /////// ERC20
+  // console.log('================================')
+  // console.log('================================')
+  // console.log('ERC20')
+  // await mongo.db().dropDatabase()
 
-  let contractAddress = '0x8ad5c3cd38676d630b060a09baa40b0a3cb0b4b5'
-  let checkBalanceERC20 = async (message: string, web3: Web3, sender: string, cb: Function) => {
-    let instanceERC20 = await buildERC20Contract(contractAddress, web3)
-    let deployedERC20 = await instanceERC20.deployed()
-    console.log('----------')
-    console.log(message)
-    let balanceBefore = (await deployedERC20.balanceOf(sender)).toNumber()
-    console.log('Balance before', balanceBefore.toString())
-    let result = await cb()
-    let balanceAfter = (await deployedERC20.balanceOf(sender)).toNumber()
-    console.log('Balance after', balanceAfter.toString())
-    let diff = balanceAfter - balanceBefore
-    console.log('Diff', diff.toString())
-    return result
-  }
+  // let contractAddress = '0x8ad5c3cd38676d630b060a09baa40b0a3cb0b4b5'
+  // let checkBalanceERC20 = async (message: string, web3: Web3, sender: string, cb: Function) => {
+  //   let instanceERC20 = await buildERC20Contract(contractAddress, web3)
+  //   let deployedERC20 = await instanceERC20.deployed()
+  //   console.log('----------')
+  //   console.log(message)
+  //   let balanceBefore = (await deployedERC20.balanceOf(sender)).toNumber()
+  //   console.log('Balance before', balanceBefore.toString())
+  //   let result = await cb()
+  //   let balanceAfter = (await deployedERC20.balanceOf(sender)).toNumber()
+  //   console.log('Balance after', balanceAfter.toString())
+  //   let diff = balanceAfter - balanceBefore
+  //   console.log('Diff', diff.toString())
+  //   return result
+  // }
 
-  message = 'This is first buy:'
-  let resultFirstERC20 = await checkBalanceERC20(message, web3, sender, async () => {
-    return await machinomy.buy({
-      receiver: receiver,
-      price: 1,
-      gateway: 'http://localhost:3001/machinomy',
-      contractAddress: contractAddress
-    }).catch((e: Error) => {
-      console.log(e)
-    })
-  })
+  // message = 'This is first buy:'
+  // let resultFirstERC20 = await checkBalanceERC20(message, web3, sender, async () => {
+  //   return await machinomy.buy({
+  //     receiver: receiver,
+  //     price: 1,
+  //     gateway: 'http://localhost:3001/machinomy',
+  //     contractAddress: contractAddress
+  //   }).catch((e: Error) => {
+  //     console.log(e)
+  //   })
+  // })
 
-  message = 'This is second buy:'
-  let resultSecondERC20 = await checkBalanceERC20(message, web3, sender, async () => {
-    return await machinomy.buy({
-      receiver: receiver,
-      price: 1,
-      gateway: 'http://localhost:3001/machinomy',
-      contractAddress: contractAddress
-    }).catch((e: Error) => {
-      console.log(e)
-    })
-  })
+  // message = 'This is second buy:'
+  // let resultSecondERC20 = await checkBalanceERC20(message, web3, sender, async () => {
+  //   return await machinomy.buy({
+  //     receiver: receiver,
+  //     price: 1,
+  //     gateway: 'http://localhost:3001/machinomy',
+  //     contractAddress: contractAddress
+  //   }).catch((e: Error) => {
+  //     console.log(e)
+  //   })
+  // })
 
-  let channelIdERC20 = resultSecondERC20.channelId
-  message = 'Deposit:'
-  await checkBalanceERC20(message, web3, sender, async () => {
-    await machinomy.deposit(channelIdERC20, 10)
-  })
+  // let channelIdERC20 = resultSecondERC20.channelId
+  // message = 'Deposit:'
+  // await checkBalanceERC20(message, web3, sender, async () => {
+  //   await machinomy.deposit(channelIdERC20, 10)
+  // })
 
-  message = 'First close:'
-  await checkBalanceERC20(message, web3, sender, async () => {
-    await machinomy.close(channelIdERC20)
-  })
+  // message = 'First close:'
+  // await checkBalanceERC20(message, web3, sender, async () => {
+  //   await machinomy.close(channelIdERC20)
+  // })
 
-  message = 'Second close:'
-  await checkBalanceERC20(message, web3, sender, async () => {
-    await machinomy.close(channelIdERC20)
-  })
+  // message = 'Second close:'
+  // await checkBalanceERC20(message, web3, sender, async () => {
+  //   await machinomy.close(channelIdERC20)
+  // })
 
-  message = 'Once more buy'
-  let resultThirdERC20 = await checkBalanceERC20(message, web3, sender, async () => {
-    return await machinomy.buy({
-      receiver: receiver,
-      price: 1,
-      gateway: 'http://localhost:3001/machinomy',
-      contractAddress: contractAddress
-    }).catch((e: Error) => {
-      console.log(e)
-    })
-  })
+  // message = 'Once more buy'
+  // let resultThirdERC20 = await checkBalanceERC20(message, web3, sender, async () => {
+  //   return await machinomy.buy({
+  //     receiver: receiver,
+  //     price: 1,
+  //     gateway: 'http://localhost:3001/machinomy',
+  //     contractAddress: contractAddress
+  //   }).catch((e: Error) => {
+  //     console.log(e)
+  //   })
+  // })
 
-  message = 'Claim by reciver'
-  await checkBalanceERC20(message, web3, sender, async () => {
-    let machinomy2 = new Machinomy(receiver, web3, { engine: 'mongo' })
-    await machinomy2.close(resultThirdERC20.channelId)
-  })
+  // message = 'Claim by reciver'
+  // await checkBalanceERC20(message, web3, sender, async () => {
+  //   let machinomy2 = new Machinomy(receiver, web3, { engine: 'mongo' })
+  //   await machinomy2.close(resultThirdERC20.channelId)
+  // })
 
-  console.log('ChannelId after first buy:', resultFirstERC20.channelId)
-  console.log('ChannelId after second buy:', resultSecondERC20.channelId)
-  console.log('ChannelId after once more buy:', resultThirdERC20.channelId)
+  // console.log('ChannelId after first buy:', resultFirstERC20.channelId)
+  // console.log('ChannelId after second buy:', resultSecondERC20.channelId)
+  // console.log('ChannelId after once more buy:', resultThirdERC20.channelId)
 
   mongo.db().close()
 })

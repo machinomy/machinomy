@@ -26,7 +26,7 @@ function buy (uri: string, command: CommandPrompt): void {
     })
   }
   if (settings.engine === 'mongo') {
-    mongo.connectToServer(() => {
+    mongo.connectToServer().then(() => {
       startBuy()
     })
   } else {
