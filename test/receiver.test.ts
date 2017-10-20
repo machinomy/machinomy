@@ -14,6 +14,8 @@ describe('receiver', () => {
     if (process.env.ENGINE_NAME === 'mongo') {
       mongo.connectToServer().then(() => {
         done()
+      }).catch((e: Error) => {
+        console.log(e)
       })
     } else {
       done()

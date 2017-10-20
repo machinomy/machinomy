@@ -28,6 +28,8 @@ function buy (uri: string, command: CommandPrompt): void {
   if (settings.engine === 'mongo') {
     mongo.connectToServer().then(() => {
       startBuy()
+    }).catch((e: Error) => {
+      console.log(e)
     })
   } else {
     startBuy()

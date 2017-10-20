@@ -34,6 +34,8 @@ function close (channelId: string, options: CommandPrompt): void {
         }).catch((e: Error) => {
           console.log(e)
         })
+      }).catch((e: Error) => {
+        console.log(e)
       })
     } else {
       let machinomy = new Machinomy(account, web3, { engine: settings.engine })

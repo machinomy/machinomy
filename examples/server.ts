@@ -27,7 +27,7 @@ import * as express from 'express'
 import Web3 = require('web3')
 import Machinomy from '../index'
 import Payment from '../lib/Payment'
-import * as bodyParser from 'body-parser';
+import * as bodyParser from 'body-parser'
 let fetch = require('whatwg-fetch').fetch
 
 /**
@@ -94,7 +94,7 @@ let paywallHeaders = () => {
   let headers: { [index: string]: string } = {}
   headers['Paywall-Version'] = '0.0.3'
   headers['Paywall-Price'] = '0.1'
-  headers["Paywall-Address"] = receiver
+  headers['Paywall-Address'] = receiver
   headers['Paywall-Gateway'] = 'http://localhost:3001/machinomy'
   return headers
 }

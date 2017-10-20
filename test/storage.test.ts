@@ -35,6 +35,8 @@ describe('storage', () => {
     if (process.env.engineName === 'mongo') {
       mongo.connectToServer().then(() => {
         done()
+      }).catch((e: Error) => {
+        console.log(e)
       })
     } else {
       done()

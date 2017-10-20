@@ -32,6 +32,8 @@ const pry = (uri: string) => {
   if (settings.engine === 'mongo') {
     mongo.connectToServer().then(() => {
       startPry()
+    }).catch((e: Error) => {
+      console.log(e)
     })
   } else {
     startPry()
