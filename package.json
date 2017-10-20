@@ -90,7 +90,8 @@
     "url-join": "^2.0.2",
     "web3": "^0.20.1",
     "web3-provider-engine": "^13.2.9",
-    "web3-typescript-typings": "https://github.com/machinomy/web3-typescript-typings"
+    "web3-typescript-typings": "https://github.com/machinomy/web3-typescript-typings",
+    "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.43",

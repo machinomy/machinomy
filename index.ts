@@ -6,6 +6,10 @@ import { default as Sender } from './lib/sender'
 import { ChannelContract, contract } from './lib/channel'
 import { PaymentChannel } from './lib/paymentChannel'
 import BigNumber from 'bignumber.js'
+// import * as BigNumber from 'bignumber.js'
+import Payment from './lib/Payment'
+// import { Receiver } from './lib/receiver'
+import * as receiver from './lib//receiver'
 
 /**
  * Options for machinomy buy.
@@ -203,6 +207,18 @@ export default class Machinomy {
         }
       }).catch(reject)
     })
+  }
+
+  acceptPayment (payment: Payment): Promise <string> {
+    let s = storage.build(this.web3, this.databaseFile, 'receiver', false, this.engine)
+    let server = receiver.build(this.web3, this.account, s)
+    return server.acceptPayment(payment)
+  }
+
+  verifyToken (token: string): Promise <boolean> {
+    let s = storage.build(this.web3, this.databaseFile, 'receiver', false, this.engine)
+    let server = receiver.build(this.web3, this.account, s)
+    return server.acceptToken(token)
   }
 
   /**
