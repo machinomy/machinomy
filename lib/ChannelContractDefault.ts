@@ -1,6 +1,6 @@
 import * as util from 'ethereumjs-util'
 import Web3 = require('web3')
-import * as BigNumber from 'bignumber.js'
+import BigNumber from 'bignumber.js'
 import { PaymentRequired } from './transport'
 import { PaymentChannel, PaymentChannelJSON } from './paymentChannel'
 import { buildBrokerContract } from 'machinomy-contracts'
@@ -71,7 +71,7 @@ export class ChannelContractDefault {
     }
   }
 
-  async startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber.BigNumber): Promise<void> {
+  async startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber): Promise<void> {
     let deployed = await buildBrokerContract(this.web3).deployed()
     const channelId = paymentChannel.channelId
     let canStart = await this.canStartSettle(account, channelId)

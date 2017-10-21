@@ -1,7 +1,7 @@
 import * as util from 'ethereumjs-util'
 import { Log } from 'typescript-logger'
 import Web3 = require('web3')
-import * as BigNumber from 'bignumber.js'
+import BigNumber from 'bignumber.js'
 import { PaymentRequired } from './transport'
 import { ChannelContractDefault } from './ChannelContractDefault'
 import { ChannelContractToken } from './ChannelContractToken'
@@ -102,7 +102,7 @@ export class ChannelContract {
     }
   }
 
-  startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber.BigNumber): Promise<void> {
+  startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber): Promise<void> {
     let channelContract = this.buildChannelContract(paymentChannel)
     return channelContract.startSettle(account, paymentChannel, payment)
   }

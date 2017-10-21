@@ -1,6 +1,6 @@
 import * as util from 'ethereumjs-util'
 import Web3 = require('web3')
-import * as BigNumber from 'bignumber.js'
+import BigNumber from 'bignumber.js'
 import { PaymentRequired } from './transport'
 import { PaymentChannel, PaymentChannelJSON } from './paymentChannel'
 import { buildBrokerTokenContract, buildERC20Contract } from 'machinomy-contracts'
@@ -65,7 +65,7 @@ export class ChannelContractToken {
    * @param payment
    * @return {string}
    */
-  h (channelId: string, payment: BigNumber.BigNumber) {
+  h (channelId: string, payment: BigNumber) {
     const message = channelId.toString() + payment.toString()
     const buffer = Buffer.from('\x19Ethereum Signed Message:\n' + message.length + message)
     return '0x' + util.sha3(buffer).toString('hex')
@@ -87,7 +87,7 @@ export class ChannelContractToken {
     }
   }
 
-  async startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber.BigNumber): Promise<void> {
+  async startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber): Promise<void> {
     let deployed = await buildBrokerTokenContract(this.web3).deployed()
     let result = await deployed.canStartSettle(account, paymentChannel.channelId)
     if (result) {

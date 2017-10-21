@@ -21,7 +21,6 @@
     "lint": "tslint -t stylish --type-check -p '.' -e './node_modules/**/*.ts'",
     "prepublish": "yarn lint && yarn build",
     "doc": "yarn build; typedoc --excludeExternals --out ./documentation --ignoreCompilerErrors --readme README.md  index.ts "
-    
   },
   "main": "index.js",
   "bin": {

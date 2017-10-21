@@ -5,7 +5,7 @@ import * as channel from './lib/channel'
 import { default as Sender } from './lib/sender'
 import { ChannelContract, contract } from './lib/channel'
 import { PaymentChannel } from './lib/paymentChannel'
-import * as BigNumber from 'bignumber.js'
+import BigNumber from 'bignumber.js'
 
 /**
  * Options for machinomy buy.
@@ -212,7 +212,7 @@ export default class Machinomy {
     return new Promise((resolve, reject) => {
       channelContract.getState(paymentChannel).then((state) => {
         if (state === 0) {
-          let num = new BigNumber.BigNumber(paymentChannel.spent)
+          let num = new BigNumber(paymentChannel.spent)
           channelContract.startSettle(this.account, paymentChannel, num).then(() => {
             console.log('startSettle is finished')
             resolve()
