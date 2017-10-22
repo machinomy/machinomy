@@ -66,6 +66,7 @@
     "@types/request": "^2.0.0",
     "@types/tmp": "^0.0.33",
     "@types/url-join": "^0.8.2",
+    "bignumber.js": "^4.1.0",
     "bluebird": "^3.5.0",
     "commander": "^2.9.0",
     "cors": "^2.8.1",
