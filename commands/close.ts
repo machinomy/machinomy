@@ -26,7 +26,7 @@ function close (channelId: string, options: CommandPrompt): void {
   if (settings.account) {
     let account = settings.account
     if (settings.engine === 'mongo') {
-      mongo.connectToServer(() => {
+      mongo.connectToServer().then(() => {
         let machinomy = new Machinomy(account, web3, {engine: settings.engine})
         machinomy.close(channelId).then(() => {
           mongo.db().close()
@@ -34,6 +34,8 @@ function close (channelId: string, options: CommandPrompt): void {
         }).catch((e: Error) => {
           console.log(e)
         })
+      }).catch((e: Error) => {
+        console.log(e)
       })
     } else {
       let machinomy = new Machinomy(account, web3, { engine: settings.engine })

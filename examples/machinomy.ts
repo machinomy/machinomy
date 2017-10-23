@@ -25,13 +25,13 @@ let checkBalance = async (message: string, web3: Web3, sender: string, cb: Funct
   return result
 }
 
-mongo.connectToServer(async () => {
+mongo.connectToServer().then( async () => {
   await mongo.db().dropDatabase()
   let provider = configuration.currentProvider()
   let web3 = new Web3(provider)
 
   const price = Number(web3.toWei(1, 'ether'))
-  let machinomy = new Machinomy(sender, web3, { engine: 'mongo' })
+  let machinomy = new Machinomy(sender, web3, { engine: 'nedb' })
 
   let message = 'This is first buy:'
   let resultFirst = await checkBalance(message, web3, sender, async () => {
@@ -178,4 +178,6 @@ mongo.connectToServer(async () => {
   console.log('ChannelId after once more buy:', resultThirdERC20.channelId)
 
   mongo.db().close()
+}).catch((e: Error) => {
+  console.log(e)
 })

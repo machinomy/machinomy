@@ -33,8 +33,10 @@ const paymentsDatabase = () => databasePromise(engine => {
 describe('storage', () => {
   before((done) => {
     if (process.env.engineName === 'mongo') {
-      mongo.connectToServer(() => {
+      mongo.connectToServer().then(() => {
         done()
+      }).catch((e: Error) => {
+        console.log(e)
       })
     } else {
       done()

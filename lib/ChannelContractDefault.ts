@@ -32,6 +32,7 @@ export class ChannelContractDefault {
     const h = ethHash(channelId.toString() + value.toString())
     let canClaim = await deployed.canClaim(channelId, h, Number(v), r, s)
     if (canClaim) {
+      console.log(canClaim)
       return deployed.claim(channelId, value, h, v, r, s, { from: receiver })
     }
   }

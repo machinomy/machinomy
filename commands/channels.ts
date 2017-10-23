@@ -12,7 +12,7 @@ function channels (command: CommandPrompt): void {
   if (settings.account) {
     let account = settings.account
     if (settings.engine === 'mongo') {
-      mongo.connectToServer(() => {
+      mongo.connectToServer().then(() => {
         let machinomy = new Machinomy(account, web3, { engine: settings.engine })
         machinomy.channels().then((channels: any) => {
           console.log(channels)
@@ -20,6 +20,8 @@ function channels (command: CommandPrompt): void {
         }).catch((e: Error) => {
           console.log(e)
         })
+      }).catch((e: Error) => {
+        console.log(e)
       })
     } else {
       let machinomy = new Machinomy(account, web3, { engine: settings.engine })
