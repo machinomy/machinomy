@@ -86,7 +86,7 @@ hub.get('/claim/:channelid', async (req: express.Request, res: express.Response,
 
 let port = 3001
 hub.listen(port, function () {
-  console.log('HUB is ready on port' + port)
+  console.log('HUB is ready on port ' + port)
 })
 
 let app = express()
