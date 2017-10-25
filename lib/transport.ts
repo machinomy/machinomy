@@ -19,7 +19,8 @@ const log = Log.create('transport')
 
 // noinspection MagicNumberJS
 export const STATUS_CODES = {
-  PAYMENT_REQUIRED: 402
+  PAYMENT_REQUIRED: 402,
+  OK: 200
 }
 
 /**

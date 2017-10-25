@@ -33,6 +33,14 @@ export interface PaymentPair {
   response: RequestResponse
 }
 
+export interface Headers {
+  [key: string]: any
+}
+
+export interface ResponseHeaders {
+  headers: Headers
+}
+
 export default class Sender {
   web3: Web3
   account: string
@@ -96,7 +104,13 @@ export default class Sender {
     })
   }
 
-  extractPaymentRequired (response: RequestResponse): Promise<PaymentRequired> {
+  extractPaymentRequired (response: ResponseHeaders): Promise<PaymentRequired> {
+    let headers = response.headers
+    if (!headers['paywall-version']) return Promise.reject(new Error(`Not found 'paywall-version' in headers`))
+    if (!headers['paywall-address']) return Promise.reject(new Error(`Not found 'paywall-address' in headers`))
+    if (!headers['paywall-price']) return Promise.reject(new Error(`Not found 'paywall-price' in headers`))
+    if (!headers['paywall-gateway']) return Promise.reject(new Error(`Not found 'paywall-gateway' in headers`))
+
     let version = response.headers['paywall-version']
     if (version === VERSION) {
       let paymentRequired = transport.PaymentRequired.parse(response.headers)
@@ -173,6 +187,7 @@ export default class Sender {
       }
       switch (response.statusCode) {
         case transport.STATUS_CODES.PAYMENT_REQUIRED:
+        case transport.STATUS_CODES.OK:
           return this.handlePaymentRequired(uri, response, opts).then((res: any) => {
             let payment = res.payment
             let token = res.token
