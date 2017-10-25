@@ -1,4 +1,3 @@
-import * as util from 'ethereumjs-util'
 import Web3 = require('web3')
 import BigNumber from 'bignumber.js'
 import { PaymentRequired } from './transport'
@@ -6,11 +5,6 @@ import { PaymentChannel, PaymentChannelJSON } from './paymentChannel'
 import { buildBrokerTokenContract, buildERC20Contract } from 'machinomy-contracts'
 
 export { PaymentChannel, PaymentChannelJSON }
-
-export const ethHash = (message: string): string => {
-  const buffer = Buffer.from('\x19Ethereum Signed Message:\n' + message.length + message)
-  return '0x' + util.sha3(buffer).toString('hex')
-}
 
 const CREATE_CHANNEL_GAS = 300000
 
@@ -34,10 +28,9 @@ export class ChannelContractToken {
   async claim (receiver: string, paymentChannel: PaymentChannel, value: number, v: number, r: string, s: string): Promise<void> {
     let channelId = paymentChannel.channelId
     let deployed = await buildBrokerTokenContract(this.web3).deployed()
-    const h = ethHash(channelId.toString() + value.toString())
-    let canClaim = await deployed.canClaim(channelId, h, Number(v), r, s)
+    let canClaim = await deployed.canClaim(channelId, value, Number(v), r, s)
     if (canClaim && paymentChannel.contractAddress) {
-      return deployed.claim(paymentChannel.contractAddress, channelId, value, h, v, r, s, { from: receiver, gas: CREATE_CHANNEL_GAS })
+      return deployed.claim(paymentChannel.contractAddress, channelId, value, v, r, s, { from: receiver, gas: CREATE_CHANNEL_GAS })
     }
   }
 
@@ -57,18 +50,6 @@ export class ChannelContractToken {
         return deployed.deposit(paymentChannel.contractAddress, channelId, value, options)
       }
     }
-  }
-
-  /**
-   * Overcome Ethereum Signed Message passing to EVM ecrecover.
-   * @param channelId
-   * @param payment
-   * @return {string}
-   */
-  h (channelId: string, payment: BigNumber) {
-    const message = channelId.toString() + payment.toString()
-    const buffer = Buffer.from('\x19Ethereum Signed Message:\n' + message.length + message)
-    return '0x' + util.sha3(buffer).toString('hex')
   }
 
   getState (paymentChannel: PaymentChannel): Promise<number> {
