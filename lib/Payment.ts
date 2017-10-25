@@ -1,11 +1,7 @@
 import Web3 = require('web3')
 import * as util from 'ethereumjs-util'
-import { ChannelId, ethHash, PaymentChannel, Signature } from './channel'
-import { Buffer } from 'buffer'
-import { buildBrokerContract } from 'machinomy-contracts'
-import { buildBrokerTokenContract } from 'machinomy-contracts'
-import BigNumber from 'bignumber.js'
-import { sign, soliditySHA3 } from 'machinomy-contracts'
+import { PaymentChannel, Signature } from './channel'
+import { buildBrokerContract, buildBrokerTokenContract, sign, soliditySHA3 } from 'machinomy-contracts'
 
 export interface PaymentJSON {
   channelId: string
@@ -20,7 +16,7 @@ export interface PaymentJSON {
   contractAddress?: string
 }
 
-export function getNetwork(web3: Web3): Promise<string> {
+export function getNetwork (web3: Web3): Promise<string> {
   return new Promise((resolve, reject) => {
     web3.version.getNetwork((error, result) => {
       if (error) {
@@ -55,29 +51,35 @@ export default class Payment {
     this.s = options.s
     this.contractAddress = options.contractAddress
   }
-   
-  //TO DO use it
-  static isValid (web3: Web3, payment: Payment, paymentChannel: PaymentChannel): Promise<boolean> {
+
+  // TODO use it
+  static async isValid (web3: Web3, payment: Payment, paymentChannel: PaymentChannel): Promise<boolean> {
     let validIncrement = (paymentChannel.spent + payment.price) <= paymentChannel.value
     let validChannelValue = paymentChannel.value === payment.channelValue
     let validChannelId = paymentChannel.channelId === payment.channelId
     let validPaymentValue = paymentChannel.value <= payment.channelValue
     let validSender = paymentChannel.sender === payment.sender
     let isPositive = payment.value >= 0 && payment.price >= 0
-    return Promise.resolve(true)
-    // let _digest = digest(paymentChannel.channelId, payment.value)
-    // return sign(web3, payment.sender, _digest).then(signature => {
-    //   let validSignature = signature.v === payment.v &&
-    //     util.bufferToHex(signature.r) === payment.r &&
-    //     util.bufferToHex(signature.s) === payment.s
-    //   return validIncrement &&
-    //     validChannelValue &&
-    //     validPaymentValue &&
-    //     validSender &&
-    //     validChannelId &&
-    //     validSignature &&
-    //     isPositive
-    // })
+    let deployed
+    if (paymentChannel.contractAddress) {
+      deployed = await buildBrokerTokenContract(web3).deployed()
+    } else {
+      deployed = await buildBrokerContract(web3).deployed()
+    }
+    let chainId = await getNetwork(web3)
+    let paymentDigest = soliditySHA3(paymentChannel.channelId, payment.value, deployed.address, chainId)
+
+    let signature = await sign(web3, paymentChannel.sender, paymentDigest)
+    let validSignature = signature.v === payment.v &&
+      util.bufferToHex(signature.r) === payment.r &&
+      util.bufferToHex(signature.s) === payment.s
+    return validIncrement &&
+      validChannelValue &&
+      validPaymentValue &&
+      validSender &&
+      validChannelId &&
+      validSignature &&
+      isPositive
   }
 
   /**
@@ -88,7 +90,7 @@ export default class Payment {
     if (override) { // FIXME
       value = price
     }
-    let deployed 
+    let deployed
     if (paymentChannel.contractAddress) {
       deployed = await buildBrokerTokenContract(web3).deployed()
     } else {
