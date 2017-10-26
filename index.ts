@@ -9,7 +9,7 @@ import BigNumber from 'bignumber.js'
 // import * as BigNumber from 'bignumber.js'
 import Payment from './lib/Payment'
 // import { Receiver } from './lib/receiver'
-import * as receiver from './lib//receiver'
+import * as receiver from './lib/receiver'
 
 /**
  * Options for machinomy buy.
