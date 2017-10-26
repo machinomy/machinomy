@@ -56,8 +56,11 @@ export interface MachinomyOptions {
  * [deposit]{@link Machinomy.deposit} methods.
  *
  *
- * @example <caption>Buying with Machinomy.</caption>
- * <pre><code>const sender = '0x5bf66080c92b81173f470e25f9a12fc146278429'
+ * @example <caption>Buying with Machinomy (TypeScript)</caption>
+ * <pre><code>import Machinomy from 'machinomy'
+ * import Web3 = require('web3')
+ *
+ * const sender = '0x5bf66080c92b81173f470e25f9a12fc146278429'
  * const provider = new Web3.providers.HttpProvider("http://localhost:8545")
  * let web3 = new Web3(provider)
  *
