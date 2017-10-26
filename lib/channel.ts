@@ -1,4 +1,3 @@
-import * as util from 'ethereumjs-util'
 import { Log } from 'typescript-logger'
 import Web3 = require('web3')
 import BigNumber from 'bignumber.js'
@@ -26,11 +25,6 @@ const DEFAULT_CHANNEL_TTL = 20 * DAY_IN_SECONDS
 
 /** Cost of creating a channel. */
 const CREATE_CHANNEL_GAS = 500000
-
-export const ethHash = (message: string): string => {
-  const buffer = Buffer.from('\x19Ethereum Signed Message:\n' + message.length + message)
-  return '0x' + util.sha3(buffer).toString('hex')
-}
 
 /** Wrapper for the payment channel contract. */
 export class ChannelContract {

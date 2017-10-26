@@ -1,16 +1,10 @@
-import * as util from 'ethereumjs-util'
 import Web3 = require('web3')
 import BigNumber from 'bignumber.js'
 import { PaymentRequired } from './transport'
 import { PaymentChannel, PaymentChannelJSON } from './paymentChannel'
-import { buildBrokerContract } from 'machinomy-contracts'
+import { buildBrokerContract } from '@machinomy/contracts'
 
 export { PaymentChannel, PaymentChannelJSON }
-
-export const ethHash = (message: string): string => {
-  const buffer = Buffer.from('\x19Ethereum Signed Message:\n' + message.length + message)
-  return '0x' + util.sha3(buffer).toString('hex')
-}
 
 const CREATE_CHANNEL_GAS = 300000
 
@@ -29,11 +23,9 @@ export class ChannelContractDefault {
   async claim (receiver: string, paymentChannel: PaymentChannel, value: number, v: number, r: string, s: string): Promise<void> {
     let channelId = paymentChannel.channelId
     let deployed = await buildBrokerContract(this.web3).deployed()
-    const h = ethHash(channelId.toString() + value.toString())
-    let canClaim = await deployed.canClaim(channelId, h, Number(v), r, s)
+    let canClaim = await deployed.canClaim(channelId, value, Number(v), r, s)
     if (canClaim) {
-      console.log(canClaim)
-      return deployed.claim(channelId, value, h, v, r, s, { from: receiver })
+      return deployed.claim(channelId, value, v, r, s, { from: receiver })
     }
   }
 

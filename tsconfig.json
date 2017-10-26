@@ -53,7 +53,8 @@
     "commands/index.ts",
     "examples/server.ts",
     "examples/client.ts",
-    "examples/machinomy.ts"
+    "examples/machinomy.ts",
+    "examples/machinomyERC20.ts"
   ],
   "include": [
     "node_modules/*/index.d.ts",
