@@ -24,7 +24,6 @@ export class ChannelContractDefault {
     let channelId = paymentChannel.channelId
     let deployed = await buildBrokerContract(this.web3).deployed()
     let canClaim = await deployed.canClaim(channelId, value, Number(v), r, s)
-    console.log(canClaim)
     if (canClaim) {
       return deployed.claim(channelId, value, v, r, s, { from: receiver })
     }
