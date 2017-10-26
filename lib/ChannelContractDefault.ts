@@ -2,7 +2,7 @@ import Web3 = require('web3')
 import BigNumber from 'bignumber.js'
 import { PaymentRequired } from './transport'
 import { PaymentChannel, PaymentChannelJSON } from './paymentChannel'
-import { buildBrokerContract } from 'machinomy-contracts'
+import { buildBrokerContract } from '@machinomy/contracts'
 
 export { PaymentChannel, PaymentChannelJSON }
 

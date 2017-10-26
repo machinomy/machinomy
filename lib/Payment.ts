@@ -1,7 +1,7 @@
 import Web3 = require('web3')
 import * as util from 'ethereumjs-util'
 import { PaymentChannel, Signature } from './channel'
-import { buildBrokerContract, buildBrokerTokenContract, sign, soliditySHA3 } from 'machinomy-contracts'
+import { buildBrokerContract, buildBrokerTokenContract, sign, soliditySHA3 } from '@machinomy/contracts'
 
 export interface PaymentJSON {
   channelId: string
