@@ -4,7 +4,6 @@ import Machinomy from '../index'
 import * as express from 'express'
 import Payment from '../lib/Payment'
 import * as bodyParser from 'body-parser'
-import { buildERC20Contract } from '@machinomy/contracts'
 const fs = require('fs')
 
 let sender = '0x5bf66080c92b81173f470e25f9a12fc146278429'
@@ -26,7 +25,7 @@ hub.post('/machinomy', async (req: express.Request, res: express.Response, next:
   let token = await machinomyHub.acceptPayment(payment)
   res.status(202).header('Paywall-Token', token).send('Accepted').end()
 })
- 
+
 let checkBalance = async (message: string, web3: Web3, sender: string, cb: Function) => {
   console.log('----------')
   console.log(message)
@@ -39,9 +38,9 @@ let checkBalance = async (message: string, web3: Web3, sender: string, cb: Funct
   console.log('Diff', web3.fromWei(diff, 'ether').toString())
   return result
 }
-  
+
 let port = 3001
-let server = hub.listen(port, async () => { 
+let server = hub.listen(port, async () => {
   const price = Number(web3.toWei(1, 'ether'))
   let machinomy = new Machinomy(sender, web3, { engine: 'nedb' })
 

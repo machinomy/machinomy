@@ -5,8 +5,6 @@ import * as express from 'express'
 import Payment from '../lib/Payment'
 import * as bodyParser from 'body-parser'
 import { buildERC20Contract } from '@machinomy/contracts'
-const delay = require('nanodelay')
-const fs = require('fs')
 
 let sender = '0x5bf66080c92b81173f470e25f9a12fc146278429'
 let receiver = '0xebeab176c2ca2ae72f11abb1cecad5df6ccb8dfe'
@@ -28,9 +26,7 @@ let server = hub.listen(port, function () {
   console.log('HUB is ready on port ' + port)
 })
 
-let f = async () => {  
-  await delay(1000)
-
+let f = async () => {
   /////// ERC20
   console.log('================================')
   console.log('ERC20')
@@ -116,7 +112,6 @@ let f = async () => {
 //   try { fs.unlinkSync('machinomy') } catch (error) { console.log(error) }
 //   try { fs.unlinkSync('hub') } catch (error) { console.log(error) }
 }
-
 
 f().catch((error) => {
   console.log(error)
