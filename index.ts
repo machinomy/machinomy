@@ -218,6 +218,11 @@ export default class Machinomy {
     return server.acceptPayment(payment)
   }
 
+  paymentById (id: string): Promise <Payment | null> {
+    let s = storage.build(this.web3, this.databaseFile, 'shared', false, this.engine)
+    return s.payments.findByToken(id)
+  }
+
   verifyToken (token: string): Promise <boolean> {
     let s = storage.build(this.web3, this.databaseFile, 'shared', false, this.engine)
     let server = receiver.build(this.web3, this.account, s)

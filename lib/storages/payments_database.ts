@@ -62,4 +62,12 @@ export default class PaymentsDatabase {
       }
     })
   }
+
+  /**
+   * Find a payment by token.
+   */
+  findByToken (token: string): Promise<Payment|null> {
+    let query = { kind: this.kind, token: token}
+    return this.engine.findOne(query)
+  }
 }
