@@ -108,7 +108,7 @@
     "tmp": "0.0.33",
     "ts-jest": "^20.0.7",
     "tslint": "^5.5.0",
-    "tslint-config-standard": "^6.0.1",
+    "tslint-config-standard": "^7.0.0",
     "web3-fake-provider": "^0.1.0"
   }
 }
