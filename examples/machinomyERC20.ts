@@ -53,7 +53,8 @@ let f = async () => {
       receiver: receiver,
       price: 1,
       gateway: 'http://localhost:3001/machinomy',
-      contractAddress: contractAddress
+      contractAddress: contractAddress,
+      meta: 'metaidexample'
     }).catch((e: Error) => {
       console.log(e)
     })
@@ -65,7 +66,8 @@ let f = async () => {
       receiver: receiver,
       price: 1,
       gateway: 'http://localhost:3001/machinomy',
-      contractAddress: contractAddress
+      contractAddress: contractAddress,
+      meta: 'metaidexample'
     }).catch((e: Error) => {
       console.log(e)
     })
@@ -93,7 +95,8 @@ let f = async () => {
       receiver: receiver,
       price: 1,
       gateway: 'http://localhost:3001/machinomy',
-      contractAddress: contractAddress
+      contractAddress: contractAddress,
+      meta: 'metaidexample'
     }).catch((e: Error) => {
       console.log(e)
     })

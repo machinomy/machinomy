@@ -23,6 +23,7 @@ export interface BuyOptions {
    * The payment signed by web3 inside Machinomy.
    */
   gateway: string,
+  meta: string,
   contractAddress?: string
 }
 

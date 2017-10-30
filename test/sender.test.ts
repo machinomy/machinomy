@@ -34,11 +34,12 @@ describe('sender', () => {
         price: 1,
         value: 1,
         channelValue: 10,
+        meta: 'metaexample',
         v: 1,
         r: '0x2',
         s: '0x3'
       })
-      let paymentRequired = new transport.PaymentRequired(payment.receiver, payment.price, 'gateway')
+      let paymentRequired = new transport.PaymentRequired(payment.receiver, payment.price, 'meta', 'gateway')
       it('determine if channel can be used', done => {
         let paymentChannel = channel.PaymentChannel.fromPayment(payment)
         randomSender().then(s => {

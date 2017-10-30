@@ -48,6 +48,7 @@ describe('channel', () => {
           price: support.randomInteger(),
           value: support.randomInteger(),
           channelValue: support.randomInteger(),
+          meta: 'metaexample',
           v: 1,
           r: '0x2',
           s: '0x3'

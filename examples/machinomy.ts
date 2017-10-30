@@ -5,6 +5,7 @@ import * as express from 'express'
 import Payment from '../lib/Payment'
 import * as bodyParser from 'body-parser'
 const fs = require('fs')
+let fetch = require('whatwg-fetch').fetch
 
 let sender = '0x5bf66080c92b81173f470e25f9a12fc146278429'
 let receiver = '0xebeab176c2ca2ae72f11abb1cecad5df6ccb8dfe'
@@ -49,7 +50,8 @@ let server = hub.listen(port, async () => {
     return await machinomy.buy({
       receiver: receiver,
       price: price,
-      gateway: 'http://localhost:3001/machinomy'
+      gateway: 'http://localhost:3001/machinomy',
+      meta: 'metaexample'
     }).catch((e: Error) => {
       console.log(e)
     })
@@ -60,11 +62,15 @@ let server = hub.listen(port, async () => {
     return await machinomy.buy({
       receiver: receiver,
       price: price,
-      gateway: 'http://localhost:3001/machinomy'
+      gateway: 'http://localhost:3001/machinomy',
+      meta: 'metaexample'
     }).catch((e: Error) => {
       console.log(e)
     })
   })
+
+  let response = await fetch(`http://localhost:3001/verify?token=${resultSecond.token}&meta=metaexample&price=${price}`)
+  console.log(await response.json())
 
   let channelId = resultSecond.channelId
   message = 'Deposit:'
@@ -88,7 +94,8 @@ let server = hub.listen(port, async () => {
     return await machinomy.buy({
       receiver: receiver,
       price: price,
-      gateway: 'http://localhost:3001/machinomy'
+      gateway: 'http://localhost:3001/machinomy',
+      meta: 'metaexample'
     }).catch((e: Error) => {
       console.log(e)
     })

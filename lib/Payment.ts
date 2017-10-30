@@ -1,6 +1,7 @@
 import Web3 = require('web3')
 import * as util from 'ethereumjs-util'
 import { PaymentChannel, Signature } from './channel'
+import { PaymentRequired } from './transport'
 import { buildBrokerContract, buildBrokerTokenContract, sign, soliditySHA3 } from '@machinomy/contracts'
 
 export interface PaymentJSON {
@@ -13,6 +14,7 @@ export interface PaymentJSON {
   v: number|string
   r: string
   s: string
+  meta: string
   contractAddress?: string
 }
 
@@ -37,6 +39,7 @@ export default class Payment {
   v: number
   r: string
   s: string
+  meta: string
   contractAddress: string | undefined
 
   constructor (options: PaymentJSON) {
@@ -49,6 +52,7 @@ export default class Payment {
     this.v = Number(options.v)
     this.r = options.r
     this.s = options.s
+    this.meta = options.meta
     this.contractAddress = options.contractAddress
   }
 
@@ -85,10 +89,10 @@ export default class Payment {
   /**
    * Build {Payment} based on PaymentChannel and monetary value to send.
    */
-  static async fromPaymentChannel (web3: Web3, paymentChannel: PaymentChannel, price: number, override?: boolean): Promise<Payment> {
-    let value = price + paymentChannel.spent
+  static async fromPaymentChannel (web3: Web3, paymentChannel: PaymentChannel, paymentRequired: PaymentRequired, override?: boolean): Promise<Payment> {
+    let value = paymentRequired.price + paymentChannel.spent
     if (override) { // FIXME
-      value = price
+      value = paymentRequired.price
     }
     let deployed
     if (paymentChannel.contractAddress) {
@@ -104,12 +108,13 @@ export default class Payment {
       channelId: paymentChannel.channelId,
       sender: paymentChannel.sender,
       receiver: paymentChannel.receiver,
-      price,
+      price: paymentRequired.price,
       value,
       channelValue: paymentChannel.value,
       v: signature.v,
       r: '0x' + signature.r.toString('hex'),
       s: '0x' + signature.s.toString('hex'),
+      meta: paymentRequired.meta,
       contractAddress: paymentChannel.contractAddress
     })
   }

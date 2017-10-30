@@ -316,6 +316,7 @@ describe('storage', () => {
           price: 10,
           value: 12,
           channelValue: 10,
+          meta: 'metaexample',
           v: 1,
           r: '0x2',
           s: '0x3'

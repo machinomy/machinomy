@@ -114,12 +114,14 @@ export class PaymentRequired {
   receiver: string
   price: number
   gateway: string
+  meta: string
   contractAddress?: string
 
-  constructor (receiver: string, price: number, gateway: string, contractAddress?: string) {
+  constructor (receiver: string, price: number, gateway: string, meta: string, contractAddress?: string) {
     this.receiver = receiver
     this.price = price
     this.gateway = gateway
+    this.meta = meta
     this.contractAddress = contractAddress
   }
 
@@ -128,7 +130,8 @@ export class PaymentRequired {
     let price = Number(headers['paywall-price'])
     let gateway = headers['paywall-gateway']
     let contractAddress = headers['paywall-token-address']
-    return new PaymentRequired(receiver, price, gateway, contractAddress)
+    let meta = headers['paywall-meta']
+    return new PaymentRequired(receiver, price, gateway, meta, contractAddress)
   }
 }
 

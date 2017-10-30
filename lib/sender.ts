@@ -81,7 +81,7 @@ export default class Sender {
    * @return {Promise<[Payment, Object]>}
    */
   existingChannel (uri: string, paymentRequired: PaymentRequired, paymentChannel: PaymentChannel, opts: RequestTokenOpts = {}): Promise<any> {
-    return Payment.fromPaymentChannel(this.web3, paymentChannel, paymentRequired.price).then(payment => {
+    return Payment.fromPaymentChannel(this.web3, paymentChannel, paymentRequired).then(payment => {
       let nextPaymentChannel = channel.PaymentChannel.fromPayment(payment)
       return this.storage.channels.saveOrUpdate(nextPaymentChannel).then(() => {
         return this.transport.requestToken(paymentRequired.gateway, payment, opts)
@@ -210,6 +210,7 @@ export default class Sender {
       options.receiver,
       options.price,
       options.gateway,
+      options.meta,
       options.contractAddress)
 
     return this.findOpenChannel(paymentRequired).then(paymentChannel => {
