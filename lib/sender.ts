@@ -206,9 +206,10 @@ export default class Sender {
 
   buyMeta (options: any): any {
     let uri = 'http://localhost:3000/paid/erc20'
+    let price = Number(options.price)
     let paymentRequired = new PaymentRequired(
       options.receiver,
-      options.price,
+      price,
       options.gateway,
       options.meta,
       options.contractAddress)
