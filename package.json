@@ -20,7 +20,7 @@
     "build": "tsc -p tsconfig.json",
     "lint": "tslint -t stylish -p '.' -e './node_modules/**/*.ts'",
     "prepublish": "yarn lint && yarn build",
-    "doc": "yarn build; typedoc --excludeExternals --out ./documentation --ignoreCompilerErrors --readme README.md  index.ts "
+    "doc": "typedoc --ignoreCompilerErrors --out ./documentation --readme README.md --theme ../typedoc-theme index.ts "
   },
   "main": "index.js",
   "bin": {
@@ -68,7 +68,6 @@
     "nedb": "^1.8.0",
     "prompt": "^1.0.0",
     "request": "^2.76.0",
-    "typedoc": "https://github.com/lilezek/typedoc",
     "types-bn": "^0.0.1",
     "types-ethereumjs-util": "^0.0.5",
     "types-rlp": "^0.0.1",
