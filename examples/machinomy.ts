@@ -4,7 +4,6 @@ import Machinomy from '../index'
 import * as express from 'express'
 import Payment from '../lib/Payment'
 import * as bodyParser from 'body-parser'
-import BigNumber from 'bignumber.js'
 const fs = require('fs')
 
 let sender = '0x5bf66080c92b81173f470e25f9a12fc146278429'
