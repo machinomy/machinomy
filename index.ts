@@ -18,7 +18,7 @@ export interface BuyOptions {
   /** The address of Ethereum account. */
   receiver: string
   /** Price of content in wei. */
-  price: number
+  price: number | BigNumber
   /** Endpoint for offchain payment that Machinomy send via HTTP.
    * The payment signed by web3 inside Machinomy.
    */
@@ -150,13 +150,14 @@ export default class Machinomy {
    * @param channelId - Channel id.
    * @param value - Size of deposit in Wei.
    */
-  deposit (channelId: string, value: number): Promise<void> {
+  deposit (channelId: string, value: BigNumber | number): Promise<void> {
+    let _value = new BigNumber(value)
     let channelContract = contract(this.web3)
     return new Promise((resolve, reject) => {
       let s = storage.build(this.web3, this.databaseFile, 'shared', false, this.engine)
       s.channels.firstById(channelId).then((paymentChannel) => {
         if (paymentChannel) {
-          channelContract.deposit(this.account, paymentChannel, value).then(() => {
+          channelContract.deposit(this.account, paymentChannel, _value).then(() => {
             resolve()
           }).catch(reject)
         }

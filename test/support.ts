@@ -4,6 +4,7 @@ import Web3 = require('web3')
 import FakeProvider = require('web3-fake-provider')
 import { ChannelId } from '../lib/channel'
 import Storage from '../lib/storage'
+import BigNumber from 'bignumber.js'
 
 const channel = require('../lib/channel')
 
@@ -21,6 +22,10 @@ export const tmpFileName: () => Promise<string> = Promise.promisify(tmp.tmpName)
 
 export function randomInteger (): number {
   return Math.floor(Math.random() * 10000)
+}
+
+export function randomBigNumber (): BigNumber {
+  return new BigNumber(Math.floor(Math.random() * 10000))
 }
 
 export function randomChannelId (): ChannelId {

@@ -56,7 +56,7 @@ export class ChannelContract {
     }
   }
 
-  buildPaymentChannel (sender: string, paymentRequired: PaymentRequired, value: number): Promise<PaymentChannel> {
+  buildPaymentChannel (sender: string, paymentRequired: PaymentRequired, value: BigNumber): Promise<PaymentChannel> {
     const receiver = paymentRequired.receiver
     return new Promise<PaymentChannel>((resolve, reject) => {
       log.info('Building payment channel from ' + sender + ' to ' + receiver + ', initial amount set to ' + value)
@@ -69,7 +69,7 @@ export class ChannelContract {
       }
       this.createChannel(paymentRequired, duration, settlementPeriod, options).then((res: any) => {
         const channelId = res.logs[0].args.channelId
-        const paymentChannel = new PaymentChannel(sender, receiver, channelId, value, 0, undefined, paymentRequired.contractAddress)
+        const paymentChannel = new PaymentChannel(sender, receiver, channelId, value, new BigNumber(0), undefined, paymentRequired.contractAddress)
         resolve(paymentChannel)
       }).catch((e: Error) => {
         reject(e)
@@ -77,12 +77,12 @@ export class ChannelContract {
     })
   }
 
-  claim (receiver: string, paymentChannel: PaymentChannel, value: number, v: number, r: string, s: string): Promise<any> {
+  claim (receiver: string, paymentChannel: PaymentChannel, value: BigNumber, v: number, r: string, s: string): Promise<any> {
     let channelContract = this.buildChannelContract(paymentChannel)
     return channelContract.claim(receiver, paymentChannel, value, v, r, s)
   }
 
-  deposit (sender: string, paymentChannel: PaymentChannel, value: number): Promise<void> {
+  deposit (sender: string, paymentChannel: PaymentChannel, value: BigNumber): Promise<void> {
     let channelContract = this.buildChannelContract(paymentChannel)
     return channelContract.deposit(sender, paymentChannel, value)
   }

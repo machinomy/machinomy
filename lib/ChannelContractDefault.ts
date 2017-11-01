@@ -20,7 +20,8 @@ export class ChannelContractDefault {
     return deployed.createChannel(paymentRequired.receiver, duration, settlementPeriod, options)
   }
 
-  async claim (receiver: string, paymentChannel: PaymentChannel, value: number, v: number, r: string, s: string): Promise<void> {
+  async claim (receiver: string, paymentChannel: PaymentChannel, value: BigNumber, v: number, r: string, s: string): Promise<void> {
+    value = new BigNumber(value)
     let channelId = paymentChannel.channelId
     let deployed = await buildBrokerContract(this.web3).deployed()
     let canClaim = await deployed.canClaim(channelId, value, Number(v), r, s)
@@ -29,7 +30,8 @@ export class ChannelContractDefault {
     }
   }
 
-  async deposit (sender: string, paymentChannel: PaymentChannel, value: number): Promise<void> {
+  async deposit (sender: string, paymentChannel: PaymentChannel, value: BigNumber): Promise<void> {
+    value = new BigNumber(value)
     let options = {
       from: sender,
       value: value,

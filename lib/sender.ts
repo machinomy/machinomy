@@ -11,6 +11,7 @@ import { PaymentRequired, RequestTokenOpts, Transport } from './transport'
 import Storage from './storage'
 import { RequestResponse } from 'request'
 import Payment from './Payment'
+import BigNumber from 'bignumber.js'
 
 const log = Log.create('sender')
 
@@ -59,7 +60,7 @@ export default class Sender {
   /**
    * Make request to +uri+ building a new payment channel. Returns HTTP response.
    */
-  freshChannel (uri: string, paymentRequired: PaymentRequired, channelValue: number, opts: FreshChannelOpts = {}): Promise<any> {
+  freshChannel (uri: string, paymentRequired: PaymentRequired, channelValue: BigNumber, opts: FreshChannelOpts = {}): Promise<any> {
     if (_.isFunction(opts.onWillOpenChannel)) {
       opts.onWillOpenChannel()
     }
@@ -98,7 +99,7 @@ export default class Sender {
     return this.contract.getState(paymentChannel).then(state => {
       let isOpen = state === 0 // FIXME Harmonize channel states
       // log.debug(`canUseChannel: isOpen: ${isOpen}`)
-      let funded = paymentChannel.value >= (paymentChannel.spent + paymentRequired.price)
+      let funded = paymentChannel.value.greaterThanOrEqualTo(paymentChannel.spent.plus(paymentRequired.price))
       // log.debug(`canUseChannel: funded: ${funded}`)
       return isOpen && funded
     })
@@ -143,7 +144,7 @@ export default class Sender {
         if (paymentChannel) {
           return this.existingChannel(uri, paymentRequired, paymentChannel)
         } else {
-          let value = paymentRequired.price * 10 // FIXME Total value of the channel
+          let value = paymentRequired.price.times(10) // FIXME Total value of the channel
           return this.freshChannel(uri, paymentRequired, value, opts) // Build new channel
         }
       })
@@ -206,7 +207,7 @@ export default class Sender {
 
   buyMeta (options: any): any {
     let uri = 'http://localhost:3000/paid/erc20'
-    let price = Number(options.price)
+    let price = new BigNumber(options.price)
     let paymentRequired = new PaymentRequired(
       options.receiver,
       price,
@@ -218,7 +219,7 @@ export default class Sender {
       if (paymentChannel) {
         return this.existingChannel(uri, paymentRequired, paymentChannel)
       } else {
-        let value = paymentRequired.price * 10 // FIXME Total value of the channel
+        let value = paymentRequired.price.times(10) // FIXME Total value of the channel
         return this.freshChannel(uri, paymentRequired, value) // Build new channel
       }
     })

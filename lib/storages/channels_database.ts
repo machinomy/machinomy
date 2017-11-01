@@ -2,6 +2,8 @@ import * as channel from '../channel'
 import Web3 = require('web3')
 import Engine from '../engines/engine'
 import { ChannelId, PaymentChannel, PaymentChannelJSON } from '../channel'
+import BigNumber from 'bignumber.js'
+import util = require('ethereumjs-util')
 
 const namespaced = (namespace: string|null|undefined, kind: string): string => {
   let result = kind
@@ -30,8 +32,8 @@ export default class ChannelsDatabase {
       kind: this.kind,
       sender: paymentChannel.sender,
       receiver: paymentChannel.receiver,
-      value: paymentChannel.value,
-      spent: paymentChannel.spent,
+      value: util.bufferToHex(util.toBuffer(paymentChannel.value.toString())),
+      spent: util.bufferToHex(util.toBuffer(paymentChannel.spent.toString())),
       channelId: paymentChannel.channelId,
       contractAddress: paymentChannel.contractAddress
     }
@@ -69,14 +71,14 @@ export default class ChannelsDatabase {
   /**
    * Set amount of money spent on the channel.
    */
-  spend (channelId: ChannelId|string, spent: number): Promise<void> {
+  spend (channelId: ChannelId|string, spent: BigNumber): Promise<void> {
     let query = {
       kind: this.kind,
       channelId: channelId.toString()
     }
     let update = {
       $set: {
-        spent: spent
+        spent: util.bufferToHex(util.toBuffer(spent.toString()))
       }
     }
     // log.info(`ChannelsDatabase#spend channel ${channelId.toString()} spent ${spent}`)

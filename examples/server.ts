@@ -1,25 +1,25 @@
 /**
  * Start this file by
- * 
+ *
  * node server.js
- * 
- * The script runs 3 core endpoints.  
- * http://localhost:3000/content provides an example of the paid content.  
- * http://localhost:3001/machinomy accepts payment.  
+ *
+ * The script runs 3 core endpoints.
+ * http://localhost:3000/content provides an example of the paid content.
+ * http://localhost:3001/machinomy accepts payment.
  * http://localhost:3001/verify/:token verifies token that /machinomy generates.
- * 
+ *
  * The main use case is to buy content:
- * 
- * $ machinomy buy http://localhost:3000/content 
- * 
+ *
+ * $ machinomy buy http://localhost:3000/content
+ *
  * The command shows the bought content on console.
- * 
+ *
  * Then you can see channels:
- * 
+ *
  * $ machinomy channels
- * 
+ *
  * And if you wants to close channel, call `/claim` endpoint via curl:
- * 
+ *
  * $ curl -X POST http://localhost:3001/claim/:channeId
  */
 

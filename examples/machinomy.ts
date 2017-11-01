@@ -4,14 +4,14 @@ import Machinomy from '../index'
 import * as express from 'express'
 import Payment from '../lib/Payment'
 import * as bodyParser from 'body-parser'
+import BigNumber from 'bignumber.js'
 const fs = require('fs')
-let fetch = require('whatwg-fetch').fetch
 
 let sender = '0x5bf66080c92b81173f470e25f9a12fc146278429'
 let receiver = '0xebeab176c2ca2ae72f11abb1cecad5df6ccb8dfe'
 
 let getBalance = async (web3: Web3, account: string) => {
-  return Number(web3.eth.getBalance(account))
+  return new BigNumber(web3.eth.getBalance(account))
 }
 
 let provider = configuration.currentProvider()
@@ -35,14 +35,14 @@ let checkBalance = async (message: string, web3: Web3, sender: string, cb: Funct
   let result = await cb()
   let balanceAfter = await getBalance(web3, sender)
   console.log('Balance after', web3.fromWei(balanceAfter, 'ether').toString())
-  let diff = balanceAfter - balanceBefore
+  let diff = balanceAfter.minus(balanceBefore)
   console.log('Diff', web3.fromWei(diff, 'ether').toString())
   return result
 }
 
 let port = 3001
 let server = hub.listen(port, async () => {
-  const price = Number(web3.toWei(1, 'ether'))
+  const price = new BigNumber(web3.toWei(1, 'ether'))
   let machinomy = new Machinomy(sender, web3, { engine: 'nedb' })
 
   let message = 'This is first buy:'
@@ -69,14 +69,10 @@ let server = hub.listen(port, async () => {
     })
   })
 
-  let response = await fetch(`http://localhost:3001/verify?token=${resultSecond.token}&meta=metaexample&price=${price}`)
-  console.log(await response.json())
-
   let channelId = resultSecond.channelId
   message = 'Deposit:'
   await checkBalance(message, web3, sender, async () => {
-    await machinomy.deposit(channelId, price
-    )
+    await machinomy.deposit(channelId, price)
   })
 
   message = 'First close:'

@@ -1,9 +1,9 @@
-import _ = require('lodash')
 import Engine from '../engines/engine'
 import { ChannelId } from '../channel'
 import Payment from '../Payment'
+import util = require('ethereumjs-util')
 
-const namespaced = (namespace: string|null|undefined, kind: string): string => {
+const namespaced = (namespace: string | null | undefined, kind: string): string => {
   let result = kind
   if (namespace) {
     result = namespace + ':' + kind
@@ -31,11 +31,11 @@ export default class PaymentsDatabase {
       kind: this.kind,
       token: token,
       channelId: payment.channelId,
-      value: payment.value,
+      value: util.bufferToHex(util.toBuffer(payment.value.toString())),
       sender: payment.sender,
       receiver: payment.receiver,
-      price: payment.price,
-      channelValue: payment.channelValue,
+      price: util.bufferToHex(util.toBuffer(payment.price.toString())),
+      channelValue: util.bufferToHex(util.toBuffer(payment.channelValue.toString())),
       v: Number(payment.v),
       r: payment.r,
       s: payment.s,
@@ -48,12 +48,13 @@ export default class PaymentsDatabase {
   /**
    * Find a payment with maximum value on it inside the channel.
    */
-  firstMaximum (channelId: ChannelId|string): Promise<Payment|null> {
+  firstMaximum (channelId: ChannelId | string): Promise<Payment | null> {
     // log.info(`Trying to find last payment for channel ${channelId.toString()}`)
-    let query = { kind: this.kind, channelId: channelId.toString() }
+    let query = {kind: this.kind, channelId: channelId.toString()}
     return this.engine.find(query).then((documents: Array<Payment>) => {
+      documents.map((document) => Payment.replaceHexToBigNumber(document))
       // log.info(`Found ${documents.length} payment documents`)
-      let maximum = _.maxBy(documents, (payment: Payment) => payment.value)
+      let maximum = this.maxBy(documents)
       // log.info(`Found maximum payment for channel ${channelId}`, maximum)
       if (maximum) {
         return maximum
@@ -63,11 +64,25 @@ export default class PaymentsDatabase {
     })
   }
 
+  maxBy (documents: Array<Payment>): Payment {
+    if (documents.length === 1) return documents[0]
+    let document = documents[0]
+    documents.forEach((_document) => {
+      if (_document.value.greaterThan(document.value)) {
+        document = _document
+      }
+    })
+    return document
+  }
+
   /**
    * Find a payment by token.
    */
-  findByToken (token: string): Promise<Payment|null> {
-    let query = { kind: this.kind, token: token}
-    return this.engine.findOne(query)
+  findByToken (token: string): Promise<Payment | null> {
+    let query = {kind: this.kind, token: token}
+    return this.engine.findOne(query).then((document: Payment) => {
+      document = Payment.replaceHexToBigNumber(document)
+      return Promise.resolve(document)
+    })
   }
 }

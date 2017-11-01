@@ -5,6 +5,7 @@ import * as channel from '../lib/channel'
 import { randomStorage } from './support'
 import Payment from '../lib/Payment'
 import Promise = require('bluebird')
+import BigNumber from 'bignumber.js'
 const engineName = process.env.ENGINE_NAME || 'nedb'
 let expect = require('expect')
 
@@ -31,9 +32,9 @@ describe('sender', () => {
         channelId: channelId.toString(),
         sender: 'sender',
         receiver: 'receiver',
-        price: 1,
-        value: 1,
-        channelValue: 10,
+        price: new BigNumber(1),
+        value: new BigNumber(1),
+        channelValue: new BigNumber(10),
         meta: 'metaexample',
         v: 1,
         r: '0x2',
