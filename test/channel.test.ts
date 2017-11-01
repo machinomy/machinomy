@@ -57,7 +57,7 @@ describe('channel', () => {
         expect(paymentChannel.channelId).toBe(payment.channelId)
         expect(paymentChannel.sender).toBe(payment.sender)
         expect(paymentChannel.receiver).toBe(payment.receiver)
-        expect(paymentChannel.value).toBe(payment.channelValue)
+        expect(paymentChannel.value).toEqual(payment.channelValue)
       })
     })
   })

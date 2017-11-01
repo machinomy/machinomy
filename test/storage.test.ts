@@ -174,7 +174,7 @@ describe('storage', () => {
           })
         }).then((updated: any) => {
           expect(updated.channelId).toBe(hexChannelId)
-          expect(updated.spent).toBe(spent)
+          expect(updated.spent).toEqual(spent)
         }).then(done)
       })
     })
@@ -232,7 +232,7 @@ describe('storage', () => {
           }).then(() => {
             return channels.firstById(channelId)
           }).then((found: any) => {
-            expect(found.spent).toBe(spent)
+            expect(found.spent).toEqual(spent)
           })
         }).then(done)
       })
