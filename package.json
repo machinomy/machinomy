@@ -40,7 +40,7 @@
     "index.js.map"
   ],
   "dependencies": {
-    "@machinomy/contracts": "^1.0.1",
+    "@machinomy/contracts": "^2.0.0",
     "@types/bignumber.js": "^4.0.2",
     "@types/bluebird": "3.5.8",
     "@types/body-parser": "^1.16.4",
