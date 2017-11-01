@@ -11,7 +11,7 @@ let sender = '0x5bf66080c92b81173f470e25f9a12fc146278429'
 let receiver = '0xebeab176c2ca2ae72f11abb1cecad5df6ccb8dfe'
 
 let getBalance = async (web3: Web3, account: string) => {
-  return new BigNumber(web3.eth.getBalance(account))
+  return web3.eth.getBalance(account)
 }
 
 let provider = configuration.currentProvider()
@@ -42,7 +42,7 @@ let checkBalance = async (message: string, web3: Web3, sender: string, cb: Funct
 
 let port = 3001
 let server = hub.listen(port, async () => {
-  const price = new BigNumber(web3.toWei(1, 'ether'))
+  const price = web3.toWei(1, 'ether')
   let machinomy = new Machinomy(sender, web3, { engine: 'nedb' })
 
   let message = 'This is first buy:'
