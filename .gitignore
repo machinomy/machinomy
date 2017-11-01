@@ -8,3 +8,4 @@ build/
 .vscode/
 documentation
 .DS_Store
+!examples/client_es5.js

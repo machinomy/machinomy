@@ -56,7 +56,7 @@ export interface MachinomyOptions {
  * NB. All monetary values below are denominated in Wei, including: [buy]{@link Machinomy.buy} and
  * [deposit]{@link Machinomy.deposit} methods.
  *
- *
+ * You can find ES5 example in this {@link https://github.com/machinomy/machinomy/tree/master/examples folder} of the project.
  * @example <caption>Buying with Machinomy (TypeScript)</caption>
  * <pre><code>import Machinomy from 'machinomy'
  * import Web3 = require('web3')
@@ -212,18 +212,27 @@ export default class Machinomy {
       }).catch(reject)
     })
   }
-
+   
+  /**
+   * Save payment into the storage and return an id of the payment. The id can be used by {@link Machinomy.paymentById}.
+   */
   acceptPayment (payment: Payment): Promise <string> {
     let s = storage.build(this.web3, this.databaseFile, 'shared', false, this.engine)
     let server = receiver.build(this.web3, this.account, s)
     return server.acceptPayment(payment)
   }
-
+  
+  /**
+   * Return information about the payment by id.
+   */
   paymentById (id: string): Promise <Payment | null> {
     let s = storage.build(this.web3, this.databaseFile, 'shared', false, this.engine)
     return s.payments.findByToken(id)
   }
-
+  
+  /**
+   * @deprecated Use {@link Machinomy.paymentById} to find information about payment and verify it. 
+   */
   verifyToken (token: string): Promise <boolean> {
     let s = storage.build(this.web3, this.databaseFile, 'shared', false, this.engine)
     let server = receiver.build(this.web3, this.account, s)
