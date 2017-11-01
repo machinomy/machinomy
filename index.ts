@@ -212,7 +212,7 @@ export default class Machinomy {
       }).catch(reject)
     })
   }
-   
+
   /**
    * Save payment into the storage and return an id of the payment. The id can be used by {@link Machinomy.paymentById}.
    */
@@ -221,7 +221,7 @@ export default class Machinomy {
     let server = receiver.build(this.web3, this.account, s)
     return server.acceptPayment(payment)
   }
-  
+
   /**
    * Return information about the payment by id.
    */
@@ -229,7 +229,7 @@ export default class Machinomy {
     let s = storage.build(this.web3, this.databaseFile, 'shared', false, this.engine)
     return s.payments.findByToken(id)
   }
-  
+
   /**
    * @deprecated Use {@link Machinomy.paymentById} to find information about payment and verify it. 
    */
