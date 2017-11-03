@@ -208,7 +208,7 @@ export default class Sender {
   buyMeta (options: any): any {
     let uri = 'http://localhost:3000/paid/erc20'
     let price = new BigNumber(options.price)
-    if(price.isNaN() || price.isFinite() || price.isNegative()) return Promise.reject(new Error('Price is incorrect'));
+    if (price.isNaN() || !price.isFinite() || price.isNegative()) return Promise.reject(new Error('Price is incorrect'))
     let paymentRequired = new PaymentRequired(
       options.receiver,
       price,
