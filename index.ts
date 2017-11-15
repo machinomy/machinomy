@@ -87,6 +87,7 @@ export default class Machinomy {
   private web3: Web3
   private engine: string
   private databaseFile: string
+  private minimumChannelAmount: BigNumber
 
   /**
    * Create an instance of Machinomy.
@@ -101,10 +102,11 @@ export default class Machinomy {
    * @param account - Ethereum account address that sends the money. Make sure it is managed by Web3 instance passed as `web3` param.
    * @param web3 - Prebuilt web3 instance that manages the account and signs payments.
    */
-  constructor (account: string, web3: Web3, options: MachinomyOptions) {
+  constructor (account: string, web3: Web3, options: MachinomyOptions, minimumChannelAmount: number | BigNumber = 0) {
     this.account = account
     this.web3 = web3
     this.engine = options.engine || 'nedb'
+    this.minimumChannelAmount = new BigNumber(minimumChannelAmount)
     if (options.databaseFile) {
       this.databaseFile = options.databaseFile
     } else {
@@ -132,7 +134,7 @@ export default class Machinomy {
     let _transport = transport.build()
     let contract = channel.contract(this.web3)
     let s = storage.build(this.web3, this.databaseFile, 'shared', false, this.engine)
-    let client = new Sender(this.web3, this.account, contract, _transport, s)
+    let client = new Sender(this.web3, this.account, contract, _transport, s, this.minimumChannelAmount)
     return client.buyMeta(options).then((res: any) => {
       return { channelId: res.payment.channelId, token: res.token }
     })
@@ -232,7 +234,7 @@ export default class Machinomy {
   }
 
   /**
-   * @deprecated Use {@link Machinomy.paymentById} to find information about payment and verify it. 
+   * @deprecated Use {@link Machinomy.paymentById} to find information about payment and verify it.
    */
   verifyToken (token: string): Promise <boolean> {
     let s = storage.build(this.web3, this.databaseFile, 'shared', false, this.engine)
