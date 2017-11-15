@@ -87,7 +87,7 @@ export default class Machinomy {
   private web3: Web3
   private engine: string
   private databaseFile: string
-  private minimumChannelAmount: BigNumber
+  private minimumChannelAmount?: BigNumber
 
   /**
    * Create an instance of Machinomy.
@@ -102,11 +102,11 @@ export default class Machinomy {
    * @param account - Ethereum account address that sends the money. Make sure it is managed by Web3 instance passed as `web3` param.
    * @param web3 - Prebuilt web3 instance that manages the account and signs payments.
    */
-  constructor (account: string, web3: Web3, options: MachinomyOptions, minimumChannelAmount: number | BigNumber = 0) {
+  constructor (account: string, web3: Web3, options: MachinomyOptions, minimumChannelAmount?: number | BigNumber) {
     this.account = account
     this.web3 = web3
     this.engine = options.engine || 'nedb'
-    this.minimumChannelAmount = new BigNumber(minimumChannelAmount)
+    if (minimumChannelAmount) this.minimumChannelAmount = new BigNumber(minimumChannelAmount)
     if (options.databaseFile) {
       this.databaseFile = options.databaseFile
     } else {
