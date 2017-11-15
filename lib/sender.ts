@@ -146,9 +146,9 @@ export default class Sender {
         if (paymentChannel) {
           return this.existingChannel(uri, paymentRequired, paymentChannel)
         } else {
-          let value = paymentRequired.price.times(10);
-          if(this.minimumChannelAmount && this.minimumChannelAmount < value){
-            value = this.minimumChannelAmount;
+          let value = paymentRequired.price.times(10)
+          if (this.minimumChannelAmount && this.minimumChannelAmount < value) {
+            value = this.minimumChannelAmount
           }
           return this.freshChannel(uri, paymentRequired, value, opts) // Build new channel
         }
@@ -225,11 +225,10 @@ export default class Sender {
       if (paymentChannel) {
         return this.existingChannel(uri, paymentRequired, paymentChannel)
       } else {
-        let value = paymentRequired.price.times(10);
-        if(this.minimumChannelAmount && this.minimumChannelAmount > value){
-          value = this.minimumChannelAmount;
+        let value = paymentRequired.price.times(10)
+        if (this.minimumChannelAmount && this.minimumChannelAmount < value) {
+          value = this.minimumChannelAmount
         }
-        console.error('value', value.toString())
         return this.freshChannel(uri, paymentRequired, value) // Build new channel
       }
     })
