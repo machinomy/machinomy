@@ -48,13 +48,15 @@ export default class Sender {
   contract: ChannelContract
   transport: Transport
   storage: Storage
+  minimumChannelAmount: BigNumber
 
-  constructor (web3: Web3, account: string, contract: ChannelContract, transport: Transport, storage: Storage) {
+  constructor (web3: Web3, account: string, contract: ChannelContract, transport: Transport, storage: Storage, minimumChannelAmount: BigNumber = new BigNumber(0)) {
     this.web3 = web3
     this.account = account
     this.contract = contract
     this.transport = transport
     this.storage = storage
+    this.minimumChannelAmount = minimumChannelAmount
   }
 
   /**
@@ -144,7 +146,10 @@ export default class Sender {
         if (paymentChannel) {
           return this.existingChannel(uri, paymentRequired, paymentChannel)
         } else {
-          let value = paymentRequired.price.times(10) // FIXME Total value of the channel
+          let value = paymentRequired.price.times(10)
+          if (!this.minimumChannelAmount.equals(0) && this.minimumChannelAmount.greaterThan(value)) {
+            value = this.minimumChannelAmount
+          }
           return this.freshChannel(uri, paymentRequired, value, opts) // Build new channel
         }
       })
@@ -220,7 +225,10 @@ export default class Sender {
       if (paymentChannel) {
         return this.existingChannel(uri, paymentRequired, paymentChannel)
       } else {
-        let value = paymentRequired.price.times(10) // FIXME Total value of the channel
+        let value = paymentRequired.price.times(10)
+        if (!this.minimumChannelAmount.equals(0) && this.minimumChannelAmount.greaterThan(value)) {
+          value = this.minimumChannelAmount
+        }
         return this.freshChannel(uri, paymentRequired, value) // Build new channel
       }
     })
