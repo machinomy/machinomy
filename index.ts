@@ -1,6 +1,6 @@
 import Web3 = require('web3')
 import * as transport from './lib/transport'
-import {default as Storage, engine, build, channels as storageChannels} from './lib/storage'
+import { default as Storage, engine, build, channels as storageChannels } from './lib/storage'
 import * as channel from './lib/channel'
 import { default as Sender } from './lib/sender'
 import { ChannelContract, contract } from './lib/channel'
@@ -200,9 +200,6 @@ export default class Machinomy {
    * For more details on how payment channels work refer to a website.
    */
   close (channelId: string): Promise<void> {
-    if (typeof channelId !== 'string') {
-      throw 'channelId must be a string'
-    }
     let channelContract = contract(this.web3)
     return new Promise((resolve, reject) => {
       this.storage.channels.firstById(channelId).then((paymentChannel) => {
