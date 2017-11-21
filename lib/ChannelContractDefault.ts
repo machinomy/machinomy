@@ -75,7 +75,6 @@ export class ChannelContractDefault {
     let canStart = await this.canStartSettle(account, channelId)
     if (!canStart) {
       return Promise.reject(new Error('Settle start isn\'t possible'))
-      // let paymentHex = '0x' + payment.toString(16)
     }
     return deployed.startSettle(channelId, payment, { from: account })
   }
