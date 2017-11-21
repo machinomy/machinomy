@@ -2,7 +2,8 @@ import Web3 = require('web3')
 import BigNumber from 'bignumber.js'
 import { PaymentRequired } from './transport'
 import { PaymentChannel, PaymentChannelJSON } from './paymentChannel'
-import { buildBrokerContract } from '@machinomy/contracts'
+import { Broker } from '@machinomy/contracts'
+import { TransactionResult } from 'truffle-contract'
 
 export { PaymentChannel, PaymentChannelJSON }
 
@@ -15,22 +16,23 @@ export class ChannelContractDefault {
     this.web3 = web3
   }
 
-  async createChannel (paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: any): Promise<any> {
-    let deployed = await buildBrokerContract(this.web3).deployed()
+  async createChannel (paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: any): Promise<TransactionResult> {
+    let deployed = await Broker.deployed(this.web3.currentProvider)
     return deployed.createChannel(paymentRequired.receiver, duration, settlementPeriod, options)
   }
 
-  async claim (receiver: string, paymentChannel: PaymentChannel, value: BigNumber, v: number, r: string, s: string): Promise<void> {
+  async claim (receiver: string, paymentChannel: PaymentChannel, value: BigNumber, v: number, r: string, s: string): Promise<TransactionResult> {
     value = new BigNumber(value)
     let channelId = paymentChannel.channelId
-    let deployed = await buildBrokerContract(this.web3).deployed()
+    let deployed = await Broker.deployed(this.web3.currentProvider)
     let canClaim = await deployed.canClaim(channelId, value, Number(v), r, s)
-    if (canClaim) {
-      return deployed.claim(channelId, value, v, r, s, { from: receiver })
+    if (!canClaim) {
+      return Promise.reject(new Error('Claim isn\'t possible'))
     }
+    return deployed.claim(channelId, value, v, r, s, { from: receiver })
   }
 
-  async deposit (sender: string, paymentChannel: PaymentChannel, value: BigNumber): Promise<void> {
+  async deposit (sender: string, paymentChannel: PaymentChannel, value: BigNumber): Promise<TransactionResult> {
     value = new BigNumber(value)
     let options = {
       from: sender,
@@ -38,15 +40,16 @@ export class ChannelContractDefault {
       gas: CREATE_CHANNEL_GAS
     }
     const channelId = paymentChannel.channelId
-    let deployed = await buildBrokerContract(this.web3).deployed()
+    let deployed = await Broker.deployed(this.web3.currentProvider)
     let canDeposit = await deployed.canDeposit(sender, channelId)
-    if (canDeposit) {
-      return deployed.deposit(channelId, options)
+    if (!canDeposit) {
+      return Promise.reject(new Error('Deposit isn\'t possible'))
     }
+    return deployed.deposit(channelId, options)
   }
 
   async canStartSettle (account: string, channelId: string): Promise<boolean> {
-    let deployed = await buildBrokerContract(this.web3).deployed()
+    let deployed = await Broker.deployed(this.web3.currentProvider)
     return deployed.canStartSettle(account, channelId)
   }
 
@@ -55,7 +58,7 @@ export class ChannelContractDefault {
       return Promise.resolve(0)
     } else {
       return new Promise((resolve, reject) => {
-        buildBrokerContract(this.web3).deployed().then((deployed) => {
+        Broker.deployed(this.web3.currentProvider).then((deployed) => {
           deployed.getState(paymentChannel.channelId).then((result: any) => {
             resolve(Number(result))
           })
@@ -66,22 +69,24 @@ export class ChannelContractDefault {
     }
   }
 
-  async startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber): Promise<void> {
-    let deployed = await buildBrokerContract(this.web3).deployed()
+  async startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber): Promise<TransactionResult> {
+    let deployed = await Broker.deployed(this.web3.currentProvider)
     const channelId = paymentChannel.channelId
     let canStart = await this.canStartSettle(account, channelId)
-    if (canStart) {
-      let paymentHex = '0x' + payment.toString(16)
-      return deployed.startSettle(channelId, paymentHex, { from: account })
+    if (!canStart) {
+      return Promise.reject(new Error('Settle start isn\'t possible'))
+      // let paymentHex = '0x' + payment.toString(16)
     }
+    return deployed.startSettle(channelId, payment, { from: account })
   }
 
-  async finishSettle (account: string, paymentChannel: PaymentChannel): Promise<void> {
+  async finishSettle (account: string, paymentChannel: PaymentChannel): Promise<TransactionResult> {
     const channelId = paymentChannel.channelId
-    let deployed = await buildBrokerContract(this.web3).deployed()
+    let deployed = await Broker.deployed(this.web3.currentProvider)
     let canFinish = deployed.canFinishSettle(account, channelId)
-    if (canFinish) {
-      return deployed.finishSettle(channelId, { from: account, gas: 400000 })
+    if (!canFinish) {
+      return Promise.reject(new Error('Settle finish isn\'t possible'))
     }
+    return deployed.finishSettle(channelId, { from: account, gas: 400000 })
   }
 }

@@ -17,6 +17,11 @@ const log = Log.create('sender')
 
 const VERSION = configuration.VERSION
 
+const DAY_IN_SECONDS = 86400
+
+/** Default settlement period for a payment channel */
+const DEFAULT_SETTLEMENT_PERIOD = 2 * DAY_IN_SECONDS
+
 export interface FreshChannelOpts extends RequestTokenOpts {
   onWillOpenChannel?: () => void
   onDidOpenChannel?: () => void
@@ -49,14 +54,20 @@ export default class Sender {
   transport: Transport
   storage: Storage
   minimumChannelAmount: BigNumber
+  settlementPeriod: number
 
-  constructor (web3: Web3, account: string, contract: ChannelContract, transport: Transport, storage: Storage, minimumChannelAmount: BigNumber = new BigNumber(0)) {
+  constructor (web3: Web3, account: string, contract: ChannelContract, transport: Transport, storage: Storage, minimumChannelAmount: BigNumber = new BigNumber(0), settlementPeriod?: number) {
     this.web3 = web3
     this.account = account
     this.contract = contract
     this.transport = transport
     this.storage = storage
     this.minimumChannelAmount = minimumChannelAmount
+    if (settlementPeriod || settlementPeriod === 0) {
+      this.settlementPeriod = settlementPeriod
+    } else {
+      this.settlementPeriod = DEFAULT_SETTLEMENT_PERIOD
+    }
   }
 
   /**
@@ -66,7 +77,7 @@ export default class Sender {
     if (_.isFunction(opts.onWillOpenChannel)) {
       opts.onWillOpenChannel()
     }
-    return this.contract.buildPaymentChannel(this.account, paymentRequired, channelValue).then((paymentChannel: PaymentChannel) => {
+    return this.contract.buildPaymentChannel(this.account, paymentRequired, channelValue, this.settlementPeriod).then((paymentChannel: PaymentChannel) => {
       if (_.isFunction(opts.onDidOpenChannel)) {
         opts.onDidOpenChannel()
       }

@@ -2,12 +2,10 @@
 # yarn lockfile v1
 
 
-"@machinomy/contracts@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@machinomy/contracts/-/contracts-1.0.1.tgz#58a743ce2eb0cf7789a4fff2d6a30be4c26a0971"
+"@machinomy/contracts@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@machinomy/contracts/-/contracts-3.0.0.tgz#72d99bb42d2ee1692254cf8b97b2da4ec5ebc61e"
   dependencies:
-    "@types/bignumber.js" "^4.0.3"
-    "@types/node" "^8.0.28"
     bignumber.js "^4.1.0"
     buffer "^5.0.7"
     chai "^4.1.2"
@@ -18,7 +16,7 @@
     web3-typescript-typings "https://github.com/machinomy/web3-typescript-typings"
     zeppelin-solidity "^1.2.0"
 
-"@types/bignumber.js@^4.0.2", "@types/bignumber.js@^4.0.3":
+"@types/bignumber.js@^4.0.2":
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/@types/bignumber.js/-/bignumber.js-4.0.3.tgz#e8ce5f28c3025a01c6af7fc6d944494903a9e348"
 
@@ -90,7 +88,7 @@
   dependencies:
     "@types/node" "*"
 
-"@types/node@*", "@types/node@^8.0.28":
+"@types/node@*":
   version "8.0.31"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-8.0.31.tgz#d9af61093cf4bfc9f066ca34de0175012cfb0ce9"
 
@@ -176,7 +174,7 @@ ajv@^4.9.1:
     co "^4.6.0"
     json-stable-stringify "^1.0.1"
 
-ajv@^5.1.0, ajv@^5.1.1, ajv@^5.1.5:
+ajv@^5.1.0, ajv@^5.1.5:
   version "5.2.3"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-5.2.3.tgz#c06f598778c44c6b161abafe3466b81ad1814ed2"
   dependencies:
@@ -184,6 +182,15 @@ ajv@^5.1.0, ajv@^5.1.1, ajv@^5.1.5:
     fast-deep-equal "^1.0.0"
     json-schema-traverse "^0.3.0"
     json-stable-stringify "^1.0.1"
+
+ajv@^5.1.1:
+  version "5.4.0"
+  resolved "https://registry.yarnpkg.com/ajv/-/ajv-5.4.0.tgz#32d1cf08dbc80c432f426f12e10b2511f6b46474"
+  dependencies:
+    co "^4.6.0"
+    fast-deep-equal "^1.0.0"
+    fast-json-stable-stringify "^2.0.0"
+    json-schema-traverse "^0.3.0"
 
 align-text@^0.1.1, align-text@^0.1.3:
   version "0.1.4"
@@ -2003,6 +2010,10 @@ falafel@^1.0.1:
 fast-deep-equal@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-1.0.0.tgz#96256a3bc975595eb36d82e9929d060d893439ff"
+
+fast-json-stable-stringify@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/fast-json-stable-stringify/-/fast-json-stable-stringify-2.0.0.tgz#d5142c0caee6b1189f87d3a76111064f86c8bbf2"
 
 fast-levenshtein@~2.0.4:
   version "2.0.6"
@@ -4743,15 +4754,15 @@ truffle-blockchain-utils@^0.0.3:
     web3 "^0.20.1"
 
 truffle-contract-schema@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/truffle-contract-schema/-/truffle-contract-schema-1.0.0.tgz#42978c02ee6fe60cb602c70155d1eb050c06cfbd"
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/truffle-contract-schema/-/truffle-contract-schema-1.0.1.tgz#08ceaefe71062a8ac9ab881a77a30fda3744176e"
   dependencies:
     ajv "^5.1.1"
     crypto-js "^3.1.9-1"
 
 truffle-contract@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/truffle-contract/-/truffle-contract-3.0.0.tgz#354813e69c575a202dca614354bc5e49754c2881"
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/truffle-contract/-/truffle-contract-3.0.1.tgz#7fd0395571b0c011afb809cbd6441d553e793201"
   dependencies:
     ethjs-abi "0.1.8"
     truffle-blockchain-utils "^0.0.3"
@@ -4835,8 +4846,8 @@ type-detect@^1.0.0:
   resolved "https://registry.yarnpkg.com/type-detect/-/type-detect-1.0.0.tgz#762217cc06db258ec48908a1298e8b95121e8ea2"
 
 type-detect@^4.0.0:
-  version "4.0.3"
-  resolved "https://registry.yarnpkg.com/type-detect/-/type-detect-4.0.3.tgz#0e3f2670b44099b0b46c284d136a7ef49c74c2ea"
+  version "4.0.5"
+  resolved "https://registry.yarnpkg.com/type-detect/-/type-detect-4.0.5.tgz#d70e5bc81db6de2a381bcaca0c6e0cbdc7635de2"
 
 type-is@~1.5.1:
   version "1.5.7"
@@ -5079,8 +5090,8 @@ web3-provider-engine@^13.2.9:
     xtend "^4.0.1"
 
 "web3-typescript-typings@https://github.com/machinomy/web3-typescript-typings":
-  version "0.2.1"
-  resolved "https://github.com/machinomy/web3-typescript-typings#129e3c32ddf33c19af1b81802d6f89b2aecf857d"
+  version "0.6.2"
+  resolved "https://github.com/machinomy/web3-typescript-typings#9dc1b34664b08c5fdc9aba13c2546fb4d00bd2d3"
   dependencies:
     bignumber.js "^4.0.2"
 

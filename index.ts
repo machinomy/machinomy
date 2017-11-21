@@ -6,10 +6,9 @@ import { default as Sender } from './lib/sender'
 import { ChannelContract, contract } from './lib/channel'
 import { PaymentChannel } from './lib/paymentChannel'
 import BigNumber from 'bignumber.js'
-// import * as BigNumber from 'bignumber.js'
 import Payment from './lib/Payment'
-// import { Receiver } from './lib/receiver'
 import * as receiver from './lib/receiver'
+import { TransactionResult } from 'truffle-contract'
 
 /**
  * Options for machinomy buy.
@@ -45,6 +44,8 @@ export interface MachinomyOptions {
   engine?: string
   /** Path to nedb database file. In the browser will used as name for indexedb. */
   databaseFile?: string
+  minimumChannelAmount?: number | BigNumber
+  settlementPeriod?: number
 }
 
 /**
@@ -89,6 +90,7 @@ export default class Machinomy {
   private databaseFile: string
   private minimumChannelAmount?: BigNumber
   private storage: Storage
+  private settlementPeriod?: number
 
   /**
    * Create an instance of Machinomy.
@@ -103,11 +105,15 @@ export default class Machinomy {
    * @param account - Ethereum account address that sends the money. Make sure it is managed by Web3 instance passed as `web3` param.
    * @param web3 - Prebuilt web3 instance that manages the account and signs payments.
    */
-  constructor (account: string, web3: Web3, options: MachinomyOptions, minimumChannelAmount?: number | BigNumber) {
+  constructor (account: string, web3: Web3, options: MachinomyOptions) {
     this.account = account
     this.web3 = web3
     this.engine = options.engine || 'nedb'
-    if (minimumChannelAmount) this.minimumChannelAmount = new BigNumber(minimumChannelAmount)
+    this.settlementPeriod = options.settlementPeriod
+
+    if (options.minimumChannelAmount) {
+      this.minimumChannelAmount = new BigNumber(options.minimumChannelAmount)
+    }
     if (options.databaseFile) {
       this.databaseFile = options.databaseFile
     } else {
@@ -135,7 +141,7 @@ export default class Machinomy {
   buy (options: BuyOptions): Promise<BuyResult> {
     let _transport = transport.build()
     let contract = channel.contract(this.web3)
-    let client = new Sender(this.web3, this.account, contract, _transport, this.storage, this.minimumChannelAmount)
+    let client = new Sender(this.web3, this.account, contract, _transport, this.storage, this.minimumChannelAmount, this.settlementPeriod)
     return client.buyMeta(options).then((res: any) => {
       return { channelId: res.payment.channelId, token: res.token }
     })
@@ -199,19 +205,17 @@ export default class Machinomy {
    * The method nicely abstracts over that, so you do not need to know what is really going on under the hood.
    * For more details on how payment channels work refer to a website.
    */
-  close (channelId: string): Promise<void> {
+  async close (channelId: string): Promise<TransactionResult> {
     let channelContract = contract(this.web3)
-    return new Promise((resolve, reject) => {
-      this.storage.channels.firstById(channelId).then((paymentChannel) => {
-        if (paymentChannel) {
-          if (paymentChannel.sender === this.account) {
-            this.settle(channelContract, paymentChannel).then(resolve).catch(reject)
-          } else if (paymentChannel.receiver === this.account) {
-            this.claim(channelContract, paymentChannel).then(resolve).catch(reject)
-          }
-        }
-      }).catch(reject)
-    })
+    const paymentChannel = await this.storage.channels.firstById(channelId)
+    if (!paymentChannel) {
+      return Promise.reject(new Error('Can\'t find payment channel'))
+    }
+    if (paymentChannel.sender === this.account) {
+      return this.settle(channelContract, paymentChannel)
+    } else {
+      return this.claim(channelContract, paymentChannel)
+    }
   }
 
   /**
@@ -240,36 +244,28 @@ export default class Machinomy {
   /**
    * Used by {@link Machinomy.close} if initiated by a sender.
    */
-  private settle (channelContract: ChannelContract, paymentChannel: PaymentChannel): Promise<void> {
-    return new Promise((resolve, reject) => {
-      channelContract.getState(paymentChannel).then((state) => {
-        if (state === 0) {
-          let num = new BigNumber(paymentChannel.spent)
-          channelContract.startSettle(this.account, paymentChannel, num).then(() => {
-            console.log('startSettle is finished')
-            resolve()
-          }).catch(reject)
-        } else if (state === 1) {
-          channelContract.finishSettle(this.account, paymentChannel).then(() => {
-            console.log('finishSettle is finished')
-            resolve()
-          }).catch(reject)
-        }
-      }).catch(reject)
-    })
+  private async settle (channelContract: ChannelContract, paymentChannel: PaymentChannel): Promise<TransactionResult> {
+    const state = await channelContract.getState(paymentChannel)
+    if (state === 0) {
+      let num = new BigNumber(paymentChannel.spent)
+      return channelContract.startSettle(this.account, paymentChannel, num)
+    } else if (state === 1) {
+      return channelContract.finishSettle(this.account, paymentChannel)
+    } else {
+      return Promise.reject(new Error('Unknown state'))
+    }
   }
 
   /**
    * Used by {@link Machinomy.close} if initiated by a receiver.
    */
-  private claim (channelContract: ChannelContract, paymentChannel: PaymentChannel): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const channelId = paymentChannel.channelId
-      this.storage.payments.firstMaximum(channelId).then((paymentDoc: any) => {
-        channelContract.claim(paymentChannel.receiver, paymentChannel, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s).then(value => {
-          resolve()
-        }).catch(reject)
-      }).catch(reject)
-    })
+  private async claim (channelContract: ChannelContract, paymentChannel: PaymentChannel): Promise<TransactionResult> {
+    const channelId = paymentChannel.channelId
+    const paymentDoc = await this.storage.payments.firstMaximum(channelId)
+    if (paymentDoc) {
+      return channelContract.claim(paymentChannel.receiver, paymentChannel, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s)
+    } else {
+      return Promise.reject(new Error('Can\'t find paymentDoc'))
+    }
   }
 }
