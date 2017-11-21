@@ -41,8 +41,8 @@ let checkBalance = async (message: string, web3: Web3, sender: string, cb: Funct
 
 let port = 3001
 let server = hub.listen(port, async () => {
-  const price = web3.toWei(1, 'ether')
-  let machinomy = new Machinomy(sender, web3, { engine: 'nedb' })
+  const price = 1000000000000000000 // 1 eth
+  let machinomy = new Machinomy(sender, web3, { engine: 'nedb', settlementPeriod: 0})
 
   let message = 'This is first buy:'
   let resultFirst = await checkBalance(message, web3, sender, async () => {

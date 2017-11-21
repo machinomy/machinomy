@@ -57,8 +57,7 @@
     "examples/machinomyERC20.ts"
   ],
   "include": [
-    "node_modules/*/index.d.ts",
-    "node_modules/*/index.d.ts",
+    "node_modules/**/index.d.ts",
     "src/globals.d.ts",
     "src/**/*.ts",
     "lib/*.ts",

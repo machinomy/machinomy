@@ -2,7 +2,7 @@ import Web3 = require('web3')
 import * as util from 'ethereumjs-util'
 import { PaymentChannel } from './channel'
 import { PaymentRequired } from './transport'
-import { buildBrokerContract, buildBrokerTokenContract, sign, soliditySHA3 } from '@machinomy/contracts'
+import { Broker, TokenBroker, sign, paymentDigest } from '@machinomy/contracts'
 import BigNumber from 'bignumber.js'
 
 export interface PaymentJSON {
@@ -67,14 +67,14 @@ export default class Payment {
     let isPositive = payment.value.greaterThanOrEqualTo(new BigNumber(0)) && payment.price.greaterThanOrEqualTo(new BigNumber(0))
     let deployed
     if (paymentChannel.contractAddress) {
-      deployed = await buildBrokerTokenContract(web3).deployed()
+      deployed = await TokenBroker.deployed(web3.currentProvider)
     } else {
-      deployed = await buildBrokerContract(web3).deployed()
+      deployed = await Broker.deployed(web3.currentProvider)
     }
     let chainId = await getNetwork(web3)
-    let paymentDigest = soliditySHA3(paymentChannel.channelId, payment.value, deployed.address, chainId)
+    let _paymentDigest = paymentDigest(paymentChannel.channelId, payment.value, deployed.address, Number(chainId))
 
-    let signature = await sign(web3, paymentChannel.sender, paymentDigest)
+    let signature = await sign(web3, paymentChannel.sender, _paymentDigest)
     let validSignature = signature.v === payment.v &&
       util.bufferToHex(signature.r) === payment.r &&
       util.bufferToHex(signature.s) === payment.s
@@ -97,14 +97,14 @@ export default class Payment {
     }
     let deployed
     if (paymentChannel.contractAddress) {
-      deployed = await buildBrokerTokenContract(web3).deployed()
+      deployed = await TokenBroker.deployed(web3.currentProvider)
     } else {
-      deployed = await buildBrokerContract(web3).deployed()
+      deployed = await Broker.deployed(web3.currentProvider)
     }
     let chainId = await getNetwork(web3)
-    let paymentDigest = soliditySHA3(paymentChannel.channelId, value, deployed.address, chainId)
+    let _paymentDigest = paymentDigest(paymentChannel.channelId, value, deployed.address, Number(chainId))
 
-    let signature = await sign(web3, paymentChannel.sender, paymentDigest)
+    let signature = await sign(web3, paymentChannel.sender, _paymentDigest)
     return new Payment({
       channelId: paymentChannel.channelId,
       sender: paymentChannel.sender,

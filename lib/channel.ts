@@ -6,6 +6,7 @@ import { ChannelContractDefault } from './ChannelContractDefault'
 import { ChannelContractToken } from './ChannelContractToken'
 import { PaymentChannelJSON, PaymentChannel } from './paymentChannel'
 export { PaymentChannelJSON, PaymentChannel }
+import { TransactionResult } from 'truffle-contract'
 const log = Log.create('channel')
 Log.setProductionMode()
 
@@ -16,9 +17,6 @@ export interface Signature {
 }
 
 const DAY_IN_SECONDS = 86400
-
-/** efault settlement period for a payment channel */
-const DEFAULT_SETTLEMENT_PERIOD = 2 * DAY_IN_SECONDS
 
 /** Default duration of a payment channel. */
 const DEFAULT_CHANNEL_TTL = 20 * DAY_IN_SECONDS
@@ -56,11 +54,10 @@ export class ChannelContract {
     }
   }
 
-  buildPaymentChannel (sender: string, paymentRequired: PaymentRequired, value: BigNumber): Promise<PaymentChannel> {
+  buildPaymentChannel (sender: string, paymentRequired: PaymentRequired, value: BigNumber, settlementPeriod: number): Promise<PaymentChannel> {
     const receiver = paymentRequired.receiver
     return new Promise<PaymentChannel>((resolve, reject) => {
       log.info('Building payment channel from ' + sender + ' to ' + receiver + ', initial amount set to ' + value)
-      const settlementPeriod = DEFAULT_SETTLEMENT_PERIOD
       const duration = DEFAULT_CHANNEL_TTL
       const options = {
         from: sender,
@@ -77,12 +74,12 @@ export class ChannelContract {
     })
   }
 
-  claim (receiver: string, paymentChannel: PaymentChannel, value: BigNumber, v: number, r: string, s: string): Promise<any> {
+  claim (receiver: string, paymentChannel: PaymentChannel, value: BigNumber, v: number, r: string, s: string): Promise<TransactionResult> {
     let channelContract = this.buildChannelContract(paymentChannel)
     return channelContract.claim(receiver, paymentChannel, value, v, r, s)
   }
 
-  deposit (sender: string, paymentChannel: PaymentChannel, value: BigNumber): Promise<void> {
+  deposit (sender: string, paymentChannel: PaymentChannel, value: BigNumber): Promise<TransactionResult> {
     let channelContract = this.buildChannelContract(paymentChannel)
     return channelContract.deposit(sender, paymentChannel, value)
   }
@@ -96,12 +93,12 @@ export class ChannelContract {
     }
   }
 
-  startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber): Promise<void> {
+  startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber): Promise<TransactionResult> {
     let channelContract = this.buildChannelContract(paymentChannel)
     return channelContract.startSettle(account, paymentChannel, payment)
   }
 
-  finishSettle (account: string, paymentChannel: PaymentChannel): Promise<void> {
+  finishSettle (account: string, paymentChannel: PaymentChannel): Promise<TransactionResult> {
     let channelContract = this.buildChannelContract(paymentChannel)
     return channelContract.finishSettle(account, paymentChannel)
   }
