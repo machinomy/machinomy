@@ -11,7 +11,7 @@ Machinomy is a Node.js library for micropayments in Ether over HTTP. It allows y
 amount of money instantly.
 
 Web site: [machinomy.com](http://machinomy.com).
-Twitter: [@machinomy](http://twitter.com).
+Twitter: [@machinomy](http://twitter.com/machinomy).
 Support/Discussion: [Gitter](https://gitter.im/machinomy/machinomy).
 
 ## Documentation
