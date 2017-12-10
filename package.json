@@ -1,7 +1,7 @@
 {
   "name": "machinomy",
   "version": "1.4.0",
-  "description": "Micropayments in Ether over HTTP",
+  "description": "Micropayments powered by Ethereum",
   "author": "Sergey Ukustov <sergey.ukustov@machinomy.com>",
   "license": "Apache-2.0",
   "keywords": [
