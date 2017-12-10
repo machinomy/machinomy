@@ -35,6 +35,7 @@
     "lib/",
     "test/",
     "src/",
+    "index.ts",
     "index.d.ts",
     "index.js",
     "index.js.map"
