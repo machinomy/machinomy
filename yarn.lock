@@ -2,9 +2,9 @@
 # yarn lockfile v1
 
 
-"@machinomy/contracts@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@machinomy/contracts/-/contracts-3.0.0.tgz#72d99bb42d2ee1692254cf8b97b2da4ec5ebc61e"
+"@machinomy/contracts@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@machinomy/contracts/-/contracts-3.1.0.tgz#0d540494606bc0c0187589bae269770620fede98"
   dependencies:
     bignumber.js "^4.1.0"
     buffer "^5.0.7"
@@ -184,8 +184,8 @@ ajv@^5.1.0, ajv@^5.1.5:
     json-stable-stringify "^1.0.1"
 
 ajv@^5.1.1:
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/ajv/-/ajv-5.4.0.tgz#32d1cf08dbc80c432f426f12e10b2511f6b46474"
+  version "5.5.1"
+  resolved "https://registry.yarnpkg.com/ajv/-/ajv-5.5.1.tgz#b38bb8876d9e86bee994956a04e721e88b248eb2"
   dependencies:
     co "^4.6.0"
     fast-deep-equal "^1.0.0"
@@ -1793,8 +1793,8 @@ ethereum-common@0.1.0:
     ethereumjs-util "^4.3.0"
 
 "ethereumjs-abi@https://github.com/ethereumjs/ethereumjs-abi":
-  version "0.6.4"
-  resolved "https://github.com/ethereumjs/ethereumjs-abi#ee6ded67235a98f3ef4ae2a338aee70a9f68fe20"
+  version "0.6.5"
+  resolved "https://github.com/ethereumjs/ethereumjs-abi#71f123b676f2b2d81bc20f343670d90045a3d3d8"
   dependencies:
     bn.js "^4.10.0"
     ethereumjs-util "^4.3.0"
@@ -5316,5 +5316,5 @@ yargs@~3.10.0:
     window-size "0.1.0"
 
 zeppelin-solidity@^1.2.0:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/zeppelin-solidity/-/zeppelin-solidity-1.3.0.tgz#066ab35d7e07510da391d1dbaaf319e0d06fcfc6"
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/zeppelin-solidity/-/zeppelin-solidity-1.4.0.tgz#0b8e0ef219897431a5be47004f78b20e0a2ee34a"
