@@ -61,7 +61,7 @@
     "commander": "^2.9.0",
     "cors": "^2.8.1",
     "ethereumjs-util": "^5.1.2",
-    "expect": "^21.2.1",
+    "expect": "^22.0.0",
     "homedir": "https://github.com/ukstv/node-homedir",
     "lodash": "^4.17.4",
     "loglevel": "^1.4.1",
