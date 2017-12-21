@@ -3,11 +3,18 @@ import Engine from './engine'
 /**
  * Database engine.
  */
+let db: any = {};
+
 export default class EngineNedb implements Engine {
   datastore: Datastore
 
   constructor (path: string, inMemoryOnly: boolean = false) {
-    this.datastore = new Datastore({ filename: path, autoload: true, inMemoryOnly: inMemoryOnly })
+    if (db[path]) {
+      this.datastore = db[path]
+    } else {
+      db[path] = new Datastore({ filename: path, autoload: true, inMemoryOnly: inMemoryOnly })
+      this.datastore = db[path]
+    }
   }
 
   find<A> (query: object): Promise<Array<A>> {
