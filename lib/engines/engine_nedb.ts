@@ -3,7 +3,7 @@ import Engine from './engine'
 /**
  * Database engine.
  */
-let db: any = {};
+let db: any = {}
 
 export default class EngineNedb implements Engine {
   datastore: Datastore
