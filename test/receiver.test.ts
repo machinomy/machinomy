@@ -5,7 +5,7 @@ import { randomStorage } from './support'
 import { PaymentChannel } from '../lib/channel'
 import Payment from '../lib/Payment'
 import mongo from '../lib/mongo'
-import BigNumber from 'bignumber.js'
+import BigNumber from '../lib/bignumber'
 let expect = require('expect')
 
 const engineName = process.env.ENGINE_NAME || 'nedb'

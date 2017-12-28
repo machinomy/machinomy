@@ -2,7 +2,7 @@ import * as channel from '../channel'
 import Web3 = require('web3')
 import Engine from '../engines/engine'
 import { ChannelId, PaymentChannel, PaymentChannelJSON } from '../channel'
-import BigNumber from 'bignumber.js'
+import BigNumber from '../bignumber'
 import util = require('ethereumjs-util')
 
 const namespaced = (namespace: string|null|undefined, kind: string): string => {

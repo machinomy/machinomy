@@ -4,7 +4,7 @@ import Web3 = require('web3')
 import FakeProvider = require('web3-fake-provider')
 import { ChannelId } from '../lib/channel'
 import Storage from '../lib/storage'
-import BigNumber from 'bignumber.js'
+import BigNumber from '../lib/bignumber'
 
 const channel = require('../lib/channel')
 

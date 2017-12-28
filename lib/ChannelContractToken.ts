@@ -1,5 +1,5 @@
 import Web3 = require('web3')
-import BigNumber from 'bignumber.js'
+import BigNumber from './bignumber'
 import { PaymentRequired } from './transport'
 import { PaymentChannel, PaymentChannelJSON } from './paymentChannel'
 import { TokenBroker, buildERC20Contract } from '@machinomy/contracts'
@@ -16,8 +16,8 @@ export class ChannelContractToken {
     this.web3 = web3
   }
 
-  async createChannel (paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: any): Promise<TransactionResult> {
-    const value = options['value']
+  async createChannel (paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: Web3.TxData): Promise<TransactionResult> {
+    const value = options.value ? new BigNumber(options.value! as BigNumber) : new BigNumber(0)
     delete options['value']
     let deployed = await TokenBroker.deployed(this.web3.currentProvider)
     let instanceERC20 = await buildERC20Contract(paymentRequired.contractAddress as string, this.web3)

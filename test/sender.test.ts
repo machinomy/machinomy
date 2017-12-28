@@ -5,7 +5,7 @@ import * as channel from '../lib/channel'
 import { randomStorage } from './support'
 import Payment from '../lib/Payment'
 import Promise = require('bluebird')
-import BigNumber from 'bignumber.js'
+import BigNumber from '../lib/bignumber'
 const engineName = process.env.ENGINE_NAME || 'nedb'
 let expect = require('expect')
 

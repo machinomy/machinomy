@@ -11,7 +11,7 @@ import { PaymentRequired, RequestTokenOpts, Transport } from './transport'
 import Storage from './storage'
 import { RequestResponse } from 'request'
 import Payment from './Payment'
-import BigNumber from 'bignumber.js'
+import BigNumber from './bignumber'
 
 const log = Log.create('sender')
 

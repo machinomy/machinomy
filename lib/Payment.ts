@@ -3,7 +3,7 @@ import * as util from 'ethereumjs-util'
 import { PaymentChannel } from './channel'
 import { PaymentRequired } from './transport'
 import { Broker, TokenBroker, sign, paymentDigest } from '@machinomy/contracts'
-import BigNumber from 'bignumber.js'
+import BigNumber from './bignumber'
 
 export interface PaymentJSON {
   channelId: string

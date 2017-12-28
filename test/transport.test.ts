@@ -3,7 +3,7 @@ import * as channel from '../lib/channel'
 import * as transport from '../lib/transport'
 import { randomInteger } from './support'
 import Payment from '../lib/Payment'
-import BigNumber from 'bignumber.js'
+import BigNumber from '../lib/bignumber'
 let expect = require('expect')
 
 describe('transport', () => {

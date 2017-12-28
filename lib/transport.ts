@@ -2,7 +2,7 @@ import { Log } from 'typescript-logger'
 import _ = require('lodash')
 import { RequestResponse, RequiredUriUrl, CoreOptions } from 'request'
 import Payment from './Payment'
-import BigNumber from 'bignumber.js'
+import BigNumber from './bignumber'
 let req = require('request')
 
 const request: (opts: RequiredUriUrl & CoreOptions) => Promise<RequestResponse> = (opts: RequiredUriUrl & CoreOptions) => {

@@ -1,5 +1,5 @@
-import Web3 = require('web3')
-import BigNumber from 'bignumber.js'
+import * as Web3 from 'web3'
+import BigNumber from './bignumber'
 import { PaymentRequired } from './transport'
 import { PaymentChannel, PaymentChannelJSON } from './paymentChannel'
 import { Broker } from '@machinomy/contracts'
@@ -38,7 +38,7 @@ export class ChannelContractDefault {
       from: sender,
       value: value,
       gas: CREATE_CHANNEL_GAS
-    }
+    } as Web3.TxData
     const channelId = paymentChannel.channelId
     let deployed = await Broker.deployed(this.web3.currentProvider)
     let canDeposit = await deployed.canDeposit(sender, channelId)

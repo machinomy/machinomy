@@ -1,6 +1,6 @@
 import { Log } from 'typescript-logger'
 import Web3 = require('web3')
-import BigNumber from 'bignumber.js'
+import BigNumber from './bignumber'
 import { PaymentRequired } from './transport'
 import { ChannelContractDefault } from './ChannelContractDefault'
 import { ChannelContractToken } from './ChannelContractToken'
@@ -63,7 +63,7 @@ export class ChannelContract {
         from: sender,
         value,
         gas: CREATE_CHANNEL_GAS
-      }
+      } as Web3.TxData
       this.createChannel(paymentRequired, duration, settlementPeriod, options).then((res: any) => {
         const channelId = res.logs[0].args.channelId
         const paymentChannel = new PaymentChannel(sender, receiver, channelId, value, new BigNumber(0), undefined, paymentRequired.contractAddress)
