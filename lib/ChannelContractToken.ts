@@ -17,7 +17,7 @@ export class ChannelContractToken {
   }
 
   async createChannel (paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: Web3.TxData): Promise<TransactionResult> {
-    const value = options.value ? new BigNumber(options.value! as BigNumber) : new BigNumber(0)
+    const value = new BigNumber(options.value!.toString())
     delete options['value']
     let deployed = await TokenBroker.deployed(this.web3.currentProvider)
     let instanceERC20 = await buildERC20Contract(paymentRequired.contractAddress as string, this.web3)
