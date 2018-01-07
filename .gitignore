@@ -6,6 +6,7 @@ build/
 **/*.js
 **/*.js.map
 .vscode/
+.idea/
 documentation
 .DS_Store
 !examples/client_es5.js
