@@ -9,11 +9,14 @@ Usually one follows Truffle process FIXME Link. Machinomy is a _library_, not an
 Machinomy micropayments one has to follow a different process, described below. For a starter, clone
 [machinomy] and [machinomy-contracts] repositories from GitHub.
 
-1\. Start TestRPC
+1\. Start TestRPC.
 
 ```
-$ testrpc
+$ testrpc --networkId 1024
 ```
+
+Please, set network id to something less then 2 millions. The contract assumes network id to be of `uint32` type.
+By default, TestRPC sets network id to some very big number that does not fit the type.  
 
 2\. Deploy machinomy-contracts onto TestRPC Ethereum network.
 
