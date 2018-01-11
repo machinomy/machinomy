@@ -21,6 +21,8 @@ It is more illustrative than instructions below.
 
 Machinomy provides simple [JS API](https://machinomy.com/documentation/api/classes/_index_.machinomy.html).
 
+For running against TestRPC, see [corresponding manual](docs/testrpc.md).
+
 ## Installation
 
     $ npm install -g machinomy
