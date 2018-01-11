@@ -83,6 +83,7 @@
     "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {
+    "@machinomy/types-truffle-contract": "https://github.com/machinomy/types-truffle-contract",
     "@types/mocha": "^2.2.43",
     "body-parser": "^1.15.2",
     "coveralls": "^2.12.0",

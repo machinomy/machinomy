@@ -16,6 +16,14 @@
     web3-typescript-typings "https://github.com/machinomy/web3-typescript-typings"
     zeppelin-solidity "^1.2.0"
 
+"@machinomy/types-truffle-contract@https://github.com/machinomy/types-truffle-contract":
+  version "0.0.1"
+  resolved "https://github.com/machinomy/types-truffle-contract#112f61ec4527a0fbf7c1b9bcc0bedaa6be42caa7"
+  dependencies:
+    truffle-contract "^3.0.0"
+    web3 "^0.20.2"
+    web3-typescript-typings "https://github.com/0xProject/web3-typescript-typings"
+
 "@types/bignumber.js@^4.0.2":
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/@types/bignumber.js/-/bignumber.js-4.0.3.tgz#e8ce5f28c3025a01c6af7fc6d944494903a9e348"
@@ -5089,6 +5097,12 @@ web3-provider-engine@^13.2.9:
     xhr "^2.2.0"
     xtend "^4.0.1"
 
+"web3-typescript-typings@https://github.com/0xProject/web3-typescript-typings":
+  version "0.9.0"
+  resolved "https://github.com/0xProject/web3-typescript-typings#f6df0e1238282207535f0b7c2f6fcda697c8b855"
+  dependencies:
+    bignumber.js "^4.0.2"
+
 "web3-typescript-typings@https://github.com/machinomy/web3-typescript-typings":
   version "0.6.2"
   resolved "https://github.com/machinomy/web3-typescript-typings#9dc1b34664b08c5fdc9aba13c2546fb4d00bd2d3"
@@ -5098,6 +5112,16 @@ web3-provider-engine@^13.2.9:
 web3@^0.20.1:
   version "0.20.2"
   resolved "https://registry.yarnpkg.com/web3/-/web3-0.20.2.tgz#c54dac5fc0e377399c04c1a6ecbb12e4513278d6"
+  dependencies:
+    bignumber.js "git+https://github.com/frozeman/bignumber.js-nolookahead.git"
+    crypto-js "^3.1.4"
+    utf8 "^2.1.1"
+    xhr2 "*"
+    xmlhttprequest "*"
+
+web3@^0.20.2:
+  version "0.20.3"
+  resolved "https://registry.yarnpkg.com/web3/-/web3-0.20.3.tgz#caa44373dc8815ac8767bddb6ba73073964caa8b"
   dependencies:
     bignumber.js "git+https://github.com/frozeman/bignumber.js-nolookahead.git"
     crypto-js "^3.1.4"
