@@ -1,6 +1,7 @@
 import Web3 = require('web3')
 import * as transport from './lib/transport'
 import { default as Storage, engine, build, channels as storageChannels } from './lib/storage'
+import Engine from './lib/engines/engine'
 import * as channel from './lib/channel'
 import { default as Sender } from './lib/sender'
 import { ChannelContract, contract } from './lib/channel'
@@ -41,7 +42,7 @@ export interface BuyResult {
  */
 export interface MachinomyOptions {
   /** "nedb" or "mongo". */
-  engine?: string
+  engine?: string | Engine
   /** Path to nedb database file. In the browser will used as name for indexedb. */
   databaseFile?: string
   minimumChannelAmount?: number | BigNumber
@@ -86,7 +87,7 @@ export default class Machinomy {
   private account: string
   /** Web3 instance that manages {@link Machinomy.account}'s private key */
   private web3: Web3
-  private engine: string
+  private engine: string | Engine
   private databaseFile: string
   private minimumChannelAmount?: BigNumber
   private storage: Storage

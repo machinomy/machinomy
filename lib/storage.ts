@@ -24,11 +24,17 @@ export const channels = (web3: Web3, engine: Engine, namespace: string | null): 
 /**
  * Instantiate a storage engine.
  */
-export const engine = (path: string, inMemoryOnly: boolean = false, engineName: string = defaultEngineName): Engine => {
+export const engine = (path: string, inMemoryOnly: boolean = false, engineName?: string | Engine): Engine => {
+  if (!engineName) {
+    engineName = defaultEngineName
+  }
+
   if (engineName === 'nedb') {
     return new EngineNedb(path, inMemoryOnly)
   } else if (engineName === 'mongo') {
     return new EngineMongo(path, inMemoryOnly)
+  } else if (engineName && typeof engineName === 'object') {
+    return engineName as Engine
   } else {
     throw new Error('Can not detect datastore enigine')
   }
@@ -41,8 +47,11 @@ export default class Storage {
   tokens: TokensDatabase
   payments: PaymentsDatabase
 
-  constructor (web3: Web3, path: string, namespace: string|null, inMemoryOnly?: boolean, engineName: string = defaultEngineName) {
-    let storageEngine = engine(path, inMemoryOnly, engineName)
+  constructor (web3: Web3, path: string, namespace: string|null, inMemoryOnly?: boolean, engineName?: string | Engine) {
+    if (!engineName) {
+      engineName = defaultEngineName
+    }
+    const storageEngine = (typeof engineName === 'string' ? engine(path, inMemoryOnly, engineName) : engineName)
     this.namespace = namespace || null
     // this.db = storageEngine.datastore
     this.channels = channels(web3, storageEngine, namespace)
@@ -54,6 +63,6 @@ export default class Storage {
 /**
  * Build an instance of Storage.
  */
-export const build = (web3: Web3, path: string, namespace: string | null = null, inMemoryOnly?: boolean, engineName: string = defaultEngineName): Storage => {
+export const build = (web3: Web3, path: string, namespace: string | null = null, inMemoryOnly?: boolean, engineName?: string | Engine): Storage => {
   return new Storage(web3, path, namespace, inMemoryOnly, engineName)
 }
