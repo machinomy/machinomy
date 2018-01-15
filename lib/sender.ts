@@ -135,7 +135,7 @@ export default class Sender {
   }
 
   findOpenChannel (paymentRequired: PaymentRequired): Promise<PaymentChannel | undefined> {
-    return this.storage.channels.allByQuery({ sender: this.account, receiver: paymentRequired.receiver }).then(paymentChannels => {
+    return this.storage.channels.findBySenderReceiver(this.account, paymentRequired.receiver).then(paymentChannels => {
       return Bluebird.filter(paymentChannels, paymentChannel => {
         return this.canUseChannel(paymentChannel, paymentRequired)
       }).then(openChannels => {

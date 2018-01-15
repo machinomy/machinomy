@@ -1,8 +1,7 @@
 import CommandPrompt from './CommandPrompt'
 import * as configuration from '../lib/configuration'
-import Web3 = require('web3')
-import mongo from '../lib/mongo'
 import Machinomy from '../index'
+import Web3 = require('web3')
 
 function channels (command: CommandPrompt): void {
   let settings = configuration.sender()
@@ -11,26 +10,18 @@ function channels (command: CommandPrompt): void {
 
   if (settings.account) {
     let account = settings.account
-    if (settings.engine === 'mongo') {
-      mongo.connectToServer().then(() => {
-        let machinomy = new Machinomy(account, web3, { engine: settings.engine })
-        machinomy.channels().then((channels: any) => {
-          console.log(channels)
-          mongo.db().close()
-        }).catch((e: Error) => {
-          console.log(e)
-        })
-      }).catch((e: Error) => {
-        console.log(e)
-      })
-    } else {
-      let machinomy = new Machinomy(account, web3, { engine: settings.engine })
-      machinomy.channels().then((channels: any) => {
-        console.log(channels)
-      }).catch((e: Error) => {
-        console.log(e)
-      })
-    }
+    let machinomy = new Machinomy(account, web3, {engine: settings.engine})
+    machinomy.channels().then((channels: any) => {
+      console.log(channels)
+    }).catch((e: Error) => {
+      console.log(e)
+    }).then(() => {
+      return machinomy.shutdown()
+    }).catch((e) => {
+      console.error('Failed to cleanly shut down:')
+      console.error(e)
+      process.exit(1)
+    })
   }
 }
 

@@ -17,6 +17,7 @@ export interface PaymentJSON {
   s: string
   meta: string
   contractAddress?: string
+  token: string | undefined
 }
 
 export function getNetwork (web3: Web3): Promise<string> {
@@ -42,6 +43,7 @@ export default class Payment {
   s: string
   meta: string
   contractAddress: string | undefined
+  token: string | undefined
 
   constructor (options: PaymentJSON) {
     this.channelId = options.channelId
@@ -55,6 +57,7 @@ export default class Payment {
     this.s = options.s
     this.meta = options.meta
     this.contractAddress = options.contractAddress
+    this.token = options.token
   }
 
   // TODO use it
@@ -116,22 +119,24 @@ export default class Payment {
       r: '0x' + signature.r.toString('hex'),
       s: '0x' + signature.s.toString('hex'),
       meta: paymentRequired.meta,
-      contractAddress: paymentChannel.contractAddress
+      contractAddress: paymentChannel.contractAddress,
+      token: undefined
     })
   }
 
-  static replaceHexToBigNumber (payment: Payment): Payment {
-    payment.price = this.hexToBigNumber(payment.price.toString())
-    payment.value = this.hexToBigNumber(payment.value.toString())
-    payment.channelValue = this.hexToBigNumber(payment.channelValue.toString())
-    return payment
-  }
-
-  static hexToBigNumber (hex: string): BigNumber {
-    if (hex.substr(0, 2) === '0x') {
-      return new BigNumber(new Buffer(hex.substr(2), 'hex').toString('utf8'))
-    } else {
-      return new BigNumber(hex)
+  static serialize (payment: Payment): object {
+    return {
+      channelId: payment.channelId.toString(),
+      value: payment.value.toString(),
+      sender: payment.sender,
+      receiver: payment.receiver,
+      price: payment.price.toString(),
+      channelValue: payment.channelValue.toString(),
+      v: Number(payment.v),
+      r: payment.r,
+      s: payment.s,
+      contractAddress: payment.contractAddress,
+      token: payment.token
     }
   }
 }

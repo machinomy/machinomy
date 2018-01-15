@@ -242,6 +242,10 @@ export default class Machinomy {
     return server.acceptToken(token)
   }
 
+  shutdown (): Promise<void> {
+    return this.storage.close()
+  }
+
   /**
    * Used by {@link Machinomy.close} if initiated by a sender.
    */

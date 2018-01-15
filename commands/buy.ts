@@ -1,6 +1,5 @@
 import { buyContent } from '../lib/buy'
 import CommandPrompt from './CommandPrompt'
-import mongo from '../lib/mongo'
 import * as configuration from '../lib/configuration'
 
 function buy (uri: string, command: CommandPrompt): void {
@@ -18,22 +17,12 @@ function buy (uri: string, command: CommandPrompt): void {
     buyContent(uri, settings.account, password).then(contents => {
       console.log('Buy result:')
       console.log(contents)
-      if (settings.engine === 'mongo') {
-        mongo.db().close()
-      }
     }).catch((error: any) => {
       console.error(error)
     })
   }
-  if (settings.engine === 'mongo') {
-    mongo.connectToServer().then(() => {
-      startBuy()
-    }).catch((e: Error) => {
-      console.log(e)
-    })
-  } else {
-    startBuy()
-  }
+
+  startBuy()
 }
 
 export default buy

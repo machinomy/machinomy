@@ -1,5 +1,6 @@
 import Datastore = require('nedb')
 import Engine from './engine'
+import pify from '../util/pify'
 /**
  * Database engine.
  */
@@ -17,47 +18,20 @@ export default class EngineNedb implements Engine {
     }
   }
 
-  find<A> (query: object): Promise<Array<A>> {
-    return new Promise((resolve: Function, reject: Function) => {
-      this.datastore.find(query, (err: Error, res: Array<A>) => {
-        if (err) {
-          return reject(err)
-        }
-        resolve(res)
-      })
-    })
+  connect (): Promise<any> {
+    return Promise.resolve()
   }
 
-  findOne<A> (query: object): Promise<A|null> {
-    return new Promise((resolve: Function, reject: Function) => {
-      this.datastore.findOne(query, (err: Error, res: A) => {
-        if (err) {
-          return reject(err)
-        }
-        resolve(res)
-      })
-    })
+  close (): Promise<any> {
+    return Promise.resolve()
   }
 
-  insert (document: object): Promise<void> {
-    return new Promise((resolve: Function, reject: Function) => {
-      this.datastore.insert(document, (err: Error, res: any) => {
-        if (err) {
-          return reject(err)
-        }
-        resolve(res)
-      })
-    })
+  drop (): Promise<any> {
+    return this.exec((client: any) => pify((cb: Function) => client.remove({}, { multi: true }, cb)))
   }
 
-  update (query: object, update: object): Promise<void> {
-    return new Promise((resolve: Function, reject: Function) => {
-      this.datastore.update(query, update, {}, (err: Error, res: any) => {
-        if (err) {
-          return reject(err)
-        }
-        resolve(res)
-      })
-    })
+  exec (cb: Function): Promise<any> {
+    return Promise.resolve(this.datastore)
+      .then((ds) => cb(ds))
   }
 }

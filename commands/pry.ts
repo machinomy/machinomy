@@ -4,7 +4,6 @@ import * as configuration from '../lib/configuration'
 import Storage from '../lib/storage'
 import Sender from '../lib/sender'
 import Web3 = require('web3')
-import mongo from '../lib/mongo'
 
 const pry = (uri: string) => {
   let settings = configuration.sender()
@@ -18,26 +17,19 @@ const pry = (uri: string) => {
       let client = new Sender(web3, settings.account, contract, _transport, storage)
       client.pry(uri).then(paymentRequired => {
         console.log(paymentRequired)
-        if (settings.engine === 'mongo') {
-          mongo.db().close()
-        }
       }).catch(error => {
         console.error(error)
-        if (settings.engine === 'mongo') {
-          mongo.db().close()
-        }
+      }).then(() => {
+        return storage.close()
+      }).catch(e => {
+        console.error('Failed to cleanly shut down:')
+        console.error(e)
+        process.exit(1)
       })
     }
   }
-  if (settings.engine === 'mongo') {
-    mongo.connectToServer().then(() => {
-      startPry()
-    }).catch((e: Error) => {
-      console.log(e)
-    })
-  } else {
-    startPry()
-  }
+
+  startPry()
 }
 
 export default pry

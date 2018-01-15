@@ -38,7 +38,8 @@ describe('sender', () => {
         meta: 'metaexample',
         v: 1,
         r: '0x2',
-        s: '0x3'
+        s: '0x3',
+        token: undefined
       })
       let paymentRequired = new transport.PaymentRequired(payment.receiver, payment.price, 'meta', 'gateway')
       it('determine if channel can be used', done => {

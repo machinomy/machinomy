@@ -1,59 +1,67 @@
-import mongo from '../mongo'
+const MongoClient = require('mongodb').MongoClient
+
 import Engine from './engine'
 
 /**
  * Database engine.
  */
 export default class EngineMongo implements Engine {
-  constructor (path: string, inMemoryOnly: boolean = false) {
-    // Do Nothing
-  }
+  connectionInProgress: Promise<any>
 
-  find<A> (query: {kind: string}): Promise<Array<A>> {
-    let collection = query.kind || 'all'
-    return new Promise((resolve: Function, reject: Function) => {
-      mongo.db().collection(collection).find(query).toArray((err: any, res: any) => {
+  _client: any
+
+  connect (): Promise<any> {
+    if (this.connectionInProgress) {
+      return this.connectionInProgress
+    }
+
+    this.connectionInProgress = new Promise((resolve, reject) => {
+      MongoClient.connect('mongodb://localhost:27017/machinomy', (err: any, db: any) => {
         if (err) {
           return reject(err)
         }
-        resolve(res)
-      })
-    })
-  }
 
-  findOne<A> (query: {kind: string}): Promise<A|null> {
-    let collection = query.kind || 'all'
-    return new Promise<A>((resolve: Function, reject: Function) => {
-      mongo.db().collection(collection).findOne(query, (err: any, res: any) => {
-        if (err) {
-          return reject(err)
-        }
-        resolve(res)
-      })
-    })
-  }
-
-  insert (document: {kind: string}): Promise<void> {
-    let collection = document.kind || 'all'
-    return new Promise((resolve: Function, reject: Function) => {
-      mongo.db().collection(collection).insert(document, (err: any, res: any) => {
-        if (err) {
-          return reject(err)
-        }
+        this._client = db
         resolve()
       })
     })
+
+    return this.connectionInProgress
   }
 
-  update (query: {kind: string}, update: object): Promise<void> {
-    let collection = query.kind || 'all'
-    return new Promise((resolve: Function, reject: Function) => {
-      mongo.db().collection(collection).update(query, update, {}, (err: any, res: any) => {
-        if (err) {
-          return reject(err)
-        }
-        resolve()
+  close (): Promise<any> {
+    if (!this._client) {
+      return Promise.resolve()
+    }
+
+    this._client.close()
+    return Promise.resolve()
+  }
+
+  drop (): Promise<any> {
+    return this.ensureConnection().then(() => {
+      return new Promise<void>((resolve, reject) => {
+        this._client.dropDatabase((err: any) => {
+          if (err) {
+            return reject(err)
+          }
+
+          return resolve()
+        })
       })
     })
+  }
+
+  exec (cb: Function): any {
+    return this.ensureConnection()
+      .then(() => cb(this._client))
+  }
+
+  ensureConnection (): Promise<void> {
+    if (this._client) {
+      return Promise.resolve()
+    }
+
+    return this.connect()
   }
 }

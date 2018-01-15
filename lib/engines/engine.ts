@@ -1,7 +1,6 @@
-
 export default interface Engine {
-  find<A> (query: {}): Promise<Array<A>>
-  findOne<A> (query: {}): Promise<A|null>
-  insert (document: {}): Promise<void>
-  update (query: {}, update: object): Promise<void>
+  connect (): Promise<any>
+  close (): Promise<any>
+  drop (): Promise<any>
+  exec (cb: Function): Promise<any>
 }

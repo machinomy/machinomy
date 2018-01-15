@@ -63,7 +63,8 @@ describe('transport', () => {
         meta: 'metaexample',
         v: 1,
         r: '0x2',
-        s: '0x3'
+        s: '0x3',
+        token: undefined
       })
 
       let randomToken = randomInteger().toString()

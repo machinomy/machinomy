@@ -29,8 +29,7 @@ export class Receiver {
      * Find a payment channel corresponding to +payment+.
      */
   findPaymentChannel (payment: Payment): Promise<PaymentChannel|null> {
-    let query = {sender: payment.sender, receiver: payment.receiver, channelId: payment.channelId}
-    return this.storage.channels.allByQuery(query).then(documents => {
+    return this.storage.channels.findBySenderReceiverChannelId(payment.sender, payment.receiver, payment.channelId).then(documents => {
       if (documents.length >= 1) {
         let document = documents[0]
         return channel.PaymentChannel.fromDocument(document)

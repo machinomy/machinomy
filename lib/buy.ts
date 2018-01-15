@@ -23,7 +23,6 @@ export function buyContent (uri: string, account: string, password: string): Pro
   let contract = channel.contract(web3)
   let client = new Sender(web3, account, contract, _transport, _storage)
   return client.buy({ uri: uri }).then((pair: PaymentPair) => {
-    let response = pair.response
-    return response.body
+    return _storage.close().then(() => pair.response.body)
   })
 }

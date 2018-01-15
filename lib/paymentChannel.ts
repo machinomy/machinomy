@@ -35,8 +35,8 @@ export class PaymentChannel {
     this.sender = sender
     this.receiver = receiver
     this.channelId = channelId
-    this.value = this.hexToBigNumber(value.toString())
-    this.spent = this.hexToBigNumber(spent.toString())
+    this.value = new BigNumber(value.toString())
+    this.spent = new BigNumber(spent.toString())
     this.state = state || 0
     this.contractAddress = contractAddress
   }
