@@ -29,13 +29,17 @@ export default class EngineMongo implements Engine {
     return this.connectionInProgress
   }
 
+  isConnected (): boolean {
+    return Boolean(this._client)
+  }
+
   close (): Promise<any> {
     if (!this._client) {
       return Promise.resolve()
     }
 
-    this._client.close()
-    return Promise.resolve()
+    return this._client.close()
+      .then(() => (this._client = null))
   }
 
   drop (): Promise<any> {

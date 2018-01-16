@@ -18,6 +18,10 @@ export default class EngineNedb implements Engine {
     }
   }
 
+  isConnected (): boolean {
+    return true
+  }
+
   connect (): Promise<any> {
     return Promise.resolve()
   }
