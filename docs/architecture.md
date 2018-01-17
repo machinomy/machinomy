@@ -55,6 +55,9 @@ Manages the state, both off-chain and on-chain.
   - **// Serialize calls somehow**
 - channels
 - channelById
+- acceptPayment(payment)
+  - check if payment is valid
+  - // TBD Describe what makes a payment valid
 - requireOpenChannel(sender, receiver, channelValue)
   - // Figure out if that is called sequentially: concurrency issue
   - if not channel is open between (sender, receiver) = ChannelManager.channelBySenderReceiver
