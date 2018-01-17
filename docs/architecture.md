@@ -114,8 +114,8 @@ and reuse it on hub side.
 Goal of the refactoring is to harden the library for a production use. That involves minimising a scope for every component there is,
 writing extensive tests, and independent review of the code, and architecture.
 
-As the refactoring is done, a pain point is left intact related to waiting for blockchain transactions. For that, current
-design is to add additional `EventEmitter` parameter to long-waiting methods. That `EventEmitter` is managed by
+As the refactoring is done, a pain point is left intact related to waiting for blockchain transactions. For that,
+proposed approach is to add additional `EventEmitter` parameter to long-waiting methods. That `EventEmitter` is managed by
 the library user. The library emits an event before and after long method is called.
 
 TBD Set of events, and when these are emitted.
