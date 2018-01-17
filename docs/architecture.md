@@ -70,7 +70,9 @@ Manages the state, both off-chain and on-chain.
 
 ### Storage
 
+Factory of Channels, Payments, and Tokens databases based on particular engine selected.
 
+The database follows Database Access Object pattern.
 
 ### Transport
 
