@@ -123,6 +123,11 @@ and reuse it on hub side.
 Goal of the refactoring is to harden the library for a production use. That involves minimising a scope for every component there is,
 writing extensive tests, and independent review of the code, and architecture.
 
+Current version of the code uses sender/receiver dichotomy all the way through the code.
+The dichotomy makes sense for CLI, when you run the code on the same machine, and for closing the channel.
+Apparently, if one closes a channel, that distinction of the role could be done in place. For CLI the configuration 
+should be enforced for using different addresses for sender and receiver roles.     
+
 As the refactoring is done, a pain point is left intact related to waiting for blockchain transactions. For that,
 proposed approach is to add additional `EventEmitter` parameter to long-waiting methods. That `EventEmitter` is managed by
 the library user. The library emits an event before and after long method is called.
