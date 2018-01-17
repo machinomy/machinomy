@@ -39,6 +39,9 @@ Top-Level Interface for the library user.
 
 Manages the state, both off-chain and on-chain.
 
+- constructor
+  - instantiate storage,
+  - accept web3 provider for signing
 - closeChannel
   - eventEmitter.emit('startClosing')
   - // push tx to the blockchain
@@ -46,9 +49,10 @@ Manages the state, both off-chain and on-chain.
 - nextPayment(channelId, amount)
   - // See if spentAmount ≤ channelValue
   - spentAmount = channel.spenAmount + amount
-    - // Tracks nonces
-    - **// TBD Must respect concurrency HOLE - FIGURE OUT THE MECHANISM IN PLACE**
-    - **// Serialize calls somehow**
+  - sign the payment
+  - // Tracks nonces
+  - **// TBD Must respect concurrency HOLE - FIGURE OUT THE MECHANISM IN PLACE**
+  - **// Serialize calls somehow**
 - channels
 - channelById
 - requireOpenChannel(sender, receiver, channelValue)

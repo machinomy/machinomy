@@ -8,6 +8,7 @@ skinparam dpi 96
 class Payment {
   channelId: ChannelId
   amount: Amount
+  signature: Signature
 }
 
 class Channel {
@@ -36,6 +37,9 @@ class Address {
 }
 
 class ChannelId {
+}
+
+class Signature {
 }
 
 @enduml
