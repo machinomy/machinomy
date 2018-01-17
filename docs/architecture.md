@@ -80,9 +80,9 @@ HttpClient:
   - // get token, send that to the hub
   - // parse the result, return boolean
 
-`sendPayment` initiates a flow below:
+`sendPayment` initiates a serialisation flow below:
 ```
-AcceptPaymentRequest [payment → /accept, req → payment] → () → [token → /accept, res → token] AcceptPaymentResponse
+AcceptPaymentRequest [payment → (req POST /accept) → payment] → (...) → [token → (res /accept) → token] AcceptPaymentResponse
 ``` 
 
 namespace AcceptPaymentRequest:
@@ -93,9 +93,9 @@ namespace AcceptPaymentResponse:
 - toResponse(token)
 - fromResponse(token)
 
-`verifyToken` initiates a flow below:
+`verifyToken` initiates a serialisation flow below:
 ```
-VerifyTokenRequest [token → /verify, req → token] → () → [bool → /verify, res → bool] VerifyTokenResponse
+VerifyTokenRequest [token → (req GET /verify)→ token] → (...) → [bool → (res /verify) → bool] VerifyTokenResponse
 ```
 
 namespace VerifyTokenRequest:
