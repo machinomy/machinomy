@@ -118,7 +118,7 @@ export class NedbChannelsDatabase extends AbstractChannelsDatabase<EngineNedb> i
       }
 
       return pify((cb: Function) => client.find(query, cb))
-    }).then((doc: any) => { console.log(doc); return this.inflatePaymentChannel(doc[0]) })
+    }).then((doc: any) => this.inflatePaymentChannel(doc[0]))
   }
 
   /**
