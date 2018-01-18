@@ -7,7 +7,7 @@ import Storage from './storage'
 import Payment from './Payment'
 
 const log = Log.create('sender')
-const isPaymentValid = (payment: Payment, paymentChannel: PaymentChannel): boolean => {
+export const isPaymentValid = (payment: Payment, paymentChannel: PaymentChannel): boolean => {
   let validIncrement = (paymentChannel.spent.plus(payment.price)).lessThanOrEqualTo(paymentChannel.value)
   let validChannelValue = paymentChannel.value.equals(payment.channelValue)
   let validPaymentValue = paymentChannel.value.lessThanOrEqualTo(payment.channelValue)

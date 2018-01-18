@@ -1,7 +1,5 @@
 import Web3 = require('web3')
-import Engine from './engines/engine'
-import EngineMongo from './engines/engine_mongo'
-import EngineNedb from './engines/engine_nedb'
+import Engine, { EngineMongo, EngineNedb, EnginePostgres } from './engines/engine'
 
 import ChannelsDatabase, {
   MongoChannelsDatabase, NedbChannelsDatabase,
@@ -15,7 +13,6 @@ import PaymentsDatabase, {
   MongoPaymentsDatabase, NedbPaymentsDatabase,
   PostgresPaymentsDatabase
 } from './storages/payments_database'
-import EnginePostgres from './engines/engine_postgres'
 
 const defaultEngineName = 'nedb'
 

@@ -1,10 +1,8 @@
 import Datastore = require('nedb')
-import EngineMongo from '../lib/engines/engine_mongo'
 import * as sinon from 'sinon'
 import { SinonSpy } from 'sinon'
-import EngineNedb from '../lib/engines/engine_nedb'
 import { tmpFileName } from './support'
-import EnginePostgres from '../lib/engines/engine_postgres'
+import { EngineMongo, EngineNedb, EnginePostgres } from '../lib/engines/engine'
 
 const expect = require('expect')
 

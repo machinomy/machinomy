@@ -115,6 +115,7 @@ export default class Machinomy {
   constructor (account: string, web3: Web3, options: MachinomyOptions) {
     serviceRegistry.bind('Web3', () => web3)
     serviceRegistry.bind('MachinomyOptions', () => options)
+    serviceRegistry.bind('account', () => account)
 
     this.serviceContainer = new Container(serviceRegistry)
     this.channelContract = this.serviceContainer.resolve('ChannelContract')

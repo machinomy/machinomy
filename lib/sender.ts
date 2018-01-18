@@ -20,7 +20,7 @@ const VERSION = configuration.VERSION
 const DAY_IN_SECONDS = 86400
 
 /** Default settlement period for a payment channel */
-const DEFAULT_SETTLEMENT_PERIOD = 2 * DAY_IN_SECONDS
+export const DEFAULT_SETTLEMENT_PERIOD = 2 * DAY_IN_SECONDS
 
 export interface FreshChannelOpts extends RequestTokenOpts {
   onWillOpenChannel?: () => void

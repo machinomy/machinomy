@@ -5,6 +5,7 @@ import Payment from '../lib/Payment'
 import BigNumber from '../lib/bignumber'
 import Engine from '../lib/engines/engine'
 import Web3 = require('web3')
+import { PaymentChannel } from '../lib/paymentChannel'
 
 let expect = require('expect')
 
@@ -93,7 +94,7 @@ describe('storage', () => {
       it('match', () => {
         let channelId = channel.id('0xdeadbeaf')
         let hexChannelId = channelId.toString()
-        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber(10), new BigNumber(0), undefined, undefined)
+        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber(10), new BigNumber(0), 0, undefined)
         return channelsDatabase(web3, engine).then((channels: any) => {
           return channels.save(paymentChannel).then(() => {
             return channels.firstById(channelId)
@@ -163,6 +164,22 @@ describe('storage', () => {
             expect(foundChannelId).toBe(hexChannelId)
           })
         })
+      })
+    })
+
+    describe('#firstUsable', () => {
+      it('returns the first channel for the specified sender and receiver whose value is less than the sum of the channel value and amount', () => {
+        const correct = support.randomChannelId().toString()
+
+        return channelsDatabase(web3, engine).then((channels) => {
+          return Promise.all([
+            channels.save(new channel.PaymentChannel('sender', 'receiver', support.randomChannelId().toString(), new BigNumber(9), new BigNumber(8), 0, undefined)),
+            channels.save(new channel.PaymentChannel('sender', 'receiver', correct, new BigNumber(13), new BigNumber(0), 0, undefined)),
+            channels.save(new channel.PaymentChannel('sender', 'receiver', support.randomChannelId().toString(), new BigNumber(130), new BigNumber(0), 1, undefined)),
+            channels.save(new channel.PaymentChannel('othersender', 'receiver', support.randomChannelId().toString(), new BigNumber(11), new BigNumber(0), 0, undefined))
+          ]).then(() => channels)
+        }).then((channels) => channels.findUsable('sender', 'receiver', new BigNumber(2)))
+          .then((channel: PaymentChannel) => expect(channel.channelId.toString()).toEqual(correct))
       })
     })
   })

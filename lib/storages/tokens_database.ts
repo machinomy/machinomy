@@ -1,10 +1,7 @@
-import Engine from '../engines/engine'
+import Engine, { EngineMongo, EngineNedb, EnginePostgres } from '../engines/engine'
 import { ChannelId } from '../channel'
 import { namespaced } from '../util/namespaced'
-import EngineMongo from '../engines/engine_mongo'
 import pify from '../util/pify'
-import EngineNedb from '../engines/engine_nedb'
-import EnginePostgres from '../engines/engine_postgres'
 
 export default interface TokensDatabase {
   save (token: string, channelId: ChannelId | string): Promise<void>

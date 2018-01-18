@@ -1,13 +1,11 @@
 import * as channel from '../channel'
 import { ChannelContract, ChannelId, PaymentChannel, PaymentChannelJSON } from '../channel'
-import Engine from '../engines/engine'
+import Engine, { EngineMongo, EnginePostgres, EngineNedb } from '../engines/engine'
 import BigNumber from '../bignumber'
-import EngineMongo from '../engines/engine_mongo'
 import { namespaced } from '../util/namespaced'
 import pify from '../util/pify'
-import EngineNedb from '../engines/engine_nedb'
-import EnginePostgres from '../engines/engine_postgres'
 import Web3 = require('web3')
+import serviceRegistry from '../container'
 
 export default interface ChannelsDatabase {
   save (paymentChannel: PaymentChannel): Promise<void>
@@ -19,6 +17,8 @@ export default interface ChannelsDatabase {
   spend (channelId: ChannelId | string, spent: BigNumber): Promise<void>
 
   all (): Promise<Array<PaymentChannel>>
+
+  findUsable (sender: string, receiver: string, amount: BigNumber): Promise<PaymentChannel | null>
 
   findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>>
 
@@ -85,6 +85,8 @@ export abstract class AbstractChannelsDatabase<T extends Engine> implements Chan
 
   abstract all (): Promise<Array<PaymentChannel>>
 
+  abstract findUsable (sender: string, receiver: string, amount: BigNumber): Promise<PaymentChannel|null>
+
   abstract findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>>
 
   abstract findBySenderReceiverChannelId (sender: string, receiver: string, channelId: ChannelId | string): Promise<Array<PaymentChannel>>
@@ -103,6 +105,7 @@ export class NedbChannelsDatabase extends AbstractChannelsDatabase<EngineNedb> i
         value: paymentChannel.value.toString(),
         spent: paymentChannel.spent.toString(),
         channelId: paymentChannel.channelId,
+        state: paymentChannel.state,
         contractAddress: paymentChannel.contractAddress
       }
 
@@ -138,7 +141,6 @@ export class NedbChannelsDatabase extends AbstractChannelsDatabase<EngineNedb> i
       }
 
       return pify((cb: Function) => client.update(query, update, {}, cb))
-        .then((res) => console.log(res))
     })
   }
 
@@ -151,6 +153,22 @@ export class NedbChannelsDatabase extends AbstractChannelsDatabase<EngineNedb> i
     return this.engine.exec((client: any) => {
       return pify((cb: Function) => client.find({ kind: this.kind }, cb))
     }).then((res) => this.inflatePaymentChannels(res))
+  }
+
+  findUsable (sender: string, receiver: string, amount: BigNumber): Promise<PaymentChannel | null> {
+    return this.engine.exec((client: any) => {
+      const query = {
+        kind: this.kind,
+        state: 0,
+        sender,
+        receiver
+      }
+      return pify((cb: Function) => client.find(query, cb))
+    }).then((res) => this.inflatePaymentChannels(res)).then((res: Array<PaymentChannel>) => {
+      return res.find((chan: PaymentChannel) => {
+        return chan.value.greaterThanOrEqualTo(chan.spent.add(amount))
+      }) || null
+    })
   }
 
   findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>> {
@@ -176,6 +194,7 @@ export class MongoChannelsDatabase extends AbstractChannelsDatabase<EngineMongo>
         value: paymentChannel.value.toString(),
         spent: paymentChannel.spent.toString(),
         channelId: paymentChannel.channelId,
+        state: paymentChannel.state,
         contractAddress: paymentChannel.contractAddress
       }
 
@@ -229,6 +248,21 @@ export class MongoChannelsDatabase extends AbstractChannelsDatabase<EngineMongo>
     return this.engine.exec((client: any) => {
       return pify((cb: Function) => client.collection('channel').find({}).toArray(cb))
     }).then((res: any) => this.inflatePaymentChannels(res))
+  }
+
+  findUsable (sender: string, receiver: string, amount: BigNumber): Promise<PaymentChannel | null> {
+    return this.engine.exec((client: any) => {
+      const query = {
+        sender,
+        receiver,
+        state: 0
+      }
+      return pify((cb: Function) => client.collection('channel').find(query).toArray(cb))
+    }).then((res: any) => this.inflatePaymentChannels(res)).then((res: Array<PaymentChannel>) => {
+      return res.find((chan: PaymentChannel) => {
+        return chan.value.greaterThanOrEqualTo(chan.spent.add(amount))
+      }) || null
+    })
   }
 
   findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>> {
@@ -288,6 +322,18 @@ export class PostgresChannelsDatabase extends AbstractChannelsDatabase<EnginePos
     )).then((res: any) => this.inflatePaymentChannels(res.rows))
   }
 
+  findUsable (sender: string, receiver: string, amount: BigNumber): Promise<PaymentChannel | null> {
+    return this.engine.exec((client: any) => client.query(
+      'SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
+      'WHERE sender = $1 AND receiver = $2 AND value >= spent + $3',
+      [
+        sender,
+        receiver,
+        amount.toString()
+      ]
+    )).then((res: any) => this.inflatePaymentChannel(res.rows[0]))
+  }
+
   findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>> {
     return this.engine.exec((client: any) => client.query(
       'SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
@@ -311,3 +357,19 @@ export class PostgresChannelsDatabase extends AbstractChannelsDatabase<EnginePos
     )).then((res: any) => this.inflatePaymentChannels(res.rows))
   }
 }
+
+serviceRegistry.bind('ChannelsDatabase', (web3: Web3, engine: Engine, namespace: string): ChannelsDatabase => {
+  if (engine instanceof EngineMongo) {
+    return new MongoChannelsDatabase(web3, engine, namespace)
+  }
+
+  if (engine instanceof EnginePostgres) {
+    return new PostgresChannelsDatabase(web3, engine, namespace)
+  }
+
+  if (engine instanceof EngineNedb) {
+    return new NedbChannelsDatabase(web3, engine, namespace)
+  }
+
+  throw new Error('Invalid engine.')
+}, ['Web3', 'Engine', 'namespace'])

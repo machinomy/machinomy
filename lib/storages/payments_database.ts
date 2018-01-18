@@ -1,15 +1,12 @@
 import { ChannelId } from '../channel'
 import Payment, { PaymentJSON } from '../Payment'
-import EngineMongo from '../engines/engine_mongo'
 import pify from '../util/pify'
-import Engine from '../engines/engine'
-import EngineNedb from '../engines/engine_nedb'
-import EnginePostgres from '../engines/engine_postgres'
 import { namespaced } from '../util/namespaced'
 
 // linter false positive below
 /* tslint:disable */
 import BigNumber from '../bignumber'
+import Engine, {EngineMongo, EngineNedb, EnginePostgres} from "../engines/engine";
 /* tslint:enable */
 
 export default interface PaymentsDatabase {
