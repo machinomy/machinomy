@@ -43,6 +43,15 @@ To only play with CLI a command below is enough:
 If you also intend to _sell_ services via HTTP, set up "receiver" side:
 
     $ machinomy setup --namespace receiver
+    
+### Environment Variables
+
+Machinomy can be configured on the CLI using a few environment variables. Specifically:
+
+| Variables  | Use |
+| ------------- | ------------- |
+| `MACHINOMY_GETH_ADDR`  | Tells the CLI where `geth`'s RPC server is running. Defaults to `http://localhost:8545`. |
+| `MACHINOMY_SENDER_ENGINE`  | Tells the CLI which database engine to use. Default to `nedb`, but can also be `mongo` or `postgres`.  |
 
 ## Usage
 

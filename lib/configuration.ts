@@ -111,6 +111,6 @@ export function currentProvider (): Web3.Provider {
     return web3.currentProvider
   } else {
     // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
-    return new Web3.providers.HttpProvider('http://localhost:8545')
+    return new Web3.providers.HttpProvider(process.env.MACHINOMY_GETH_ADDR || 'http://localhost:8545')
   }
 }
