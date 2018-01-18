@@ -10,7 +10,7 @@ import BigNumber from './lib/bignumber'
 import Payment from './lib/Payment'
 import * as receiver from './lib/receiver'
 import { TransactionResult } from 'truffle-contract'
-import ServiceContext from './lib/container'
+import serviceRegistry, {Container} from './lib/container'
 
 /**
  * Options for machinomy buy.
@@ -96,6 +96,8 @@ export default class Machinomy {
 
   private channelContract: ChannelContract
 
+  private serviceContainer: Container
+
   /**
    * Create an instance of Machinomy.
    *
@@ -111,10 +113,11 @@ export default class Machinomy {
    * @param options - Options object
    */
   constructor (account: string, web3: Web3, options: MachinomyOptions) {
-    ServiceContext.bind('Web3', () => web3)
-    ServiceContext.bind('MachinomyOptions', () => options)
+    serviceRegistry.bind('Web3', () => web3)
+    serviceRegistry.bind('MachinomyOptions', () => options)
 
-    this.channelContract = ServiceContext.resolve('ChannelContract')
+    this.serviceContainer = new Container(serviceRegistry)
+    this.channelContract = this.serviceContainer.resolve('ChannelContract')
 
     this.account = account
     this.web3 = web3

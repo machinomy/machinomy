@@ -5,13 +5,15 @@ export interface ServiceDefinition {
   isSingleton: boolean
 }
 
-export class Container {
+export class Registry {
   private registry: { [name: string]: ServiceDefinition }
 
-  private cache: { [name: string]: any }
-
-  constructor () {
+  constructor() {
     this.clear()
+  }
+
+  clear(): void {
+    this.registry = {}
   }
 
   bind (name: string, factory: Function, dependencies: Array<string> = [], isSingleton: boolean = true) {
@@ -27,12 +29,32 @@ export class Container {
     }
   }
 
+  get (name: string): ServiceDefinition {
+    const service = this.registry[name]
+
+    if (!service) {
+      throw new Error(`Service with name ${name} not found`);
+    }
+
+    return service
+  }
+}
+
+export class Container {
+  private registry: Registry
+
+  private cache: { [name: string]: any }
+
+  constructor (registry: Registry) {
+    this.registry = registry
+    this.clear()
+  }
+
   resolve<T> (name: string) {
     return this.internalResolve<T>(name, [])
   }
 
   clear (): void {
-    this.registry = {}
     this.cache = {}
   }
 
@@ -41,11 +63,7 @@ export class Container {
       throw new Error(`Found cyclic dependencies: [${visited.join(',')},${name}]`)
     }
 
-    const definition = this.registry[name]
-
-    if (!definition) {
-      throw new Error(`No service with name ${name} found.`)
-    }
+    const definition = this.registry.get(name)
 
     if (!definition.isSingleton) {
       return this.instantiate(definition, visited)
@@ -69,6 +87,6 @@ export class Container {
   }
 }
 
-export const ServiceContext = new Container()
+export const serviceRegistry = new Registry()
 
-export default ServiceContext
+export default serviceRegistry

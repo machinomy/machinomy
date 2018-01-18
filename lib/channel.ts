@@ -7,7 +7,7 @@ import { ChannelContractToken } from './ChannelContractToken'
 import { PaymentChannelJSON, PaymentChannel } from './paymentChannel'
 export { PaymentChannelJSON, PaymentChannel }
 import { TransactionResult } from 'truffle-contract'
-import ServiceContext from './container'
+import serviceRegistry from './container'
 const log = Log.create('channel')
 Log.setProductionMode()
 
@@ -135,4 +135,4 @@ export function contract (web3: Web3, _address?: string): ChannelContract {
   return new ChannelContract(web3)
 }
 
-ServiceContext.bind('ChannelContract', (web3: Web3) => new ChannelContract(web3))
+serviceRegistry.bind('ChannelContract', (web3: Web3) => new ChannelContract(web3))
