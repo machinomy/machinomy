@@ -4,12 +4,13 @@ import { default as Storage, engine, build, channels as storageChannels } from '
 import Engine from './lib/engines/engine'
 import * as channel from './lib/channel'
 import { default as Sender } from './lib/sender'
-import { ChannelContract, contract } from './lib/channel'
+import { ChannelContract } from './lib/channel'
 import { PaymentChannel } from './lib/paymentChannel'
 import BigNumber from './lib/bignumber'
 import Payment from './lib/Payment'
 import * as receiver from './lib/receiver'
 import { TransactionResult } from 'truffle-contract'
+import ServiceContext from './lib/container'
 
 /**
  * Options for machinomy buy.
@@ -93,6 +94,8 @@ export default class Machinomy {
   private storage: Storage
   private settlementPeriod?: number
 
+  private channelContract: ChannelContract
+
   /**
    * Create an instance of Machinomy.
    *
@@ -105,8 +108,14 @@ export default class Machinomy {
    *
    * @param account - Ethereum account address that sends the money. Make sure it is managed by Web3 instance passed as `web3` param.
    * @param web3 - Prebuilt web3 instance that manages the account and signs payments.
+   * @param options - Options object
    */
   constructor (account: string, web3: Web3, options: MachinomyOptions) {
+    ServiceContext.bind('Web3', () => web3)
+    ServiceContext.bind('MachinomyOptions', () => options)
+
+    this.channelContract = ServiceContext.resolve('ChannelContract')
+
     this.account = account
     this.web3 = web3
     this.engine = options.engine || 'nedb'
@@ -141,8 +150,7 @@ export default class Machinomy {
    */
   buy (options: BuyOptions): Promise<BuyResult> {
     let _transport = transport.build()
-    let contract = channel.contract(this.web3)
-    let client = new Sender(this.web3, this.account, contract, _transport, this.storage, this.minimumChannelAmount, this.settlementPeriod)
+    let client = new Sender(this.web3, this.account, this.channelContract, _transport, this.storage, this.minimumChannelAmount, this.settlementPeriod)
     return client.buyMeta(options).then((res: any) => {
       return { channelId: res.payment.channelId, token: res.token }
     })
@@ -162,11 +170,10 @@ export default class Machinomy {
    */
   deposit (channelId: string, value: BigNumber | number): Promise<void> {
     let _value = new BigNumber(value)
-    let channelContract = contract(this.web3)
     return new Promise((resolve, reject) => {
       this.storage.channels.firstById(channelId).then((paymentChannel) => {
         if (paymentChannel) {
-          channelContract.deposit(this.account, paymentChannel, _value).then(() => {
+          this.channelContract.deposit(this.account, paymentChannel, _value).then(() => {
             resolve()
           }).catch(reject)
         }
@@ -207,15 +214,14 @@ export default class Machinomy {
    * For more details on how payment channels work refer to a website.
    */
   async close (channelId: string): Promise<TransactionResult> {
-    let channelContract = contract(this.web3)
     const paymentChannel = await this.storage.channels.firstById(channelId)
     if (!paymentChannel) {
       return Promise.reject(new Error('Can\'t find payment channel'))
     }
     if (paymentChannel.sender === this.account) {
-      return this.settle(channelContract, paymentChannel)
+      return this.settle(this.channelContract, paymentChannel)
     } else {
-      return this.claim(channelContract, paymentChannel)
+      return this.claim(this.channelContract, paymentChannel)
     }
   }
 

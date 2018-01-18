@@ -149,19 +149,19 @@ export class NedbChannelsDatabase extends AbstractChannelsDatabase<EngineNedb> i
    */
   all (): Promise<Array<PaymentChannel>> {
     return this.engine.exec((client: any) => {
-      return pify((cb: Function) => client.find({}, cb))
+      return pify((cb: Function) => client.find({ kind: this.kind }, cb))
     }).then((res) => this.inflatePaymentChannels(res))
   }
 
   findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>> {
     return this.engine.exec((client: any) => {
-      return pify((cb: Function) => client.find({sender, receiver}, cb))
+      return pify((cb: Function) => client.find({sender, receiver, kind: this.kind}, cb))
     }).then((res) => this.inflatePaymentChannels(res))
   }
 
   findBySenderReceiverChannelId (sender: string, receiver: string, channelId: ChannelId | string): Promise<Array<PaymentChannel>> {
     return this.engine.exec((client: any) => {
-      return pify((cb: Function) => client.find({sender, receiver, channelId: channelId.toString()}, cb))
+      return pify((cb: Function) => client.find({sender, receiver, channelId: channelId.toString(), kind: this.kind}, cb))
     }).then((res) => this.inflatePaymentChannels(res))
   }
 }
