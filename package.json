@@ -93,7 +93,7 @@
     "ethereumjs-testrpc": "^6.0.1",
     "express": "^4.14.0",
     "istanbul": "^0.4.5",
-    "mocha": "^4.0.1",
+    "mocha": "^5.0.0",
     "nock": "^9.0.9",
     "sinon": "^4.1.5",
     "tmp": "0.0.33",
