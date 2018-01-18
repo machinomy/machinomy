@@ -10,7 +10,7 @@ import BigNumber from './lib/bignumber'
 import Payment from './lib/Payment'
 import * as receiver from './lib/receiver'
 import { TransactionResult } from 'truffle-contract'
-import serviceRegistry, {Container} from './lib/container'
+import serviceRegistry, { Container } from './lib/container'
 
 /**
  * Options for machinomy buy.

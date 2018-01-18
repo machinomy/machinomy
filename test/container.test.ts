@@ -1,4 +1,4 @@
-import {Container, Registry} from '../lib/container'
+import { Container, Registry } from '../lib/container'
 import * as sinon from 'sinon'
 import expect = require('expect')
 

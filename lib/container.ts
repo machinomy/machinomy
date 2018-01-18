@@ -8,11 +8,11 @@ export interface ServiceDefinition {
 export class Registry {
   private registry: { [name: string]: ServiceDefinition }
 
-  constructor() {
+  constructor () {
     this.clear()
   }
 
-  clear(): void {
+  clear (): void {
     this.registry = {}
   }
 
@@ -33,7 +33,7 @@ export class Registry {
     const service = this.registry[name]
 
     if (!service) {
-      throw new Error(`Service with name ${name} not found`);
+      throw new Error(`Service with name ${name} not found`)
     }
 
     return service
