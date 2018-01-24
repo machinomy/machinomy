@@ -1,5 +1,6 @@
 import Payment from './Payment'
 import * as BigNumber from 'bignumber.js'
+import Serde from './serde'
 
 export interface PaymentChannelJSON {
   sender: string
@@ -56,24 +57,32 @@ export class PaymentChannel {
       document.contractAddress
     )
   }
+}
 
-  toJSON (): PaymentChannelJSON {
+export class PaymentChannelSerde implements Serde<PaymentChannel> {
+  static instance = new PaymentChannelSerde()
+
+  serialize (obj: PaymentChannel): Object {
     return {
-      state: this.state,
-      spent: this.spent,
-      value: this.value,
-      channelId: this.channelId,
-      receiver: this.receiver,
-      sender: this.sender,
-      contractAddress: this.contractAddress
+      state: obj.state,
+      spent: obj.spent.toString(),
+      value: obj.value.toString(),
+      channelId: obj.channelId.toString(),
+      receiver: obj.receiver,
+      sender: obj.sender,
+      contractAddress: obj.contractAddress
     }
   }
 
-  hexToBigNumber (hex: string): BigNumber.BigNumber {
-    if (hex.substr(0, 2) === '0x') {
-      return new BigNumber.BigNumber(new Buffer(hex.substr(2), 'hex').toString('utf8'))
-    } else {
-      return new BigNumber.BigNumber(hex)
-    }
+  deserialize (data: any): PaymentChannel {
+    return new PaymentChannel(
+      data.sender,
+      data.receiver,
+      data.channelId,
+      data.value,
+      data.spent,
+      data.state,
+      data.contractAddress
+    )
   }
 }

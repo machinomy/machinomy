@@ -173,9 +173,13 @@ export class EnginePostgres implements Engine {
 }
 
 serviceRegistry.bind('Engine', (options: MachinomyOptions): Engine => {
+  if (options.engine === 'nedb' && !options.databaseFile) {
+    throw new Error('No database file found.')
+  }
+
   switch (options.engine) {
     case 'nedb':
-      return new EngineNedb('/', false)
+      return new EngineNedb(options.databaseFile as string, false)
     case 'mongo':
       return new EngineMongo()
     case 'postgres':
@@ -187,4 +191,4 @@ serviceRegistry.bind('Engine', (options: MachinomyOptions): Engine => {
   }
 
   throw new Error(`Invalid engine: ${options.engine}.`)
-})
+}, ['MachinomyOptions'])

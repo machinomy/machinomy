@@ -2,7 +2,7 @@ import * as BigNumber from 'bignumber.js'
 import { PaymentChannel } from './paymentChannel'
 import ChannelsDatabase from './storages/channels_database'
 import { ChannelContract, ChannelId } from './channel'
-import ServiceContext from './container'
+import serviceRegistry from './container'
 import { EventEmitter } from 'events'
 import Mutex from './util/mutex'
 import { PaymentRequired } from './transport'
@@ -13,15 +13,20 @@ import Payment from './Payment'
 import Web3 = require('web3')
 import { isPaymentValid } from './receiver'
 import TokensDatabase from './storages/tokens_database'
+import log from './util/log'
+
+const LOG = log('ChannelManager')
 
 export default interface ChannelManager extends EventEmitter {
-  openChannel (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel>
+  openChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber): Promise<PaymentChannel>
   closeChannel (channelId: string | ChannelId): Promise<TransactionResult>
   nextPayment (channelId: string | ChannelId, amount: BigNumber.BigNumber, meta: string): Promise<Payment>
   acceptPayment (payment: Payment): Promise<string>
-  requireOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel>
+  requireOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber): Promise<PaymentChannel>
   channels (): Promise<PaymentChannel[]>
+  openChannels (): Promise<PaymentChannel[]>
   channelById (channelId: ChannelId | string): Promise<PaymentChannel|null>
+  verifyToken (token: string): Promise<boolean>
 }
 
 export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
@@ -49,8 +54,8 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     this.channelContract = channelContract
   }
 
-  openChannel (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel> {
-    return this.mutex.synchronize(() => this.internalOpenChannel(sender, receiver, amount))
+  openChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber): Promise<PaymentChannel> {
+    return this.mutex.synchronize(() => this.internalOpenChannel(sender, receiver, amount, minDepositAmount))
   }
 
   closeChannel (channelId: string | ChannelId): Promise<TransactionResult> {
@@ -88,35 +93,34 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
         throw new Error(`Total spend ${toSpend.toString()} is larger than channel value ${channel.value.toString()}`)
       }
 
-      return Payment.fromPaymentChannel(this.web3, channel, new PaymentRequired(channel.receiver, amount, '', meta))
+      return Payment.fromPaymentChannel(this.web3, channel, new PaymentRequired(channel.receiver, toSpend, '', meta))
     }))
   }
 
   acceptPayment (payment: Payment): Promise<string> {
-    return this.mutex.synchronize(() => this.channelsDao.findBySenderReceiverChannelId(payment.sender, payment.receiver, payment.channelId).then((channels: PaymentChannel[]) => {
-      if (!channels.length) {
-        throw new Error(`No channel with id ${payment.channelId} found.`)
-      }
+    LOG(`Queueing payment of ${payment.price.toString()} Wei to channel with ID ${payment.channelId}.`)
 
-      const channel = channels[0]
+    return this.mutex.synchronize(() => this.channelsDao.findBySenderReceiverChannelId(payment.sender, payment.receiver, payment.channelId).then(() => {
+      const channel = PaymentChannel.fromPayment(payment)
+
+      LOG(`Adding ${payment.price.toString()} Wei to channel with ID ${channel.channelId.toString()}.`)
 
       if (!isPaymentValid(payment, channel)) {
         throw new Error('Invalid payment.')
       }
 
-      const paymentChannel = PaymentChannel.fromPayment(payment)
       const token = this.web3.sha3(JSON.stringify(payment)).toString()
-      return this.channelsDao.saveOrUpdate(paymentChannel)
+      return this.channelsDao.saveOrUpdate(channel)
         .then(() => this.tokensDao.save(token, payment.channelId))
         .then(() => this.paymentsDao.save(token, payment))
         .then(() => token)
     }))
   }
 
-  requireOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel> {
+  requireOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber): Promise<PaymentChannel> {
     return this.mutex.synchronize(() => {
       return this.channelsDao.findUsable(sender, receiver, amount).then((channel: PaymentChannel) => {
-        return channel || this.internalOpenChannel(sender, receiver, amount)
+        return channel || this.internalOpenChannel(sender, receiver, amount, minDepositAmount)
       })
     })
   }
@@ -125,14 +129,28 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     return this.channelsDao.all()
   }
 
+  openChannels (): Promise<PaymentChannel[]> {
+    return this.channelsDao.allOpen()
+  }
+
   channelById (channelId: ChannelId | string): Promise<PaymentChannel | null> {
     return this.channelsDao.firstById(channelId)
   }
 
-  private internalOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel> {
-    this.emit('willOpenChannel', sender, receiver, amount)
-    const paymentReq = new PaymentRequired(receiver, amount, '', '')
-    return this.channelContract.buildPaymentChannel(sender, paymentReq, amount, DEFAULT_SETTLEMENT_PERIOD)
+  verifyToken (token: string): Promise<boolean> {
+    return this.tokensDao.isPresent(token)
+  }
+
+  private internalOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount: BigNumber.BigNumber = new BigNumber.BigNumber(0)): Promise<PaymentChannel> {
+    let depositAmount = amount.times(10)
+
+    if (minDepositAmount.greaterThan(0) && minDepositAmount.greaterThan(depositAmount)) {
+      depositAmount = minDepositAmount
+    }
+
+    this.emit('willOpenChannel', sender, receiver, depositAmount)
+    const paymentReq = new PaymentRequired(receiver, depositAmount, '', '')
+    return this.channelContract.buildPaymentChannel(sender, paymentReq, depositAmount, DEFAULT_SETTLEMENT_PERIOD)
       .then((paymentChannel: PaymentChannel) => this.channelsDao.save(paymentChannel).then(() => paymentChannel))
       .then((paymentChannel: PaymentChannel) => {
         this.emit('didOpenChannel', paymentChannel)
@@ -142,11 +160,17 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
 
   private settle (channel: PaymentChannel): Promise<TransactionResult> {
     return this.channelContract.getState(channel).then((state: number) => {
+      if (state === 2) {
+        throw new Error(`Channel ${channel.channelId.toString()} is already settled.`)
+      }
+
       switch (state) {
         case 0:
           return this.channelContract.startSettle(this.account, channel, new BigNumber.BigNumber(channel.spent))
+            .then((res: TransactionResult) => this.channelsDao.updateState(channel.channelId, 1).then(() => res))
         case 1:
           return this.channelContract.finishSettle(this.account, channel)
+            .then((res: TransactionResult) => this.channelsDao.updateState(channel.channelId, 2).then(() => res))
         default:
           throw new Error(`Unknown state: ${state}`)
       }
@@ -160,11 +184,12 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
       }
 
       return this.channelContract.claim(channel.receiver, channel, payment.value, Number(payment.v), payment.r, payment.s)
+        .then((res: TransactionResult) => this.channelsDao.updateState(channel.channelId, 2).then(() => res))
     })
   }
 }
 
-ServiceContext.bind('ChannelManager',
+serviceRegistry.bind('ChannelManager',
   (
     account: string,
     web3: Web3,

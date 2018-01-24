@@ -1,16 +1,24 @@
 import Web3 = require('web3')
-import * as transport from './lib/transport'
-import { default as Storage, engine, build, channels as storageChannels } from './lib/storage'
+import { default as Storage, build } from './lib/storage'
 import Engine from './lib/engines/engine'
 import * as channel from './lib/channel'
-import { default as Sender } from './lib/sender'
-import { ChannelContract } from './lib/channel'
+import { ChannelContract, id } from './lib/channel'
 import { PaymentChannel } from './lib/paymentChannel'
 import * as BigNumber from 'bignumber.js'
 import Payment from './lib/Payment'
-import * as receiver from './lib/receiver'
 import { TransactionResult } from 'truffle-contract'
-import serviceRegistry, { Container } from './lib/container'
+import mainRegistry, { Container, Registry } from './lib/container'
+import ChannelManager from './lib/channel_manager'
+import ChannelsDatabase from './lib/storages/channels_database'
+import Client, {
+  AcceptPaymentRequest, AcceptPaymentResponse, AcceptTokenRequest,
+  AcceptTokenResponse
+} from './lib/client'
+import { PaymentRequired } from './lib/transport'
+
+require('./lib/channel_manager')
+require('./lib/storage')
+require('./lib/client')
 
 /**
  * Options for machinomy buy.
@@ -98,6 +106,14 @@ export default class Machinomy {
 
   private serviceContainer: Container
 
+  private channelsDao: ChannelsDatabase
+
+  private channelManager: ChannelManager
+
+  private client: Client
+
+  private transport: Transport
+
   /**
    * Create an instance of Machinomy.
    *
@@ -113,12 +129,19 @@ export default class Machinomy {
    * @param options - Options object
    */
   constructor (account: string, web3: Web3, options: MachinomyOptions) {
+    const serviceRegistry = new Registry(mainRegistry)
+
     serviceRegistry.bind('Web3', () => web3)
     serviceRegistry.bind('MachinomyOptions', () => options)
     serviceRegistry.bind('account', () => account)
+    serviceRegistry.bind('namespace', () => 'shared')
 
     this.serviceContainer = new Container(serviceRegistry)
     this.channelContract = this.serviceContainer.resolve('ChannelContract')
+    this.channelsDao = this.serviceContainer.resolve('ChannelsDatabase')
+    this.channelManager = this.serviceContainer.resolve('ChannelManager')
+    this.client = this.serviceContainer.resolve('Client')
+    this.transport = this.serviceContainer.resolve('Transport')
 
     this.account = account
     this.web3 = web3
@@ -153,11 +176,22 @@ export default class Machinomy {
    * </code></pre>
    */
   buy (options: BuyOptions): Promise<BuyResult> {
-    let _transport = transport.build()
-    let client = new Sender(this.web3, this.account, this.channelContract, _transport, this.storage, this.minimumChannelAmount, this.settlementPeriod)
-    return client.buyMeta(options).then((res: any) => {
-      return { channelId: res.payment.channelId, token: res.token }
+    const price = new BigNumber.BigNumber(options.price)
+    return this.channelManager.requireOpenChannel(this.account, options.receiver, price).then((channel: PaymentChannel) => {
+      return this.channelManager.nextPayment(channel.channelId, price, options.meta)
+        .then((payment: Payment) => this.client.doPayment(payment, options.gateway))
+        .then((res: AcceptPaymentResponse) => ({ token: res.token, channelId: id(channel.channelId) }))
     })
+  }
+
+  buyUrl (uri: string): Promise<BuyResult> {
+    return this.client.doPreflight(uri).then((req: PaymentRequired) => this.buy({
+      receiver: req.receiver,
+      price: req.price,
+      gateway: req.gateway,
+      meta: req.meta,
+      contractAddress: req.contractAddress
+    }))
   }
 
   /**
@@ -172,16 +206,15 @@ export default class Machinomy {
    * @param channelId - Channel id.
    * @param value - Size of deposit in Wei.
    */
-  deposit (channelId: string, value: BigNumber.BigNumber | number): Promise<void> {
+  deposit (channelId: string, value: BigNumber.BigNumber | number): Promise<TransactionResult> {
     let _value = new BigNumber.BigNumber(value)
-    return new Promise((resolve, reject) => {
-      this.storage.channels.firstById(channelId).then((paymentChannel) => {
-        if (paymentChannel) {
-          this.channelContract.deposit(this.account, paymentChannel, _value).then(() => {
-            resolve()
-          }).catch(reject)
-        }
-      }).catch(reject)
+
+    return this.channelManager.channelById(channelId).then((paymentChannel) => {
+      if (!paymentChannel) {
+        throw new Error('No payment channel found.')
+      }
+
+      return this.channelContract.deposit(this.account, paymentChannel, _value)
     })
   }
 
@@ -189,20 +222,7 @@ export default class Machinomy {
    * Returns the list of opened channels.
    */
   channels (): Promise<PaymentChannel[]> {
-    const namespace = 'shared'
-    return new Promise((resolve, reject) => {
-      let _engine = engine(this.databaseFile, false, this.engine)
-      storageChannels(this.web3, _engine, namespace).all().then(found => {
-        found = found.filter((ch) => {
-          if (ch.state < 2) {
-            return true
-          } else {
-            return false
-          }
-        })
-        resolve(found)
-      }).catch(reject)
-    })
+    return this.channelManager.openChannels()
   }
 
   /**
@@ -218,23 +238,14 @@ export default class Machinomy {
    * For more details on how payment channels work refer to a website.
    */
   async close (channelId: string): Promise<TransactionResult> {
-    const paymentChannel = await this.storage.channels.firstById(channelId)
-    if (!paymentChannel) {
-      return Promise.reject(new Error('Can\'t find payment channel'))
-    }
-    if (paymentChannel.sender === this.account) {
-      return this.settle(this.channelContract, paymentChannel)
-    } else {
-      return this.claim(this.channelContract, paymentChannel)
-    }
+    return this.channelManager.closeChannel(channelId)
   }
 
   /**
    * Save payment into the storage and return an id of the payment. The id can be used by {@link Machinomy.paymentById}.
    */
-  acceptPayment (payment: Payment): Promise <string> {
-    let server = receiver.build(this.web3, this.account, this.storage)
-    return server.acceptPayment(payment)
+  acceptPayment (req: AcceptPaymentRequest): Promise <AcceptPaymentResponse> {
+    return this.client.acceptPayment(req)
   }
 
   /**
@@ -244,43 +255,11 @@ export default class Machinomy {
     return this.storage.payments.findByToken(id)
   }
 
-  /**
-   * @deprecated Use {@link Machinomy.paymentById} to find information about payment and verify it.
-   */
-  verifyToken (token: string): Promise <boolean> {
-    let server = receiver.build(this.web3, this.account, this.storage)
-    return server.acceptToken(token)
+  acceptToken (req: AcceptTokenRequest): Promise<AcceptTokenResponse> {
+    return this.client.acceptVerify(req)
   }
 
   shutdown (): Promise<void> {
     return this.storage.close()
-  }
-
-  /**
-   * Used by {@link Machinomy.close} if initiated by a sender.
-   */
-  private async settle (channelContract: ChannelContract, paymentChannel: PaymentChannel): Promise<TransactionResult> {
-    const state = await channelContract.getState(paymentChannel)
-    if (state === 0) {
-      let num = new BigNumber.BigNumber(paymentChannel.spent)
-      return channelContract.startSettle(this.account, paymentChannel, num)
-    } else if (state === 1) {
-      return channelContract.finishSettle(this.account, paymentChannel)
-    } else {
-      return Promise.reject(new Error('Unknown state'))
-    }
-  }
-
-  /**
-   * Used by {@link Machinomy.close} if initiated by a receiver.
-   */
-  private async claim (channelContract: ChannelContract, paymentChannel: PaymentChannel): Promise<TransactionResult> {
-    const channelId = paymentChannel.channelId
-    const paymentDoc = await this.storage.payments.firstMaximum(channelId)
-    if (paymentDoc) {
-      return channelContract.claim(paymentChannel.receiver, paymentChannel, paymentDoc.value, Number(paymentDoc.v), paymentDoc.r, paymentDoc.s)
-    } else {
-      return Promise.reject(new Error('Can\'t find paymentDoc'))
-    }
   }
 }

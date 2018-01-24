@@ -135,4 +135,4 @@ export function contract (web3: Web3, _address?: string): ChannelContract {
   return new ChannelContract(web3)
 }
 
-serviceRegistry.bind('ChannelContract', (web3: Web3) => new ChannelContract(web3))
+serviceRegistry.bind('ChannelContract', (web3: Web3) => new ChannelContract(web3), ['Web3'])

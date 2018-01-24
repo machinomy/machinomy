@@ -2,7 +2,6 @@ import * as configuration from '../lib/configuration'
 import Web3 = require('web3')
 import Machinomy from '../index'
 import * as express from 'express'
-import Payment from '../lib/Payment'
 import * as bodyParser from 'body-parser'
 import { buildERC20Contract } from '@machinomy/contracts'
 
@@ -17,9 +16,8 @@ let hub = express()
 hub.use(bodyParser.json())
 hub.use(bodyParser.urlencoded({ extended: false }))
 hub.post('/machinomy', async (req: express.Request, res: express.Response, next: Function) => {
-  let payment = new Payment(req.body)
-  let token = await machinomyHub.acceptPayment(payment)
-  res.status(202).header('Paywall-Token', token).send('Accepted').end()
+  const body = await machinomyHub.acceptPayment(req.body)
+  res.status(202).header('Paywall-Token', body.token).send(body)
 })
 let port = 3001
 let server = hub.listen(port, function () {

@@ -3,6 +3,7 @@ import _ = require('lodash')
 import { RequestResponse, RequiredUriUrl, CoreOptions } from 'request'
 import Payment from './Payment'
 import * as BigNumber from 'bignumber.js'
+import serviceRegistry from './container'
 let req = require('request')
 
 const request: (opts: RequiredUriUrl & CoreOptions) => Promise<RequestResponse> = (opts: RequiredUriUrl & CoreOptions) => {
@@ -142,3 +143,5 @@ export class PaymentRequired {
 export const build = (): Transport => {
   return new Transport()
 }
+
+serviceRegistry.bind('Transport', () => build())

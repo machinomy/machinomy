@@ -26,25 +26,26 @@
 import * as express from 'express'
 import Web3 = require('web3')
 import Machinomy from '../index'
-import Payment from '../lib/Payment'
 import * as bodyParser from 'body-parser'
+import { AcceptTokenRequestSerde } from '../lib/client'
+import { PaymentChannelSerde } from '../lib/paymentChannel'
 let fetch = require('whatwg-fetch').fetch
 
 /**
  * Account that receives payments.
  */
-let receiver = '0xebeab176c2ca2ae72f11abb1cecad5df6ccb8dfe'
+let receiver = '0x3155694d7558eec974cfe35eaa3c2c7bcebb793f'
 
 /**
  * Geth must be run on local machine, or use another web3 provider.
  */
-let provider = new Web3.providers.HttpProvider('http://localhost:8545')
+let provider = new Web3.providers.HttpProvider(process.env.MACHINOMY_GETH_ADDR)
 let web3 = new Web3(provider)
 
 /**
  * Create machinomy instance that provides API for accepting payments.
  */
-let machinomy = new Machinomy(receiver, web3, { engine: 'nedb' })
+let machinomy = new Machinomy(receiver, web3, { engine: 'mongo', databaseFile: 'machinomy' })
 
 let hub = express()
 hub.use(bodyParser.json())
@@ -54,23 +55,24 @@ hub.use(bodyParser.urlencoded({ extended: false }))
  * Recieve an off-chain payment issued by `machinomy buy` command.
  */
 hub.post('/machinomy', async (req: express.Request, res: express.Response, next: Function) => {
-  let payment = new Payment(req.body)
-  let token = await machinomy.acceptPayment(payment)
-  res.status(202).header('Paywall-Token', token).send('Accepted').end()
+  const body = await machinomy.acceptPayment(req.body)
+  res.status(202).header('Paywall-Token', body.token).send(body)
 })
 
 /**
  * Verify the token that `/machinomy` generates.
  */
-hub.get('/verify/:token', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+hub.get('/verify/:token', (req: express.Request, res: express.Response, next: express.NextFunction) => {
   let token: string = req.params.token
-  let isOk = false
-  isOk = await machinomy.verifyToken(token)
-  if (isOk) {
-    res.status(200).send({ status: 'ok' })
-  } else {
-    res.status(500).send({ status: 'token is invalid' })
-  }
+  machinomy.acceptToken(AcceptTokenRequestSerde.instance.deserialize({
+    token
+  })).then(() => res.status(200).send({ status: 'ok' }))
+    .catch(() => res.status(400).send({ status: 'token is invalid' }))
+})
+
+hub.get('/channels', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const channels = await machinomy.channels()
+  res.status(200).send(channels.map(PaymentChannelSerde.instance.serialize))
 })
 
 hub.get('/claim/:channelid', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -93,7 +95,7 @@ let app = express()
 let paywallHeaders = () => {
   let headers: { [index: string]: string } = {}
   headers['Paywall-Version'] = '0.0.3'
-  headers['Paywall-Price'] = '0.1'
+  headers['Paywall-Price'] = '1000'
   headers['Paywall-Address'] = receiver
   headers['Paywall-Gateway'] = 'http://localhost:3001/machinomy'
   return headers
