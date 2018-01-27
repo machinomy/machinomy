@@ -2,7 +2,7 @@ import * as support from './support'
 import * as storage from '../lib/storage'
 import * as channel from '../lib/channel'
 import Payment from '../lib/Payment'
-import BigNumber from '../lib/bignumber'
+import * as BigNumber from 'bignumber.js'
 import Engine from '../lib/engines/engine'
 import Web3 = require('web3')
 import { PaymentChannel } from '../lib/paymentChannel'
@@ -76,8 +76,8 @@ describe('storage', () => {
       it('update spent amount', () => {
         let channelId = channel.id('0xdeadbeaf')
         let hexChannelId = channelId.toString()
-        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber(10), new BigNumber(0), undefined, undefined)
-        let spent = new BigNumber(33)
+        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), undefined, undefined)
+        let spent = new BigNumber.BigNumber(33)
         return channelsDatabase(support.fakeWeb3(), engine).then(channels => {
           return channels.save(paymentChannel).then(() => {
             return channels.spend(channelId, spent)
@@ -94,7 +94,7 @@ describe('storage', () => {
       it('match', () => {
         let channelId = channel.id('0xdeadbeaf')
         let hexChannelId = channelId.toString()
-        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber(10), new BigNumber(0), 0, undefined)
+        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 0, undefined)
         return channelsDatabase(web3, engine).then((channels: any) => {
           return channels.save(paymentChannel).then(() => {
             return channels.firstById(channelId)
@@ -118,7 +118,7 @@ describe('storage', () => {
       it('save new PaymentChannel', () => {
         let channelId = support.randomChannelId()
         let hexChannelId = channelId.toString()
-        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber(10), new BigNumber(0), undefined, undefined)
+        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), undefined, undefined)
         return channelsDatabase(web3, engine).then(channels => {
           return channels.firstById(channelId).then(found => {
             expect(found).toBeNull()
@@ -135,9 +135,9 @@ describe('storage', () => {
       it('update spent value on existing PaymentChannel', () => {
         let channelId = support.randomChannelId()
         let hexChannelId = channelId.toString()
-        let spent = new BigNumber(5)
-        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber(10), new BigNumber(0), undefined, undefined)
-        let updatedPaymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber(10), spent, undefined, undefined)
+        let spent = new BigNumber.BigNumber(5)
+        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), undefined, undefined)
+        let updatedPaymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber.BigNumber(10), spent, undefined, undefined)
         return channelsDatabase(web3, engine).then(channels => {
           return channels.save(paymentChannel).then(() => {
             return channels.saveOrUpdate(updatedPaymentChannel)
@@ -154,7 +154,7 @@ describe('storage', () => {
       it('return all the channels', () => {
         let channelId = support.randomChannelId()
         let hexChannelId = channelId.toString()
-        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber(10), new BigNumber(0), undefined, undefined)
+        let paymentChannel = new channel.PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), undefined, undefined)
         return channelsDatabase(web3, engine).then(channels => {
           return channels.save(paymentChannel).then(() => {
             return channels.all()
@@ -173,12 +173,12 @@ describe('storage', () => {
 
         return channelsDatabase(web3, engine).then((channels) => {
           return Promise.all([
-            channels.save(new channel.PaymentChannel('sender', 'receiver', support.randomChannelId().toString(), new BigNumber(9), new BigNumber(8), 0, undefined)),
-            channels.save(new channel.PaymentChannel('sender', 'receiver', correct, new BigNumber(13), new BigNumber(0), 0, undefined)),
-            channels.save(new channel.PaymentChannel('sender', 'receiver', support.randomChannelId().toString(), new BigNumber(130), new BigNumber(0), 1, undefined)),
-            channels.save(new channel.PaymentChannel('othersender', 'receiver', support.randomChannelId().toString(), new BigNumber(11), new BigNumber(0), 0, undefined))
+            channels.save(new channel.PaymentChannel('sender', 'receiver', support.randomChannelId().toString(), new BigNumber.BigNumber(9), new BigNumber.BigNumber(8), 0, undefined)),
+            channels.save(new channel.PaymentChannel('sender', 'receiver', correct, new BigNumber.BigNumber(13), new BigNumber.BigNumber(0), 0, undefined)),
+            channels.save(new channel.PaymentChannel('sender', 'receiver', support.randomChannelId().toString(), new BigNumber.BigNumber(130), new BigNumber.BigNumber(0), 1, undefined)),
+            channels.save(new channel.PaymentChannel('othersender', 'receiver', support.randomChannelId().toString(), new BigNumber.BigNumber(11), new BigNumber.BigNumber(0), 0, undefined))
           ]).then(() => channels)
-        }).then((channels) => channels.findUsable('sender', 'receiver', new BigNumber(2)))
+        }).then((channels) => channels.findUsable('sender', 'receiver', new BigNumber.BigNumber(2)))
           .then((channel: PaymentChannel) => expect(channel.channelId.toString()).toEqual(correct))
       })
     })
@@ -199,7 +199,7 @@ describe('storage', () => {
         let randomToken = support.randomInteger().toString()
         let channelId = support.randomChannelId()
         return channelsDatabase(web3, engine).then(channels => {
-          return channels.save(new channel.PaymentChannel('sender', 'receiver', channelId.toString(), new BigNumber(10), new BigNumber(0), undefined, undefined))
+          return channels.save(new channel.PaymentChannel('sender', 'receiver', channelId.toString(), new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), undefined, undefined))
         }).then(() => tokensDatabase(engine)).then(tokens => {
           return tokens.save(randomToken, channelId).then(() => {
             return tokens.isPresent(randomToken)
@@ -220,9 +220,9 @@ describe('storage', () => {
           channelId: channelId.toString(),
           sender: 'sender',
           receiver: 'receiver',
-          price: new BigNumber(10),
-          value: new BigNumber(12),
-          channelValue: new BigNumber(10),
+          price: new BigNumber.BigNumber(10),
+          value: new BigNumber.BigNumber(12),
+          channelValue: new BigNumber.BigNumber(10),
           meta: 'metaexample',
           v: 1,
           r: '0x2',
@@ -231,7 +231,7 @@ describe('storage', () => {
         })
 
         return channelsDatabase(web3, engine).then(channels => {
-          return channels.save(new channel.PaymentChannel('sender', 'receiver', channelId.toString(), new BigNumber(10), new BigNumber(0), undefined, undefined))
+          return channels.save(new channel.PaymentChannel('sender', 'receiver', channelId.toString(), new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), undefined, undefined))
         }).then(() => paymentsDatabase(engine))
           .then(payments => {
             return payments.save(randomToken, payment).then(() => {

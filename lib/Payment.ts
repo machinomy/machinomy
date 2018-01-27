@@ -3,15 +3,15 @@ import * as util from 'ethereumjs-util'
 import { PaymentChannel } from './channel'
 import { PaymentRequired } from './transport'
 import { Broker, TokenBroker, sign, paymentDigest } from '@machinomy/contracts'
-import BigNumber from './bignumber'
+import * as BigNumber from 'bignumber.js'
 
 export interface PaymentJSON {
   channelId: string
   sender: string
   receiver: string
-  price: BigNumber
-  value: BigNumber
-  channelValue: BigNumber
+  price: BigNumber.BigNumber
+  value: BigNumber.BigNumber
+  channelValue: BigNumber.BigNumber
   v: number|string
   r: string
   s: string
@@ -35,9 +35,9 @@ export default class Payment {
   channelId: string
   sender: string
   receiver: string
-  price: BigNumber
-  value: BigNumber
-  channelValue: BigNumber
+  price: BigNumber.BigNumber
+  value: BigNumber.BigNumber
+  channelValue: BigNumber.BigNumber
   v: number
   r: string
   s: string
@@ -67,7 +67,7 @@ export default class Payment {
     let validChannelId = paymentChannel.channelId === payment.channelId
     let validPaymentValue = paymentChannel.value.lessThanOrEqualTo(payment.channelValue)
     let validSender = paymentChannel.sender === payment.sender
-    let isPositive = payment.value.greaterThanOrEqualTo(new BigNumber(0)) && payment.price.greaterThanOrEqualTo(new BigNumber(0))
+    let isPositive = payment.value.greaterThanOrEqualTo(new BigNumber.BigNumber(0)) && payment.price.greaterThanOrEqualTo(new BigNumber.BigNumber(0))
     let deployed
     if (paymentChannel.contractAddress) {
       deployed = await TokenBroker.deployed(web3.currentProvider)

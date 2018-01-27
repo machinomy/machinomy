@@ -3,11 +3,8 @@ import Payment, { PaymentJSON } from '../Payment'
 import pify from '../util/pify'
 import { namespaced } from '../util/namespaced'
 
-// linter false positive below
-/* tslint:disable */
-import BigNumber from '../bignumber'
-import Engine, {EngineMongo, EngineNedb, EnginePostgres} from "../engines/engine";
-/* tslint:enable */
+import * as BigNumber from 'bignumber.js'
+import Engine, { EngineMongo, EngineNedb, EnginePostgres } from '../engines/engine'
 
 export default interface PaymentsDatabase {
   save (token: string, payment: Payment): Promise<void>
@@ -36,9 +33,9 @@ export abstract class AbstractPaymentsDatabase<T extends Engine> implements Paym
       channelId: json.channelId,
       sender: json.sender,
       receiver: json.receiver,
-      price: new BigNumber(json.price),
-      value: new BigNumber(json.value),
-      channelValue: new BigNumber(json.channelValue),
+      price: new BigNumber.BigNumber(json.price),
+      value: new BigNumber.BigNumber(json.value),
+      channelValue: new BigNumber.BigNumber(json.channelValue),
       v: Number(json.v),
       r: json.r,
       s: json.s,

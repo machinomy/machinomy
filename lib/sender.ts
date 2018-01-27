@@ -11,7 +11,7 @@ import { PaymentRequired, RequestTokenOpts, Transport } from './transport'
 import Storage from './storage'
 import { RequestResponse } from 'request'
 import Payment from './Payment'
-import BigNumber from './bignumber'
+import * as BigNumber from 'bignumber.js'
 
 const log = Log.create('sender')
 
@@ -53,10 +53,10 @@ export default class Sender {
   contract: ChannelContract
   transport: Transport
   storage: Storage
-  minimumChannelAmount: BigNumber
+  minimumChannelAmount: BigNumber.BigNumber
   settlementPeriod: number
 
-  constructor (web3: Web3, account: string, contract: ChannelContract, transport: Transport, storage: Storage, minimumChannelAmount: BigNumber = new BigNumber(0), settlementPeriod?: number) {
+  constructor (web3: Web3, account: string, contract: ChannelContract, transport: Transport, storage: Storage, minimumChannelAmount: BigNumber.BigNumber = new BigNumber.BigNumber(0), settlementPeriod?: number) {
     this.web3 = web3
     this.account = account
     this.contract = contract
@@ -73,7 +73,7 @@ export default class Sender {
   /**
    * Make request to +uri+ building a new payment channel. Returns HTTP response.
    */
-  freshChannel (uri: string, paymentRequired: PaymentRequired, channelValue: BigNumber, opts: FreshChannelOpts = {}): Promise<any> {
+  freshChannel (uri: string, paymentRequired: PaymentRequired, channelValue: BigNumber.BigNumber, opts: FreshChannelOpts = {}): Promise<any> {
     if (_.isFunction(opts.onWillOpenChannel)) {
       opts.onWillOpenChannel()
     }
@@ -223,7 +223,7 @@ export default class Sender {
 
   buyMeta (options: any): any {
     let uri = 'http://localhost:3000/paid/erc20'
-    let price = new BigNumber(options.price)
+    let price = new BigNumber.BigNumber(options.price)
     if (price.isNaN() || !price.isFinite() || price.isNegative()) return Promise.reject(new Error('Price is incorrect'))
     let paymentRequired = new PaymentRequired(
       options.receiver,

@@ -1,12 +1,12 @@
 import Payment from './Payment'
-import BigNumber from './bignumber'
+import * as BigNumber from 'bignumber.js'
 
 export interface PaymentChannelJSON {
   sender: string
   receiver: string
   channelId: string
-  value: BigNumber
-  spent: BigNumber
+  value: BigNumber.BigNumber
+  spent: BigNumber.BigNumber
   state: number
   contractAddress: string | undefined
 }
@@ -18,8 +18,8 @@ export class PaymentChannel {
   sender: string
   receiver: string
   channelId: string
-  value: BigNumber
-  spent: BigNumber
+  value: BigNumber.BigNumber
+  spent: BigNumber.BigNumber
   state: number
   contractAddress: string | undefined
 
@@ -31,12 +31,12 @@ export class PaymentChannel {
    * @param spent       Value sent by {sender} to {receiver}.
    * @param state       0 - 'open', 1 - 'settling', 2 - 'settled'
    */
-  constructor (sender: string, receiver: string, channelId: string, value: BigNumber, spent: BigNumber, state: number = 0, contractAddress: string | undefined) { // FIXME remove contract parameter
+  constructor (sender: string, receiver: string, channelId: string, value: BigNumber.BigNumber, spent: BigNumber.BigNumber, state: number = 0, contractAddress: string | undefined) { // FIXME remove contract parameter
     this.sender = sender
     this.receiver = receiver
     this.channelId = channelId
-    this.value = new BigNumber(value.toString())
-    this.spent = new BigNumber(spent.toString())
+    this.value = new BigNumber.BigNumber(value.toString())
+    this.spent = new BigNumber.BigNumber(spent.toString())
     this.state = state || 0
     this.contractAddress = contractAddress
   }
@@ -69,11 +69,11 @@ export class PaymentChannel {
     }
   }
 
-  hexToBigNumber (hex: string): BigNumber {
+  hexToBigNumber (hex: string): BigNumber.BigNumber {
     if (hex.substr(0, 2) === '0x') {
-      return new BigNumber(new Buffer(hex.substr(2), 'hex').toString('utf8'))
+      return new BigNumber.BigNumber(new Buffer(hex.substr(2), 'hex').toString('utf8'))
     } else {
-      return new BigNumber(hex)
+      return new BigNumber.BigNumber(hex)
     }
   }
 }

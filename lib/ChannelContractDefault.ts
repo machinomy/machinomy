@@ -1,5 +1,5 @@
 import * as Web3 from 'web3'
-import BigNumber from './bignumber'
+import * as BigNumber from 'bignumber.js'
 import { PaymentRequired } from './transport'
 import { PaymentChannel, PaymentChannelJSON } from './paymentChannel'
 import { Broker } from '@machinomy/contracts'
@@ -21,8 +21,8 @@ export class ChannelContractDefault {
     return deployed.createChannel(paymentRequired.receiver, duration, settlementPeriod, options)
   }
 
-  async claim (receiver: string, paymentChannel: PaymentChannel, value: BigNumber, v: number, r: string, s: string): Promise<TransactionResult> {
-    value = new BigNumber(value)
+  async claim (receiver: string, paymentChannel: PaymentChannel, value: BigNumber.BigNumber, v: number, r: string, s: string): Promise<TransactionResult> {
+    value = new BigNumber.BigNumber(value)
     let channelId = paymentChannel.channelId
     let deployed = await Broker.deployed(this.web3.currentProvider)
     let canClaim = await deployed.canClaim(channelId, value, Number(v), r, s)
@@ -32,8 +32,8 @@ export class ChannelContractDefault {
     return deployed.claim(channelId, value, v, r, s, { from: receiver })
   }
 
-  async deposit (sender: string, paymentChannel: PaymentChannel, value: BigNumber): Promise<TransactionResult> {
-    value = new BigNumber(value)
+  async deposit (sender: string, paymentChannel: PaymentChannel, value: BigNumber.BigNumber): Promise<TransactionResult> {
+    value = new BigNumber.BigNumber(value)
     let options = {
       from: sender,
       value: value,
@@ -69,7 +69,7 @@ export class ChannelContractDefault {
     }
   }
 
-  async startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber): Promise<TransactionResult> {
+  async startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber.BigNumber): Promise<TransactionResult> {
     let deployed = await Broker.deployed(this.web3.currentProvider)
     const channelId = paymentChannel.channelId
     let canStart = await this.canStartSettle(account, channelId)

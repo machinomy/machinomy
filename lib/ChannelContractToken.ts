@@ -1,5 +1,5 @@
 import Web3 = require('web3')
-import BigNumber from './bignumber'
+import * as BigNumber from 'bignumber.js'
 import { PaymentRequired } from './transport'
 import { PaymentChannel, PaymentChannelJSON } from './paymentChannel'
 import { TokenBroker, buildERC20Contract } from '@machinomy/contracts'
@@ -17,7 +17,7 @@ export class ChannelContractToken {
   }
 
   async createChannel (paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: Web3.TxData): Promise<TransactionResult> {
-    const value = new BigNumber(options.value!.toString())
+    const value = new BigNumber.BigNumber(options.value!.toString())
     delete options['value']
     let deployed = await TokenBroker.deployed(this.web3.currentProvider)
     let instanceERC20 = await buildERC20Contract(paymentRequired.contractAddress as string, this.web3)
@@ -26,8 +26,8 @@ export class ChannelContractToken {
     return deployed.createChannel(paymentRequired.contractAddress as string, paymentRequired.receiver, duration, settlementPeriod, value, options)
   }
 
-  async claim (receiver: string, paymentChannel: PaymentChannel, value: BigNumber, v: number, r: string, s: string): Promise<TransactionResult> {
-    value = new BigNumber(value)
+  async claim (receiver: string, paymentChannel: PaymentChannel, value: BigNumber.BigNumber, v: number, r: string, s: string): Promise<TransactionResult> {
+    value = new BigNumber.BigNumber(value)
     let channelId = paymentChannel.channelId
     let deployed = await TokenBroker.deployed(this.web3.currentProvider)
     let canClaim = await deployed.canClaim(channelId, value, Number(v), r, s)
@@ -37,8 +37,8 @@ export class ChannelContractToken {
     return deployed.claim(channelId, value, v, r, s, { from: receiver, gas: CREATE_CHANNEL_GAS })
   }
 
-  async deposit (sender: string, paymentChannel: PaymentChannel, value: BigNumber): Promise<TransactionResult> {
-    value = new BigNumber(value)
+  async deposit (sender: string, paymentChannel: PaymentChannel, value: BigNumber.BigNumber): Promise<TransactionResult> {
+    value = new BigNumber.BigNumber(value)
     let options = {
       from: sender,
       gas: CREATE_CHANNEL_GAS
@@ -72,7 +72,7 @@ export class ChannelContractToken {
     }
   }
 
-  async startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber): Promise<TransactionResult> {
+  async startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber.BigNumber): Promise<TransactionResult> {
     let deployed = await TokenBroker.deployed(this.web3.currentProvider)
     let result = await deployed.canStartSettle(account, paymentChannel.channelId)
     if (!result) {

@@ -1,7 +1,7 @@
 import * as channel from '../channel'
 import { ChannelContract, ChannelId, PaymentChannel, PaymentChannelJSON } from '../channel'
 import Engine, { EngineMongo, EnginePostgres, EngineNedb } from '../engines/engine'
-import BigNumber from '../bignumber'
+import * as BigNumber from 'bignumber.js'
 import { namespaced } from '../util/namespaced'
 import pify from '../util/pify'
 import Web3 = require('web3')
@@ -14,11 +14,11 @@ export default interface ChannelsDatabase {
 
   firstById (channelId: ChannelId | string): Promise<PaymentChannel | null>
 
-  spend (channelId: ChannelId | string, spent: BigNumber): Promise<void>
+  spend (channelId: ChannelId | string, spent: BigNumber.BigNumber): Promise<void>
 
   all (): Promise<Array<PaymentChannel>>
 
-  findUsable (sender: string, receiver: string, amount: BigNumber): Promise<PaymentChannel | null>
+  findUsable (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel | null>
 
   findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>>
 
@@ -81,11 +81,11 @@ export abstract class AbstractChannelsDatabase<T extends Engine> implements Chan
 
   abstract firstById (channelId: ChannelId | string): Promise<PaymentChannel | null>
 
-  abstract spend (channelId: ChannelId | string, spent: BigNumber): Promise<void>
+  abstract spend (channelId: ChannelId | string, spent: BigNumber.BigNumber): Promise<void>
 
   abstract all (): Promise<Array<PaymentChannel>>
 
-  abstract findUsable (sender: string, receiver: string, amount: BigNumber): Promise<PaymentChannel|null>
+  abstract findUsable (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel|null>
 
   abstract findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>>
 
@@ -127,7 +127,7 @@ export class NedbChannelsDatabase extends AbstractChannelsDatabase<EngineNedb> i
   /**
    * Set amount of money spent on the channel.
    */
-  spend (channelId: ChannelId | string, spent: BigNumber): Promise<void> {
+  spend (channelId: ChannelId | string, spent: BigNumber.BigNumber): Promise<void> {
     return this.engine.exec((client: any) => {
       const query = {
         kind: this.kind,
@@ -155,7 +155,7 @@ export class NedbChannelsDatabase extends AbstractChannelsDatabase<EngineNedb> i
     }).then((res) => this.inflatePaymentChannels(res))
   }
 
-  findUsable (sender: string, receiver: string, amount: BigNumber): Promise<PaymentChannel | null> {
+  findUsable (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel | null> {
     return this.engine.exec((client: any) => {
       const query = {
         kind: this.kind,
@@ -222,7 +222,7 @@ export class MongoChannelsDatabase extends AbstractChannelsDatabase<EngineMongo>
   /**
    * Set amount of money spent on the channel.
    */
-  spend (channelId: ChannelId | string, spent: BigNumber): Promise<void> {
+  spend (channelId: ChannelId | string, spent: BigNumber.BigNumber): Promise<void> {
     return this.engine.exec((client: any) => {
       const query = {
         kind: this.kind,
@@ -250,7 +250,7 @@ export class MongoChannelsDatabase extends AbstractChannelsDatabase<EngineMongo>
     }).then((res: any) => this.inflatePaymentChannels(res))
   }
 
-  findUsable (sender: string, receiver: string, amount: BigNumber): Promise<PaymentChannel | null> {
+  findUsable (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel | null> {
     return this.engine.exec((client: any) => {
       const query = {
         sender,
@@ -306,7 +306,7 @@ export class PostgresChannelsDatabase extends AbstractChannelsDatabase<EnginePos
     )).then((res: any) => this.inflatePaymentChannel(res.rows[0]))
   }
 
-  spend (channelId: ChannelId | string, spent: BigNumber): Promise<void> {
+  spend (channelId: ChannelId | string, spent: BigNumber.BigNumber): Promise<void> {
     return this.engine.exec((client: any) => client.query(
       'UPDATE channel SET (spent)=($2) WHERE "channelId" = $1',
       [
@@ -322,7 +322,7 @@ export class PostgresChannelsDatabase extends AbstractChannelsDatabase<EnginePos
     )).then((res: any) => this.inflatePaymentChannels(res.rows))
   }
 
-  findUsable (sender: string, receiver: string, amount: BigNumber): Promise<PaymentChannel | null> {
+  findUsable (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel | null> {
     return this.engine.exec((client: any) => client.query(
       'SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
       'WHERE sender = $1 AND receiver = $2 AND value >= spent + $3',

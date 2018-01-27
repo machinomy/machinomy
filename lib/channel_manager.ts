@@ -1,4 +1,4 @@
-import BigNumber from './bignumber'
+import * as BigNumber from 'bignumber.js'
 import { PaymentChannel } from './paymentChannel'
 import ChannelsDatabase from './storages/channels_database'
 import { ChannelContract, ChannelId } from './channel'
@@ -15,11 +15,11 @@ import { isPaymentValid } from './receiver'
 import TokensDatabase from './storages/tokens_database'
 
 export default interface ChannelManager extends EventEmitter {
-  openChannel (sender: string, receiver: string, amount: BigNumber): Promise<PaymentChannel>
+  openChannel (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel>
   closeChannel (channelId: string | ChannelId): Promise<TransactionResult>
-  nextPayment (channelId: string | ChannelId, amount: BigNumber, meta: string): Promise<Payment>
+  nextPayment (channelId: string | ChannelId, amount: BigNumber.BigNumber, meta: string): Promise<Payment>
   acceptPayment (payment: Payment): Promise<string>
-  requireOpenChannel (sender: string, receiver: string, amount: BigNumber): Promise<PaymentChannel>
+  requireOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel>
   channels (): Promise<PaymentChannel[]>
   channelById (channelId: ChannelId | string): Promise<PaymentChannel|null>
 }
@@ -49,7 +49,7 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     this.channelContract = channelContract
   }
 
-  openChannel (sender: string, receiver: string, amount: BigNumber): Promise<PaymentChannel> {
+  openChannel (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel> {
     return this.mutex.synchronize(() => this.internalOpenChannel(sender, receiver, amount))
   }
 
@@ -76,7 +76,7 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     }))
   }
 
-  nextPayment (channelId: string | ChannelId, amount: BigNumber, meta: string): Promise<Payment> {
+  nextPayment (channelId: string | ChannelId, amount: BigNumber.BigNumber, meta: string): Promise<Payment> {
     return this.mutex.synchronize(() => this.channelById(channelId).then((channel: PaymentChannel | null) => {
       if (!channel) {
         throw new Error(`Channel with id ${channelId.toString()} not found.`)
@@ -113,7 +113,7 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     }))
   }
 
-  requireOpenChannel (sender: string, receiver: string, amount: BigNumber): Promise<PaymentChannel> {
+  requireOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel> {
     return this.mutex.synchronize(() => {
       return this.channelsDao.findUsable(sender, receiver, amount).then((channel: PaymentChannel) => {
         return channel || this.internalOpenChannel(sender, receiver, amount)
@@ -129,7 +129,7 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     return this.channelsDao.firstById(channelId)
   }
 
-  private internalOpenChannel (sender: string, receiver: string, amount: BigNumber): Promise<PaymentChannel> {
+  private internalOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel> {
     this.emit('willOpenChannel', sender, receiver, amount)
     const paymentReq = new PaymentRequired(receiver, amount, '', '')
     return this.channelContract.buildPaymentChannel(sender, paymentReq, amount, DEFAULT_SETTLEMENT_PERIOD)
@@ -144,7 +144,7 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     return this.channelContract.getState(channel).then((state: number) => {
       switch (state) {
         case 0:
-          return this.channelContract.startSettle(this.account, channel, new BigNumber(channel.spent))
+          return this.channelContract.startSettle(this.account, channel, new BigNumber.BigNumber(channel.spent))
         case 1:
           return this.channelContract.finishSettle(this.account, channel)
         default:

@@ -6,7 +6,7 @@ import * as channel from './lib/channel'
 import { default as Sender } from './lib/sender'
 import { ChannelContract } from './lib/channel'
 import { PaymentChannel } from './lib/paymentChannel'
-import BigNumber from './lib/bignumber'
+import * as BigNumber from 'bignumber.js'
 import Payment from './lib/Payment'
 import * as receiver from './lib/receiver'
 import { TransactionResult } from 'truffle-contract'
@@ -19,7 +19,7 @@ export interface BuyOptions {
   /** The address of Ethereum account. */
   receiver: string
   /** Price of content in wei. */
-  price: number | BigNumber
+  price: number | BigNumber.BigNumber
   /** Endpoint for offchain payment that Machinomy send via HTTP.
    * The payment signed by web3 inside Machinomy.
    */
@@ -46,7 +46,7 @@ export interface MachinomyOptions {
   engine?: string | Engine
   /** Path to nedb database file. In the browser will used as name for indexedb. */
   databaseFile?: string
-  minimumChannelAmount?: number | BigNumber
+  minimumChannelAmount?: number | BigNumber.BigNumber
   settlementPeriod?: number
 }
 
@@ -90,7 +90,7 @@ export default class Machinomy {
   private web3: Web3
   private engine: string | Engine
   private databaseFile: string
-  private minimumChannelAmount?: BigNumber
+  private minimumChannelAmount?: BigNumber.BigNumber
   private storage: Storage
   private settlementPeriod?: number
 
@@ -126,7 +126,7 @@ export default class Machinomy {
     this.settlementPeriod = options.settlementPeriod
 
     if (options.minimumChannelAmount) {
-      this.minimumChannelAmount = new BigNumber(options.minimumChannelAmount)
+      this.minimumChannelAmount = new BigNumber.BigNumber(options.minimumChannelAmount)
     }
     if (options.databaseFile) {
       this.databaseFile = options.databaseFile
@@ -172,8 +172,8 @@ export default class Machinomy {
    * @param channelId - Channel id.
    * @param value - Size of deposit in Wei.
    */
-  deposit (channelId: string, value: BigNumber | number): Promise<void> {
-    let _value = new BigNumber(value)
+  deposit (channelId: string, value: BigNumber.BigNumber | number): Promise<void> {
+    let _value = new BigNumber.BigNumber(value)
     return new Promise((resolve, reject) => {
       this.storage.channels.firstById(channelId).then((paymentChannel) => {
         if (paymentChannel) {
@@ -262,7 +262,7 @@ export default class Machinomy {
   private async settle (channelContract: ChannelContract, paymentChannel: PaymentChannel): Promise<TransactionResult> {
     const state = await channelContract.getState(paymentChannel)
     if (state === 0) {
-      let num = new BigNumber(paymentChannel.spent)
+      let num = new BigNumber.BigNumber(paymentChannel.spent)
       return channelContract.startSettle(this.account, paymentChannel, num)
     } else if (state === 1) {
       return channelContract.finishSettle(this.account, paymentChannel)
