@@ -17,7 +17,7 @@ import log from './util/log'
 
 const LOG = log('ChannelManager')
 
-export default interface ChannelManager extends EventEmitter {
+export interface ChannelManager extends EventEmitter {
   openChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber): Promise<PaymentChannel>
   closeChannel (channelId: string | ChannelId): Promise<TransactionResult>
   nextPayment (channelId: string | ChannelId, amount: BigNumber.BigNumber, meta: string): Promise<Payment>
@@ -28,6 +28,8 @@ export default interface ChannelManager extends EventEmitter {
   channelById (channelId: ChannelId | string): Promise<PaymentChannel|null>
   verifyToken (token: string): Promise<boolean>
 }
+
+export default ChannelManager;
 
 export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
   private account: string

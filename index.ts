@@ -1,3 +1,9 @@
+// use raw import statements to prevent Typescript from tree-shaking these requires in
+// the emitted JavaScript
+import './lib/channel_manager';
+import './lib/storage';
+import './lib/client';
+
 import Web3 = require('web3')
 import { default as Storage, build } from './lib/storage'
 import Engine from './lib/engines/engine'
@@ -15,10 +21,6 @@ import Client, {
   AcceptTokenResponse
 } from './lib/client'
 import { PaymentRequired } from './lib/transport'
-
-require('./lib/channel_manager')
-require('./lib/storage')
-require('./lib/client')
 
 /**
  * Options for machinomy buy.
@@ -175,13 +177,13 @@ export default class Machinomy {
    *  })
    * </code></pre>
    */
-  buy (options: BuyOptions): Promise<BuyResult> {
+  async buy (options: BuyOptions): Promise<BuyResult> {
     const price = new BigNumber.BigNumber(options.price)
-    return this.channelManager.requireOpenChannel(this.account, options.receiver, price).then((channel: PaymentChannel) => {
-      return this.channelManager.nextPayment(channel.channelId, price, options.meta)
-        .then((payment: Payment) => this.client.doPayment(payment, options.gateway))
-        .then((res: AcceptPaymentResponse) => ({ token: res.token, channelId: id(channel.channelId) }))
-    })
+
+    const channel: PaymentChannel = await this.channelManager.requireOpenChannel(this.account, options.receiver, price)
+    const payment: Payment = await this.channelManager.nextPayment(channel.channelId, price, options.meta)
+    const res: AcceptPaymentResponse = await this.client.doPayment(payment, options.gateway)
+    return { token: res.token, channelId: id(channel.channelId) }
   }
 
   buyUrl (uri: string): Promise<BuyResult> {
