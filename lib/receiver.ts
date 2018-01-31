@@ -7,10 +7,10 @@ import Storage from './storage'
 import Payment from './Payment'
 
 const log = Log.create('sender')
-const isPaymentValid = (payment: Payment, paymentChannel: PaymentChannel): boolean => {
-  let validIncrement = (paymentChannel.spent + payment.price) <= paymentChannel.value
-  let validChannelValue = paymentChannel.value === payment.channelValue
-  let validPaymentValue = paymentChannel.value <= payment.channelValue
+export const isPaymentValid = (payment: Payment, paymentChannel: PaymentChannel): boolean => {
+  let validIncrement = (paymentChannel.spent.plus(payment.price)).lessThanOrEqualTo(paymentChannel.value)
+  let validChannelValue = paymentChannel.value.equals(payment.channelValue)
+  let validPaymentValue = paymentChannel.value.lessThanOrEqualTo(payment.channelValue)
   return validIncrement && validChannelValue && validPaymentValue
 }
 
@@ -29,8 +29,7 @@ export class Receiver {
      * Find a payment channel corresponding to +payment+.
      */
   findPaymentChannel (payment: Payment): Promise<PaymentChannel|null> {
-    let query = {sender: payment.sender, receiver: payment.receiver, channelId: payment.channelId}
-    return this.storage.channels.allByQuery(query).then(documents => {
+    return this.storage.channels.findBySenderReceiverChannelId(payment.sender, payment.receiver, payment.channelId).then(documents => {
       if (documents.length >= 1) {
         let document = documents[0]
         return channel.PaymentChannel.fromDocument(document)
@@ -101,9 +100,8 @@ export class Receiver {
   }
 
   ensureCanAcceptPayment (payment: Payment) {
-    if (payment.receiver !== this.account) {
-      throw new Error(`Receiver must be ${this.account}`)
-    }
+    // TODO: [CRITICAL] Need to verify payment before accept
+    return true
   }
 }
 

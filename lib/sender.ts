@@ -11,10 +11,16 @@ import { PaymentRequired, RequestTokenOpts, Transport } from './transport'
 import Storage from './storage'
 import { RequestResponse } from 'request'
 import Payment from './Payment'
+import * as BigNumber from 'bignumber.js'
 
 const log = Log.create('sender')
 
 const VERSION = configuration.VERSION
+
+const DAY_IN_SECONDS = 86400
+
+/** Default settlement period for a payment channel */
+export const DEFAULT_SETTLEMENT_PERIOD = 2 * DAY_IN_SECONDS
 
 export interface FreshChannelOpts extends RequestTokenOpts {
   onWillOpenChannel?: () => void
@@ -47,23 +53,31 @@ export default class Sender {
   contract: ChannelContract
   transport: Transport
   storage: Storage
+  minimumChannelAmount: BigNumber.BigNumber
+  settlementPeriod: number
 
-  constructor (web3: Web3, account: string, contract: ChannelContract, transport: Transport, storage: Storage) {
+  constructor (web3: Web3, account: string, contract: ChannelContract, transport: Transport, storage: Storage, minimumChannelAmount: BigNumber.BigNumber = new BigNumber.BigNumber(0), settlementPeriod?: number) {
     this.web3 = web3
     this.account = account
     this.contract = contract
     this.transport = transport
     this.storage = storage
+    this.minimumChannelAmount = minimumChannelAmount
+    if (settlementPeriod || settlementPeriod === 0) {
+      this.settlementPeriod = settlementPeriod
+    } else {
+      this.settlementPeriod = DEFAULT_SETTLEMENT_PERIOD
+    }
   }
 
   /**
    * Make request to +uri+ building a new payment channel. Returns HTTP response.
    */
-  freshChannel (uri: string, paymentRequired: PaymentRequired, channelValue: number, opts: FreshChannelOpts = {}): Promise<any> {
+  freshChannel (uri: string, paymentRequired: PaymentRequired, channelValue: BigNumber.BigNumber, opts: FreshChannelOpts = {}): Promise<any> {
     if (_.isFunction(opts.onWillOpenChannel)) {
       opts.onWillOpenChannel()
     }
-    return this.contract.buildPaymentChannel(this.account, paymentRequired, channelValue).then((paymentChannel: PaymentChannel) => {
+    return this.contract.buildPaymentChannel(this.account, paymentRequired, channelValue, this.settlementPeriod).then((paymentChannel: PaymentChannel) => {
       if (_.isFunction(opts.onDidOpenChannel)) {
         opts.onDidOpenChannel()
       }
@@ -81,7 +95,7 @@ export default class Sender {
    * @return {Promise<[Payment, Object]>}
    */
   existingChannel (uri: string, paymentRequired: PaymentRequired, paymentChannel: PaymentChannel, opts: RequestTokenOpts = {}): Promise<any> {
-    return Payment.fromPaymentChannel(this.web3, paymentChannel, paymentRequired.price).then(payment => {
+    return Payment.fromPaymentChannel(this.web3, paymentChannel, paymentRequired).then(payment => {
       let nextPaymentChannel = channel.PaymentChannel.fromPayment(payment)
       return this.storage.channels.saveOrUpdate(nextPaymentChannel).then(() => {
         return this.transport.requestToken(paymentRequired.gateway, payment, opts)
@@ -98,7 +112,7 @@ export default class Sender {
     return this.contract.getState(paymentChannel).then(state => {
       let isOpen = state === 0 // FIXME Harmonize channel states
       // log.debug(`canUseChannel: isOpen: ${isOpen}`)
-      let funded = paymentChannel.value >= (paymentChannel.spent + paymentRequired.price)
+      let funded = paymentChannel.value.greaterThanOrEqualTo(paymentChannel.spent.plus(paymentRequired.price))
       // log.debug(`canUseChannel: funded: ${funded}`)
       return isOpen && funded
     })
@@ -121,7 +135,7 @@ export default class Sender {
   }
 
   findOpenChannel (paymentRequired: PaymentRequired): Promise<PaymentChannel | undefined> {
-    return this.storage.channels.allByQuery({ sender: this.account, receiver: paymentRequired.receiver }).then(paymentChannels => {
+    return this.storage.channels.findBySenderReceiver(this.account, paymentRequired.receiver).then(paymentChannels => {
       return Bluebird.filter(paymentChannels, paymentChannel => {
         return this.canUseChannel(paymentChannel, paymentRequired)
       }).then(openChannels => {
@@ -143,7 +157,10 @@ export default class Sender {
         if (paymentChannel) {
           return this.existingChannel(uri, paymentRequired, paymentChannel)
         } else {
-          let value = paymentRequired.price * 10 // FIXME Total value of the channel
+          let value = paymentRequired.price.times(10)
+          if (!this.minimumChannelAmount.equals(0) && this.minimumChannelAmount.greaterThan(value)) {
+            value = this.minimumChannelAmount
+          }
           return this.freshChannel(uri, paymentRequired, value, opts) // Build new channel
         }
       })
@@ -206,17 +223,23 @@ export default class Sender {
 
   buyMeta (options: any): any {
     let uri = 'http://localhost:3000/paid/erc20'
+    let price = new BigNumber.BigNumber(options.price)
+    if (price.isNaN() || !price.isFinite() || price.isNegative()) return Promise.reject(new Error('Price is incorrect'))
     let paymentRequired = new PaymentRequired(
       options.receiver,
-      options.price,
+      price,
       options.gateway,
+      options.meta,
       options.contractAddress)
 
     return this.findOpenChannel(paymentRequired).then(paymentChannel => {
       if (paymentChannel) {
         return this.existingChannel(uri, paymentRequired, paymentChannel)
       } else {
-        let value = paymentRequired.price * 10 // FIXME Total value of the channel
+        let value = paymentRequired.price.times(10)
+        if (!this.minimumChannelAmount.equals(0) && this.minimumChannelAmount.greaterThan(value)) {
+          value = this.minimumChannelAmount
+        }
         return this.freshChannel(uri, paymentRequired, value) // Build new channel
       }
     })

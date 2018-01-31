@@ -45,18 +45,20 @@ describe('channel', () => {
           channelId: channelId.toString(),
           sender: 'sender',
           receiver: 'receiver',
-          price: support.randomInteger(),
-          value: support.randomInteger(),
-          channelValue: support.randomInteger(),
+          price: support.randomBigNumber(),
+          value: support.randomBigNumber(),
+          channelValue: support.randomBigNumber(),
+          meta: 'metaexample',
           v: 1,
           r: '0x2',
-          s: '0x3'
+          s: '0x3',
+          token: undefined
         })
         let paymentChannel = channel.PaymentChannel.fromPayment(payment)
         expect(paymentChannel.channelId).toBe(payment.channelId)
         expect(paymentChannel.sender).toBe(payment.sender)
         expect(paymentChannel.receiver).toBe(payment.receiver)
-        expect(paymentChannel.value).toBe(payment.channelValue)
+        expect(paymentChannel.value).toEqual(payment.channelValue)
       })
     })
   })

@@ -1,11 +1,13 @@
 import Payment from './Payment'
+import * as BigNumber from 'bignumber.js'
+import Serde from './serde'
 
 export interface PaymentChannelJSON {
   sender: string
   receiver: string
   channelId: string
-  value: number
-  spent: number
+  value: BigNumber.BigNumber
+  spent: BigNumber.BigNumber
   state: number
   contractAddress: string | undefined
 }
@@ -17,8 +19,8 @@ export class PaymentChannel {
   sender: string
   receiver: string
   channelId: string
-  value: number
-  spent: number
+  value: BigNumber.BigNumber
+  spent: BigNumber.BigNumber
   state: number
   contractAddress: string | undefined
 
@@ -30,12 +32,12 @@ export class PaymentChannel {
    * @param spent       Value sent by {sender} to {receiver}.
    * @param state       0 - 'open', 1 - 'settling', 2 - 'settled'
    */
-  constructor (sender: string, receiver: string, channelId: string, value: number, spent: number, state: number = 0, contractAddress: string | undefined) { // FIXME remove contract parameter
+  constructor (sender: string, receiver: string, channelId: string, value: BigNumber.BigNumber, spent: BigNumber.BigNumber, state: number = 0, contractAddress: string | undefined) { // FIXME remove contract parameter
     this.sender = sender
     this.receiver = receiver
     this.channelId = channelId
-    this.value = value
-    this.spent = spent
+    this.value = new BigNumber.BigNumber(value.toString())
+    this.spent = new BigNumber.BigNumber(spent.toString())
     this.state = state || 0
     this.contractAddress = contractAddress
   }
@@ -55,16 +57,32 @@ export class PaymentChannel {
       document.contractAddress
     )
   }
+}
 
-  toJSON (): PaymentChannelJSON {
+export class PaymentChannelSerde implements Serde<PaymentChannel> {
+  static instance = new PaymentChannelSerde()
+
+  serialize (obj: PaymentChannel): Object {
     return {
-      state: this.state,
-      spent: this.spent,
-      value: this.value,
-      channelId: this.channelId,
-      receiver: this.receiver,
-      sender: this.sender,
-      contractAddress: this.contractAddress
+      state: obj.state,
+      spent: obj.spent.toString(),
+      value: obj.value.toString(),
+      channelId: obj.channelId.toString(),
+      receiver: obj.receiver,
+      sender: obj.sender,
+      contractAddress: obj.contractAddress
     }
+  }
+
+  deserialize (data: any): PaymentChannel {
+    return new PaymentChannel(
+      data.sender,
+      data.receiver,
+      data.channelId,
+      data.value,
+      data.spent,
+      data.state,
+      data.contractAddress
+    )
   }
 }

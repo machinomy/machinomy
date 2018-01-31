@@ -5,6 +5,7 @@ import * as channel from '../lib/channel'
 import { randomStorage } from './support'
 import Payment from '../lib/Payment'
 import Promise = require('bluebird')
+import * as BigNumber from 'bignumber.js'
 const engineName = process.env.ENGINE_NAME || 'nedb'
 let expect = require('expect')
 
@@ -31,14 +32,16 @@ describe('sender', () => {
         channelId: channelId.toString(),
         sender: 'sender',
         receiver: 'receiver',
-        price: 1,
-        value: 1,
-        channelValue: 10,
+        price: new BigNumber.BigNumber(1),
+        value: new BigNumber.BigNumber(1),
+        channelValue: new BigNumber.BigNumber(10),
+        meta: 'metaexample',
         v: 1,
         r: '0x2',
-        s: '0x3'
+        s: '0x3',
+        token: undefined
       })
-      let paymentRequired = new transport.PaymentRequired(payment.receiver, payment.price, 'gateway')
+      let paymentRequired = new transport.PaymentRequired(payment.receiver, payment.price, 'meta', 'gateway')
       it('determine if channel can be used', done => {
         let paymentChannel = channel.PaymentChannel.fromPayment(payment)
         randomSender().then(s => {

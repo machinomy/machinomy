@@ -29,7 +29,8 @@ let f = (async () => {
   let result = await machinomy.buy({
     price: Number(headers['paywall-price']),
     gateway: headers['paywall-gateway'],
-    receiver: headers['paywall-address']
+    receiver: headers['paywall-address'],
+    meta: 'metaidexample'
   })
 
   let token = result.token

@@ -3,6 +3,7 @@ import * as channel from '../lib/channel'
 import * as transport from '../lib/transport'
 import { randomInteger } from './support'
 import Payment from '../lib/Payment'
+import * as BigNumber from 'bignumber.js'
 let expect = require('expect')
 
 describe('transport', () => {
@@ -56,12 +57,14 @@ describe('transport', () => {
         channelId: channelId.toString(),
         sender: 'sender',
         receiver: 'receiver',
-        price: 10,
-        value: 12,
-        channelValue: 10,
+        price: new BigNumber.BigNumber(10),
+        value: new BigNumber.BigNumber(12),
+        channelValue: new BigNumber.BigNumber(10),
+        meta: 'metaexample',
         v: 1,
         r: '0x2',
-        s: '0x3'
+        s: '0x3',
+        token: undefined
       })
 
       let randomToken = randomInteger().toString()

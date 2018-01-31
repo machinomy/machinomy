@@ -1,8 +1,9 @@
 import Web3 = require('web3')
-import BigNumber from 'bignumber.js'
+import * as BigNumber from 'bignumber.js'
 import { PaymentRequired } from './transport'
 import { PaymentChannel, PaymentChannelJSON } from './paymentChannel'
-import { buildBrokerTokenContract, buildERC20Contract } from '@machinomy/contracts'
+import { TokenBroker, buildERC20Contract } from '@machinomy/contracts'
+import { TransactionResult } from 'truffle-contract'
 
 export { PaymentChannel, PaymentChannelJSON }
 
@@ -15,40 +16,43 @@ export class ChannelContractToken {
     this.web3 = web3
   }
 
-  async createChannel (paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: any): Promise<any> {
-    const value = options['value']
+  async createChannel (paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: Web3.TxData): Promise<TransactionResult> {
+    const value = new BigNumber.BigNumber(options.value!.toString())
     delete options['value']
-    let deployed = await buildBrokerTokenContract(this.web3).deployed()
+    let deployed = await TokenBroker.deployed(this.web3.currentProvider)
     let instanceERC20 = await buildERC20Contract(paymentRequired.contractAddress as string, this.web3)
     let deployedERC20 = await instanceERC20.deployed()
     await deployedERC20.approve(deployed.address, value, options)
     return deployed.createChannel(paymentRequired.contractAddress as string, paymentRequired.receiver, duration, settlementPeriod, value, options)
   }
 
-  async claim (receiver: string, paymentChannel: PaymentChannel, value: number, v: number, r: string, s: string): Promise<void> {
+  async claim (receiver: string, paymentChannel: PaymentChannel, value: BigNumber.BigNumber, v: number, r: string, s: string): Promise<TransactionResult> {
+    value = new BigNumber.BigNumber(value)
     let channelId = paymentChannel.channelId
-    let deployed = await buildBrokerTokenContract(this.web3).deployed()
+    let deployed = await TokenBroker.deployed(this.web3.currentProvider)
     let canClaim = await deployed.canClaim(channelId, value, Number(v), r, s)
-    if (canClaim && paymentChannel.contractAddress) {
-      return deployed.claim(paymentChannel.contractAddress, channelId, value, v, r, s, { from: receiver, gas: CREATE_CHANNEL_GAS })
+    if (!canClaim) {
+      return Promise.reject(new Error('Claim isn\'t possible'))
     }
+    return deployed.claim(channelId, value, v, r, s, { from: receiver, gas: CREATE_CHANNEL_GAS })
   }
 
-  async deposit (sender: string, paymentChannel: PaymentChannel, value: number): Promise<void> {
+  async deposit (sender: string, paymentChannel: PaymentChannel, value: BigNumber.BigNumber): Promise<TransactionResult> {
+    value = new BigNumber.BigNumber(value)
     let options = {
       from: sender,
       gas: CREATE_CHANNEL_GAS
     }
     const channelId = paymentChannel.channelId
-    let deployed = await buildBrokerTokenContract(this.web3).deployed()
+    let deployed = await TokenBroker.deployed(this.web3.currentProvider)
     let canDeposit = await deployed.canDeposit(sender, channelId)
     if (canDeposit && paymentChannel.contractAddress) {
       let instanceERC20 = await buildERC20Contract(paymentChannel.contractAddress, this.web3)
       let deployedERC20 = await instanceERC20.deployed()
       await deployedERC20.approve(deployed.address, value, options)
-      if (paymentChannel.contractAddress) {
-        return deployed.deposit(paymentChannel.contractAddress, channelId, value, options)
-      }
+      return deployed.deposit(channelId, value, options)
+    } else {
+      return Promise.reject(new Error('Claim isn\'t possible'))
     }
   }
 
@@ -57,7 +61,7 @@ export class ChannelContractToken {
       return Promise.resolve(0)
     } else {
       return new Promise((resolve, reject) => {
-        buildBrokerTokenContract(this.web3).deployed().then((deployed) => {
+        TokenBroker.deployed(this.web3.currentProvider).then((deployed) => {
           deployed.getState(paymentChannel.channelId).then((result: any) => {
             resolve(Number(result))
           })
@@ -68,24 +72,21 @@ export class ChannelContractToken {
     }
   }
 
-  async startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber): Promise<void> {
-    let deployed = await buildBrokerTokenContract(this.web3).deployed()
+  async startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber.BigNumber): Promise<TransactionResult> {
+    let deployed = await TokenBroker.deployed(this.web3.currentProvider)
     let result = await deployed.canStartSettle(account, paymentChannel.channelId)
-    if (result) {
-      let paymentHex = '0x' + paymentChannel.spent.toString(16)
-      return deployed.startSettle(paymentChannel.channelId, paymentHex, { from: paymentChannel.sender })
-    } else {
-      return Promise.reject(new Error('cant start settle'))
+    if (!result) {
+      return Promise.reject(new Error('Settle start isn\'t possible'))
     }
+    return deployed.startSettle(paymentChannel.channelId, payment, { from: paymentChannel.sender })
   }
 
-  async finishSettle (account: string, paymentChannel: PaymentChannel): Promise<void> {
-    let deployed = await buildBrokerTokenContract(this.web3).deployed()
+  async finishSettle (account: string, paymentChannel: PaymentChannel): Promise<TransactionResult> {
+    let deployed = await TokenBroker.deployed(this.web3.currentProvider)
     let result = await deployed.canFinishSettle(account, paymentChannel.channelId)
-    if (result && paymentChannel.contractAddress) {
-      return deployed.finishSettle(paymentChannel.contractAddress, paymentChannel.channelId, { from: paymentChannel.sender })
-    } else {
-      return Promise.reject(new Error('cant finish settle'))
+    if (!result) {
+      return Promise.reject(new Error('Settle finish isn\'t possible'))
     }
+    return deployed.finishSettle(paymentChannel.channelId, { from: paymentChannel.sender })
   }
 }

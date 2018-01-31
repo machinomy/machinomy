@@ -1,37 +1,99 @@
 import Web3 = require('web3')
-import Engine from './engines/engine'
-import EngineMongo from './engines/engine_mongo'
-import EngineNedb from './engines/engine_nedb'
+import Engine, { EngineMongo, EngineNedb, EnginePostgres } from './engines/engine'
 
-import ChannelsDatabase from './storages/channels_database'
-import TokensDatabase from './storages/tokens_database'
-import PaymentsDatabase from './storages/payments_database'
+import ChannelsDatabase, {
+  MongoChannelsDatabase, NedbChannelsDatabase,
+  PostgresChannelsDatabase
+} from './storages/channels_database'
+import TokensDatabase, {
+  MongoTokensDatabase, NedbTokensDatabase,
+  PostgresTokensDatabase
+} from './storages/tokens_database'
+import PaymentsDatabase, {
+  MongoPaymentsDatabase, NedbPaymentsDatabase,
+  PostgresPaymentsDatabase
+} from './storages/payments_database'
 
 const defaultEngineName = 'nedb'
 
 export const payments = (engine: Engine, namespace: string | null): PaymentsDatabase => {
-  return new PaymentsDatabase(engine, namespace)
+  if (engine instanceof EngineMongo) {
+    return new MongoPaymentsDatabase(engine, namespace)
+  }
+
+  if (engine instanceof EnginePostgres) {
+    return new PostgresPaymentsDatabase(engine, namespace)
+  }
+
+  if (engine instanceof EngineNedb) {
+    return new NedbPaymentsDatabase(engine, namespace)
+  }
+
+  throw new Error('Invalid engine.')
 }
 
 export const tokens = (engine: Engine, namespace: string | null): TokensDatabase => {
-  return new TokensDatabase(engine, namespace)
+  if (engine instanceof EngineMongo) {
+    return new MongoTokensDatabase(engine, namespace)
+  }
+
+  if (engine instanceof EnginePostgres) {
+    return new PostgresTokensDatabase(engine, namespace)
+  }
+
+  if (engine instanceof EngineNedb) {
+    return new NedbTokensDatabase(engine, namespace)
+  }
+
+  throw new Error('Invalid engine.')
 }
 
 export const channels = (web3: Web3, engine: Engine, namespace: string | null): ChannelsDatabase => {
-  return new ChannelsDatabase(web3, engine, namespace)
+  if (engine instanceof EngineMongo) {
+    return new MongoChannelsDatabase(web3, engine, namespace)
+  }
+
+  if (engine instanceof EnginePostgres) {
+    return new PostgresChannelsDatabase(web3, engine, namespace)
+  }
+
+  if (engine instanceof EngineNedb) {
+    return new NedbChannelsDatabase(web3, engine, namespace)
+  }
+
+  throw new Error('Invalid engine.')
 }
 
 /**
  * Instantiate a storage engine.
  */
-export const engine = (path: string, inMemoryOnly: boolean = false, engineName: string = defaultEngineName): Engine => {
-  if (engineName === 'nedb') {
-    return new EngineNedb(path, inMemoryOnly)
-  } else if (engineName === 'mongo') {
-    return new EngineMongo(path, inMemoryOnly)
-  } else {
-    throw new Error('Can not detect datastore enigine')
+export const engine = (path: string, inMemoryOnly: boolean = false, engineName?: string | Engine): Engine => {
+  if (!engineName) {
+    engineName = defaultEngineName
   }
+
+  let engine: Engine|null
+
+  switch (engineName) {
+    case 'nedb':
+      engine = new EngineNedb(path, inMemoryOnly)
+      break
+    case 'mongo':
+      engine = new EngineMongo()
+      break
+    case 'postgres':
+      engine = new EnginePostgres()
+      break
+    default:
+      engine = typeof engineName === 'string' ? null : (engineName as Engine)
+      break
+  }
+
+  if (!engine) {
+    throw new Error('Invalid engine.')
+  }
+
+  return engine
 }
 
 export default class Storage {
@@ -40,20 +102,29 @@ export default class Storage {
   channels: ChannelsDatabase
   tokens: TokensDatabase
   payments: PaymentsDatabase
+  engine: Engine
 
-  constructor (web3: Web3, path: string, namespace: string|null, inMemoryOnly?: boolean, engineName: string = defaultEngineName) {
-    let storageEngine = engine(path, inMemoryOnly, engineName)
+  constructor (web3: Web3, path: string, namespace: string|null, inMemoryOnly?: boolean, engineName?: string | Engine) {
+    if (!engineName) {
+      engineName = defaultEngineName
+    }
+    const storageEngine = (typeof engineName === 'string' ? engine(path, inMemoryOnly, engineName) : engineName)
+    this.engine = storageEngine
     this.namespace = namespace || null
     // this.db = storageEngine.datastore
     this.channels = channels(web3, storageEngine, namespace)
     this.tokens = tokens(storageEngine, namespace)
     this.payments = payments(storageEngine, namespace)
   }
+
+  close (): Promise<void> {
+    return this.engine.close()
+  }
 }
 
 /**
  * Build an instance of Storage.
  */
-export const build = (web3: Web3, path: string, namespace: string | null = null, inMemoryOnly?: boolean, engineName: string = defaultEngineName): Storage => {
+export const build = (web3: Web3, path: string, namespace: string | null = null, inMemoryOnly?: boolean, engineName?: string | Engine): Storage => {
   return new Storage(web3, path, namespace, inMemoryOnly, engineName)
 }
