@@ -1,88 +1,160 @@
-import * as channel from '../channel'
+import { ChannelContract, ChannelId, PaymentChannel, PaymentChannelJSON, contract } from '../channel'
+import Engine, { EngineMongo, EnginePostgres, EngineNedb } from '../engines/engine'
+import * as BigNumber from 'bignumber.js'
+import { namespaced } from '../util/namespaced'
+import pify from '../util/pify'
 import Web3 = require('web3')
-import Engine from '../engines/engine'
-import { ChannelId, PaymentChannel, PaymentChannelJSON } from '../channel'
-import BigNumber from 'bignumber.js'
-import util = require('ethereumjs-util')
+import log from '../util/log'
 
-const namespaced = (namespace: string|null|undefined, kind: string): string => {
-  let result = kind
-  if (namespace) {
-    result = namespace + ':' + kind
-  }
-  return result
+export default interface ChannelsDatabase {
+  save (paymentChannel: PaymentChannel): Promise<void>
+
+  saveOrUpdate (paymentChannel: PaymentChannel): Promise<void>
+
+  firstById (channelId: ChannelId | string): Promise<PaymentChannel | null>
+
+  spend (channelId: ChannelId | string, spent: BigNumber.BigNumber): Promise<void>
+
+  all (): Promise<Array<PaymentChannel>>
+
+  allOpen (): Promise<PaymentChannel[]>
+
+  findUsable (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel | null>
+
+  findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>>
+
+  findBySenderReceiverChannelId (sender: string, receiver: string, channelId: ChannelId | string): Promise<Array<PaymentChannel>>
+
+  updateState (channelId: ChannelId | string, state: number): Promise<void>
 }
 
-/**
- * Database layer for {PaymentChannel}
- */
-export default class ChannelsDatabase {
+export abstract class AbstractChannelsDatabase<T extends Engine> implements ChannelsDatabase {
+  static LOG = log('AbstractChannelsDatabase')
+
   web3: Web3
-  engine: Engine
+
+  engine: T
+
   kind: string
 
-  constructor (web3: Web3, engine: Engine, namespace: string | null) {
+  contract: ChannelContract
+
+  constructor (web3: Web3, engine: T, namespace: string | null) {
     this.web3 = web3
     this.kind = namespaced(namespace, 'channel')
     this.engine = engine
+    this.contract = contract(web3)
   }
 
-  save (paymentChannel: PaymentChannel): Promise<void> {
-    let document = {
-      kind: this.kind,
-      sender: paymentChannel.sender,
-      receiver: paymentChannel.receiver,
-      value: util.bufferToHex(util.toBuffer(paymentChannel.value.toString())),
-      spent: util.bufferToHex(util.toBuffer(paymentChannel.spent.toString())),
-      channelId: paymentChannel.channelId,
-      contractAddress: paymentChannel.contractAddress
+  inflatePaymentChannels (channels: Array<PaymentChannelJSON>): Promise<Array<PaymentChannel>> {
+    if (!channels.length) {
+      return Promise.resolve([])
     }
-    return this.engine.insert(document)
+
+    // There shouldn't be any nulls here.
+    return Promise.all(channels.map((chan: PaymentChannelJSON) => this.inflatePaymentChannel(chan))) as Promise<Array<PaymentChannel>>
   }
+
+  inflatePaymentChannel (json: PaymentChannelJSON): Promise<PaymentChannel | null> {
+    if (!json) {
+      return Promise.resolve(null)
+    }
+
+    const doc = PaymentChannel.fromDocument(json)
+    return this.contract.getState(doc).then((state: any) => new PaymentChannel(
+      doc.sender,
+      doc.receiver,
+      doc.channelId,
+      doc.value,
+      doc.spent,
+      state,
+      doc.contractAddress || undefined
+    ))
+  }
+
+  abstract save (paymentChannel: PaymentChannel): Promise<void>
 
   saveOrUpdate (paymentChannel: PaymentChannel): Promise<void> {
+    AbstractChannelsDatabase.LOG(`Saving or updating channel with ID ${paymentChannel.channelId.toString()}`)
+
     return this.firstById(paymentChannel.channelId).then((found: PaymentChannel) => {
       if (found) {
+        AbstractChannelsDatabase.LOG(`Spending channel with ID ${paymentChannel.channelId.toString()}`)
         return this.spend(paymentChannel.channelId, paymentChannel.spent)
       } else {
+        AbstractChannelsDatabase.LOG(`Spending channel with ID ${paymentChannel.channelId.toString()}`)
         return this.save(paymentChannel)
       }
     })
   }
 
-  firstById (channelId: ChannelId|string): Promise<PaymentChannel|null> {
-    let query = {
-      kind: this.kind,
-      channelId: channelId.toString()
-    }
-    // log.info(`ChannelsDatabase#findById Trying to find channel by id ${channelId.toString()}`)
-    return this.engine.findOne<PaymentChannel>(query).then(document => {
-      if (document) {
-        return channel.contract(this.web3).getState(document).then(state => { // FIXME
-          return new channel.PaymentChannel(document.sender, document.receiver, document.channelId, document.value, document.spent, state, document.contractAddress)
-        })
-      } else {
-        // log.info(`ChannelsDatabase#findById Could not find document by id ${channelId.toString()}`)
-        return Promise.resolve(null)
+  abstract firstById (channelId: ChannelId | string): Promise<PaymentChannel | null>
+
+  abstract spend (channelId: ChannelId | string, spent: BigNumber.BigNumber): Promise<void>
+
+  abstract all (): Promise<Array<PaymentChannel>>
+
+  abstract allOpen (): Promise<PaymentChannel[]>
+
+  abstract findUsable (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel | null>
+
+  abstract findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>>
+
+  abstract findBySenderReceiverChannelId (sender: string, receiver: string, channelId: ChannelId | string): Promise<Array<PaymentChannel>>
+
+  abstract updateState (channelId: ChannelId | string, state: number): Promise<void>
+}
+
+/**
+ * Database layer for {PaymentChannel}
+ */
+export class NedbChannelsDatabase extends AbstractChannelsDatabase<EngineNedb> implements ChannelsDatabase {
+  save (paymentChannel: PaymentChannel): Promise<void> {
+    return this.engine.exec((client: any) => {
+      const document = {
+        kind: this.kind,
+        sender: paymentChannel.sender,
+        receiver: paymentChannel.receiver,
+        value: paymentChannel.value.toString(),
+        spent: paymentChannel.spent.toString(),
+        channelId: paymentChannel.channelId,
+        state: paymentChannel.state,
+        contractAddress: paymentChannel.contractAddress
       }
+
+      return pify((cb: Function) => client.insert(document, cb))
     })
+  }
+
+  firstById (channelId: ChannelId | string): Promise<PaymentChannel | null> {
+    return this.engine.exec((client: any) => {
+      const query = {
+        kind: this.kind,
+        channelId: channelId.toString()
+      }
+
+      return pify((cb: Function) => client.find(query, cb))
+    }).then((doc: any) => this.inflatePaymentChannel(doc[0]))
   }
 
   /**
    * Set amount of money spent on the channel.
    */
-  spend (channelId: ChannelId|string, spent: BigNumber): Promise<void> {
-    let query = {
-      kind: this.kind,
-      channelId: channelId.toString()
-    }
-    let update = {
-      $set: {
-        spent: util.bufferToHex(util.toBuffer(spent.toString()))
+  spend (channelId: ChannelId | string, spent: BigNumber.BigNumber): Promise<void> {
+    return this.engine.exec((client: any) => {
+      const query = {
+        kind: this.kind,
+        channelId: channelId.toString()
       }
-    }
-    // log.info(`ChannelsDatabase#spend channel ${channelId.toString()} spent ${spent}`)
-    return this.engine.update(query, update)
+
+      const update = {
+        $set: {
+          spent: spent.toString()
+        }
+      }
+
+      return pify((cb: Function) => client.update(query, update, {}, cb))
+    })
   }
 
   /**
@@ -90,25 +162,274 @@ export default class ChannelsDatabase {
    *
    * @return {Promise<PaymentChannel>}
    */
-  all () {
-    return this.allByQuery({})
+  all (): Promise<Array<PaymentChannel>> {
+    return this.engine.exec((client: any) => {
+      return pify((cb: Function) => client.find({ kind: this.kind }, cb))
+    }).then((res) => this.inflatePaymentChannels(res))
+  }
+
+  allOpen (): Promise<PaymentChannel[]> {
+    return this.engine.exec((client: any) => {
+      return pify((cb: Function) => client.find({ kind: this.kind, state: { $lt: 2 } }, cb))
+    }).then((res) => this.inflatePaymentChannels(res))
+  }
+
+  findUsable (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel | null> {
+    return this.engine.exec((client: any) => {
+      const query = {
+        kind: this.kind,
+        state: 0,
+        sender,
+        receiver
+      }
+      return pify((cb: Function) => client.find(query, cb))
+    }).then((res) => this.inflatePaymentChannels(res)).then((res: Array<PaymentChannel>) => {
+      return res.find((chan: PaymentChannel) => {
+        return chan.value.greaterThanOrEqualTo(chan.spent.add(amount))
+      }) || null
+    })
+  }
+
+  findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>> {
+    return this.engine.exec((client: any) => {
+      return pify((cb: Function) => client.find({ sender, receiver, kind: this.kind }, cb))
+    }).then((res) => this.inflatePaymentChannels(res))
+  }
+
+  findBySenderReceiverChannelId (sender: string, receiver: string, channelId: ChannelId | string): Promise<Array<PaymentChannel>> {
+    return this.engine.exec((client: any) => {
+      return pify((cb: Function) => client.find({ sender, receiver, channelId: channelId.toString(), kind: this.kind }, cb))
+    }).then((res) => this.inflatePaymentChannels(res))
+  }
+
+  updateState (channelId: ChannelId | string, state: number): Promise<void> {
+    return this.engine.exec((client: any) => {
+      const query = {
+        kind: this.kind,
+        channelId: channelId.toString()
+      }
+
+      const update = {
+        $set: {
+          state
+        }
+      }
+
+      return pify((cb: Function) => client.update(query, update, {}, cb))
+    })
+  }
+}
+
+export class MongoChannelsDatabase extends AbstractChannelsDatabase<EngineMongo> implements ChannelsDatabase {
+  save (paymentChannel: PaymentChannel): Promise<void> {
+    return this.engine.exec((client: any) => {
+      const document = {
+        kind: this.kind,
+        sender: paymentChannel.sender,
+        receiver: paymentChannel.receiver,
+        value: paymentChannel.value.toString(),
+        spent: paymentChannel.spent.toString(),
+        channelId: paymentChannel.channelId,
+        state: paymentChannel.state,
+        contractAddress: paymentChannel.contractAddress
+      }
+
+      return pify((cb: Function) => client.collection('channel').insert(document, cb))
+    })
+  }
+
+  firstById (channelId: ChannelId | string): Promise<PaymentChannel | null> {
+    return this.engine.exec((client: any) => {
+      const query = {
+        kind: this.kind,
+        channelId: channelId.toString()
+      }
+
+      return pify((cb: Function) => client.collection('channel').findOne(query, cb))
+    }).then((doc: any) => {
+      if (!doc) {
+        return null
+      }
+
+      return this.inflatePaymentChannel(doc)
+    })
   }
 
   /**
-   * Find all channels by query, for example, by sender and receiver.
+   * Set amount of money spent on the channel.
    */
-  allByQuery (q: object): Promise<Array<PaymentChannel>> {
-    let query = Object.assign({kind: this.kind}, q)
-    let contract = channel.contract(this.web3)
+  spend (channelId: ChannelId | string, spent: BigNumber.BigNumber): Promise<void> {
+    return this.engine.exec((client: any) => {
+      const query = {
+        kind: this.kind,
+        channelId: channelId.toString()
+      }
 
-    return this.engine.find<PaymentChannelJSON>(query).then(arr => {
-      let promises: Array<Promise<channel.PaymentChannel>> = arr.map(doc => {
-        let paymentChannel = PaymentChannel.fromDocument(doc)
-        return contract.getState(paymentChannel).then(state => {
-          return new channel.PaymentChannel(doc.sender, doc.receiver, doc.channelId, doc.value, doc.spent, state, doc.contractAddress)
-        })
-      })
-      return Promise.all<channel.PaymentChannel>(promises)
+      const update = {
+        $set: {
+          spent: spent.toString()
+        }
+      }
+
+      return pify((cb: Function) => client.collection('channel').update(query, update, {}, cb))
     })
+  }
+
+  /**
+   * Retrieve all the payment channels stored.
+   *
+   * @return {Promise<PaymentChannel>}
+   */
+  all (): Promise<Array<PaymentChannel>> {
+    return this.engine.exec((client: any) => {
+      return pify((cb: Function) => client.collection('channel').find({}).toArray(cb))
+    }).then((res: any) => this.inflatePaymentChannels(res))
+  }
+
+  allOpen (): Promise<PaymentChannel[]> {
+    return this.engine.exec((client: any) => {
+      return pify((cb: Function) => client.collection('channel').find({ state: { $lt: 2 } }).toArray(cb))
+    }).then((res: any) => this.inflatePaymentChannels(res))
+  }
+
+  findUsable (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel | null> {
+    return this.engine.exec((client: any) => {
+      const query = {
+        sender,
+        receiver,
+        state: 0
+      }
+      return pify((cb: Function) => client.collection('channel').find(query).toArray(cb))
+    }).then((res: any) => this.inflatePaymentChannels(res)).then((res: Array<PaymentChannel>) => {
+      return res.find((chan: PaymentChannel) => {
+        return chan.value.greaterThanOrEqualTo(chan.spent.add(amount))
+      }) || null
+    })
+  }
+
+  findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>> {
+    return this.engine.exec((client: any) => {
+      return pify((cb: Function) => client.collection('channel').find({ sender, receiver }).toArray(cb))
+    }).then((res: any) => this.inflatePaymentChannels(res))
+  }
+
+  findBySenderReceiverChannelId (sender: string, receiver: string, channelId: ChannelId | string): Promise<Array<PaymentChannel>> {
+    return this.engine.exec((client: any) => {
+      return pify((cb: Function) => client.collection('channel').find({ sender, receiver, channelId: channelId.toString() }).toArray(cb))
+    }).then((res: any) => this.inflatePaymentChannels(res))
+  }
+
+  updateState (channelId: ChannelId | string, state: number): Promise<void> {
+    return this.engine.exec((client: any) => {
+      const query = {
+        kind: this.kind,
+        channelId: channelId.toString()
+      }
+
+      const update = {
+        $set: {
+          state
+        }
+      }
+
+      return pify((cb: Function) => client.collection('channel').update(query, update, {}, cb))
+    })
+  }
+}
+
+export class PostgresChannelsDatabase extends AbstractChannelsDatabase<EnginePostgres> {
+  save (paymentChannel: PaymentChannel): Promise<void> {
+    return this.engine.exec((client: any) => client.query(
+      'INSERT INTO channel("channelId", kind, sender, receiver, value, spent, state, "contractAddress") ' +
+      'VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+      [
+        paymentChannel.channelId,
+        this.kind,
+        paymentChannel.sender,
+        paymentChannel.receiver,
+        paymentChannel.value.toString(),
+        paymentChannel.spent.toString(),
+        paymentChannel.state,
+        paymentChannel.contractAddress
+      ]
+    ))
+  }
+
+  firstById (channelId: ChannelId | string): Promise<PaymentChannel | null> {
+    return this.engine.exec((client: any) => client.query(
+      'SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
+      'WHERE "channelId" = $1 LIMIT 1',
+      [
+        channelId.toString()
+      ]
+    )).then((res: any) => this.inflatePaymentChannel(res.rows[0]))
+  }
+
+  spend (channelId: ChannelId | string, spent: BigNumber.BigNumber): Promise<void> {
+    return this.engine.exec((client: any) => client.query(
+      'UPDATE channel SET (spent)=($2) WHERE "channelId" = $1',
+      [
+        channelId.toString(),
+        spent.toString()
+      ]
+    ))
+  }
+
+  all (): Promise<Array<PaymentChannel>> {
+    return this.engine.exec((client: any) => client.query(
+      'SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel'
+    )).then((res: any) => this.inflatePaymentChannels(res.rows))
+  }
+
+  allOpen (): Promise<PaymentChannel[]> {
+    return this.engine.exec((client: any) => client.query(
+      'SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
+      'WHERE state < 2'
+    )).then((res: any) => this.inflatePaymentChannels(res.rows))
+  }
+
+  findUsable (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel | null> {
+    return this.engine.exec((client: any) => client.query(
+      'SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
+      'WHERE sender = $1 AND receiver = $2 AND value >= spent + $3 AND state = 0',
+      [
+        sender,
+        receiver,
+        amount.toString()
+      ]
+    )).then((res: any) => this.inflatePaymentChannel(res.rows[0]))
+  }
+
+  findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>> {
+    return this.engine.exec((client: any) => client.query(
+      'SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
+      'WHERE sender = $1 AND receiver = $2',
+      [
+        sender,
+        receiver
+      ]
+    )).then((res: any) => this.inflatePaymentChannels(res.rows))
+  }
+
+  findBySenderReceiverChannelId (sender: string, receiver: string, channelId: ChannelId | string): Promise<Array<PaymentChannel>> {
+    return this.engine.exec((client: any) => client.query(
+      'SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
+      'WHERE sender = $1 AND receiver = $2 AND "channelId" = $3',
+      [
+        sender,
+        receiver,
+        channelId.toString()
+      ]
+    )).then((res: any) => this.inflatePaymentChannels(res.rows))
+  }
+
+  updateState (channelId: ChannelId | string, state: number): Promise<void> {
+    return this.engine.exec((client: any) => client.query(
+      'UPDATE channel SET (state)=($1) WHERE "channelId" = $2',
+      [
+        state,
+        channelId.toString()
+      ]
+    ))
   }
 }

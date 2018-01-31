@@ -2,21 +2,23 @@ import Web3 = require('web3')
 import * as util from 'ethereumjs-util'
 import { PaymentChannel } from './channel'
 import { PaymentRequired } from './transport'
-import { buildBrokerContract, buildBrokerTokenContract, sign, soliditySHA3 } from '@machinomy/contracts'
-import BigNumber from 'bignumber.js'
+import { Broker, TokenBroker, sign, paymentDigest } from '@machinomy/contracts'
+import * as BigNumber from 'bignumber.js'
+import Serde from './serde'
 
 export interface PaymentJSON {
   channelId: string
   sender: string
   receiver: string
-  price: BigNumber
-  value: BigNumber
-  channelValue: BigNumber
-  v: number|string
+  price: BigNumber.BigNumber
+  value: BigNumber.BigNumber
+  channelValue: BigNumber.BigNumber
+  v: number | string
   r: string
   s: string
   meta: string
   contractAddress?: string
+  token: string | undefined
 }
 
 export function getNetwork (web3: Web3): Promise<string> {
@@ -34,14 +36,15 @@ export default class Payment {
   channelId: string
   sender: string
   receiver: string
-  price: BigNumber
-  value: BigNumber
-  channelValue: BigNumber
+  price: BigNumber.BigNumber
+  value: BigNumber.BigNumber
+  channelValue: BigNumber.BigNumber
   v: number
   r: string
   s: string
   meta: string
   contractAddress: string | undefined
+  token: string | undefined
 
   constructor (options: PaymentJSON) {
     this.channelId = options.channelId
@@ -55,6 +58,7 @@ export default class Payment {
     this.s = options.s
     this.meta = options.meta
     this.contractAddress = options.contractAddress
+    this.token = options.token
   }
 
   // TODO use it
@@ -64,17 +68,17 @@ export default class Payment {
     let validChannelId = paymentChannel.channelId === payment.channelId
     let validPaymentValue = paymentChannel.value.lessThanOrEqualTo(payment.channelValue)
     let validSender = paymentChannel.sender === payment.sender
-    let isPositive = payment.value.greaterThanOrEqualTo(new BigNumber(0)) && payment.price.greaterThanOrEqualTo(new BigNumber(0))
+    let isPositive = payment.value.greaterThanOrEqualTo(new BigNumber.BigNumber(0)) && payment.price.greaterThanOrEqualTo(new BigNumber.BigNumber(0))
     let deployed
     if (paymentChannel.contractAddress) {
-      deployed = await buildBrokerTokenContract(web3).deployed()
+      deployed = await TokenBroker.deployed(web3.currentProvider)
     } else {
-      deployed = await buildBrokerContract(web3).deployed()
+      deployed = await Broker.deployed(web3.currentProvider)
     }
     let chainId = await getNetwork(web3)
-    let paymentDigest = soliditySHA3(paymentChannel.channelId, payment.value, deployed.address, chainId)
+    let _paymentDigest = paymentDigest(paymentChannel.channelId, payment.value, deployed.address, Number(chainId))
 
-    let signature = await sign(web3, paymentChannel.sender, paymentDigest)
+    let signature = await sign(web3, paymentChannel.sender, _paymentDigest)
     let validSignature = signature.v === payment.v &&
       util.bufferToHex(signature.r) === payment.r &&
       util.bufferToHex(signature.s) === payment.s
@@ -97,14 +101,14 @@ export default class Payment {
     }
     let deployed
     if (paymentChannel.contractAddress) {
-      deployed = await buildBrokerTokenContract(web3).deployed()
+      deployed = await TokenBroker.deployed(web3.currentProvider)
     } else {
-      deployed = await buildBrokerContract(web3).deployed()
+      deployed = await Broker.deployed(web3.currentProvider)
     }
     let chainId = await getNetwork(web3)
-    let paymentDigest = soliditySHA3(paymentChannel.channelId, value, deployed.address, chainId)
+    let _paymentDigest = paymentDigest(paymentChannel.channelId, value, deployed.address, Number(chainId))
 
-    let signature = await sign(web3, paymentChannel.sender, paymentDigest)
+    let signature = await sign(web3, paymentChannel.sender, _paymentDigest)
     return new Payment({
       channelId: paymentChannel.channelId,
       sender: paymentChannel.sender,
@@ -116,22 +120,80 @@ export default class Payment {
       r: '0x' + signature.r.toString('hex'),
       s: '0x' + signature.s.toString('hex'),
       meta: paymentRequired.meta,
-      contractAddress: paymentChannel.contractAddress
+      contractAddress: paymentChannel.contractAddress,
+      token: undefined
     })
   }
 
-  static replaceHexToBigNumber (payment: Payment): Payment {
-    payment.price = this.hexToBigNumber(payment.price.toString())
-    payment.value = this.hexToBigNumber(payment.value.toString())
-    payment.channelValue = this.hexToBigNumber(payment.channelValue.toString())
-    return payment
+  static serialize (payment: Payment): object {
+    return {
+      channelId: payment.channelId.toString(),
+      value: payment.value.toString(),
+      sender: payment.sender,
+      receiver: payment.receiver,
+      price: payment.price.toString(),
+      channelValue: payment.channelValue.toString(),
+      v: Number(payment.v),
+      r: payment.r,
+      s: payment.s,
+      contractAddress: payment.contractAddress,
+      token: payment.token
+    }
+  }
+}
+
+export class PaymentSerde implements Serde<Payment> {
+  static instance: PaymentSerde = new PaymentSerde()
+
+  static required = [
+    'channelId',
+    'value',
+    'sender',
+    'receiver',
+    'price',
+    'channelValue',
+    'v',
+    'r',
+    's',
+    'contractAddress'
+  ]
+
+  serialize (obj: Payment): object {
+    return {
+      channelId: obj.channelId.toString(),
+      value: obj.value.toString(),
+      sender: obj.sender,
+      receiver: obj.receiver,
+      price: obj.price.toString(),
+      channelValue: obj.channelValue.toString(),
+      v: Number(obj.v),
+      r: obj.r,
+      s: obj.s,
+      contractAddress: obj.contractAddress,
+      token: obj.token
+    }
   }
 
-  static hexToBigNumber (hex: string): BigNumber {
-    if (hex.substr(0, 2) === '0x') {
-      return new BigNumber(new Buffer(hex.substr(2), 'hex').toString('utf8'))
-    } else {
-      return new BigNumber(hex)
-    }
+  deserialize (data: any): Payment {
+    PaymentSerde.required.forEach((field: string) => {
+      if (!data[field]) {
+        throw new Error(`Required field not found: ${field}`)
+      }
+    })
+
+    return new Payment({
+      channelId: data.channelId,
+      value: new BigNumber.BigNumber(data.value),
+      sender: data.sender,
+      receiver: data.receiver,
+      price: new BigNumber.BigNumber(data.price),
+      channelValue: new BigNumber.BigNumber(data.channelValue),
+      v: Number(data.v),
+      r: data.r,
+      s: data.s,
+      contractAddress: data.contractAddress,
+      token: data.token,
+      meta: data.meta
+    })
   }
 }

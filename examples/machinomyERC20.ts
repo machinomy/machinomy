@@ -2,7 +2,6 @@ import * as configuration from '../lib/configuration'
 import Web3 = require('web3')
 import Machinomy from '../index'
 import * as express from 'express'
-import Payment from '../lib/Payment'
 import * as bodyParser from 'body-parser'
 import { buildERC20Contract } from '@machinomy/contracts'
 
@@ -17,9 +16,8 @@ let hub = express()
 hub.use(bodyParser.json())
 hub.use(bodyParser.urlencoded({ extended: false }))
 hub.post('/machinomy', async (req: express.Request, res: express.Response, next: Function) => {
-  let payment = new Payment(req.body)
-  let token = await machinomyHub.acceptPayment(payment)
-  res.status(202).header('Paywall-Token', token).send('Accepted').end()
+  const body = await machinomyHub.acceptPayment(req.body)
+  res.status(202).header('Paywall-Token', body.token).send(body)
 })
 let port = 3001
 let server = hub.listen(port, function () {
@@ -30,7 +28,7 @@ let f = async () => {
   /////// ERC20
   console.log('================================')
   console.log('ERC20')
-  let machinomy = new Machinomy(sender, web3, {engine: 'nedb'})
+  let machinomy = new Machinomy(sender, web3, { engine: 'nedb' })
   let contractAddress = '0x8ad5c3cd38676d630b060a09baa40b0a3cb0b4b5'
   let checkBalanceERC20 = async (message: string, web3: Web3, sender: string, cb: Function) => {
     let instanceERC20 = await buildERC20Contract(contractAddress, web3)
@@ -49,7 +47,7 @@ let f = async () => {
 
   let message = 'This is first buy:'
   let resultFirstERC20 = await checkBalanceERC20(message, web3, sender, async () => {
-    return await machinomy.buy({
+    return machinomy.buy({
       receiver: receiver,
       price: 1,
       gateway: 'http://localhost:3001/machinomy',
@@ -62,7 +60,7 @@ let f = async () => {
 
   message = 'This is second buy:'
   let resultSecondERC20 = await checkBalanceERC20(message, web3, sender, async () => {
-    return await machinomy.buy({
+    return machinomy.buy({
       receiver: receiver,
       price: 1,
       gateway: 'http://localhost:3001/machinomy',
@@ -91,7 +89,7 @@ let f = async () => {
 
   message = 'Once more buy'
   let resultThirdERC20 = await checkBalanceERC20(message, web3, sender, async () => {
-    return await machinomy.buy({
+    return machinomy.buy({
       receiver: receiver,
       price: 1,
       gateway: 'http://localhost:3001/machinomy',

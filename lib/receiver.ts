@@ -1,13 +1,12 @@
 import { Log } from 'typescript-logger'
 import Web3 = require('web3')
 
-import * as channel from './channel'
 import { PaymentChannel } from './channel'
 import Storage from './storage'
 import Payment from './Payment'
 
 const log = Log.create('sender')
-const isPaymentValid = (payment: Payment, paymentChannel: PaymentChannel): boolean => {
+export const isPaymentValid = (payment: Payment, paymentChannel: PaymentChannel): boolean => {
   let validIncrement = (paymentChannel.spent.plus(payment.price)).lessThanOrEqualTo(paymentChannel.value)
   let validChannelValue = paymentChannel.value.equals(payment.channelValue)
   let validPaymentValue = paymentChannel.value.lessThanOrEqualTo(payment.channelValue)
@@ -28,12 +27,11 @@ export class Receiver {
     /**
      * Find a payment channel corresponding to +payment+.
      */
-  findPaymentChannel (payment: Payment): Promise<PaymentChannel|null> {
-    let query = {sender: payment.sender, receiver: payment.receiver, channelId: payment.channelId}
-    return this.storage.channels.allByQuery(query).then(documents => {
+  findPaymentChannel (payment: Payment): Promise<PaymentChannel | null> {
+    return this.storage.channels.findBySenderReceiverChannelId(payment.sender, payment.receiver, payment.channelId).then(documents => {
       if (documents.length >= 1) {
         let document = documents[0]
-        return channel.PaymentChannel.fromDocument(document)
+        return PaymentChannel.fromDocument(document)
       } else {
         return null
       }
@@ -66,7 +64,7 @@ export class Receiver {
      */
   whenValidPayment (payment: Payment): Promise<string> {
     let token = this.web3.sha3(JSON.stringify(payment)).toString()
-    let paymentChannel = channel.PaymentChannel.fromPayment(payment)
+    let paymentChannel = PaymentChannel.fromPayment(payment)
     return this.storage.channels.saveOrUpdate(paymentChannel).then(() => {
       return this.storage.tokens.save(token, payment.channelId)
     }).then(() => {
@@ -101,9 +99,8 @@ export class Receiver {
   }
 
   ensureCanAcceptPayment (payment: Payment) {
-    if (payment.receiver !== this.account) {
-      throw new Error(`Receiver must be ${this.account}`)
-    }
+    // TODO: [CRITICAL] Need to verify payment before accept
+    return true
   }
 }
 
