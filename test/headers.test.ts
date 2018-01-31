@@ -1,4 +1,4 @@
-import { default as Sender, ResponseHeaders } from '../lib/sender'
+import Sender, { ResponseHeaders } from '../lib/sender'
 import * as configuration from '../lib/configuration'
 import * as channel from '../lib/channel'
 import * as transport from '../lib/transport'
@@ -41,7 +41,7 @@ describe('Headers', function () {
     })
 
     it('-paywall-version', (done) => {
-      let _request = {headers: Object.assign({}, request.headers)}
+      let _request = { headers: Object.assign({}, request.headers) }
       delete _request.headers['paywall-version']
       client.extractPaymentRequired(_request).then(paymentRequired => {
         return expect(paymentRequired).toBe(null)
@@ -53,7 +53,7 @@ describe('Headers', function () {
     })
 
     it('-paywall-price', (done) => {
-      let _request = {headers: Object.assign({}, request.headers)}
+      let _request = { headers: Object.assign({}, request.headers) }
       delete _request.headers['paywall-price']
       client.extractPaymentRequired(_request).then(paymentRequired => {
         return expect(paymentRequired).toBe(null)
@@ -65,7 +65,7 @@ describe('Headers', function () {
     })
 
     it('-paywall-address', (done) => {
-      let _request = {headers: Object.assign({}, request.headers)}
+      let _request = { headers: Object.assign({}, request.headers) }
       delete _request.headers['paywall-address']
       client.extractPaymentRequired(_request).then(paymentRequired => {
         return expect(paymentRequired).toBe(null)
@@ -77,7 +77,7 @@ describe('Headers', function () {
     })
 
     it('-paywall-gateway', (done) => {
-      let _request = {headers: Object.assign({}, request.headers)}
+      let _request = { headers: Object.assign({}, request.headers) }
       delete _request.headers['paywall-gateway']
       client.extractPaymentRequired(_request).then(paymentRequired => {
         return expect(paymentRequired).toBe(null)

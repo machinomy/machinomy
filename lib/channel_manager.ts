@@ -24,7 +24,7 @@ export interface ChannelManager extends EventEmitter {
   requireOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber): Promise<PaymentChannel>
   channels (): Promise<PaymentChannel[]>
   openChannels (): Promise<PaymentChannel[]>
-  channelById (channelId: ChannelId | string): Promise<PaymentChannel|null>
+  channelById (channelId: ChannelId | string): Promise<PaymentChannel | null>
   verifyToken (token: string): Promise<boolean>
 }
 

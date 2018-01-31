@@ -1,8 +1,6 @@
 import * as support from './support'
-import { randomStorage } from './support'
 import * as receiver from '../lib/receiver'
 import * as channel from '../lib/channel'
-import { PaymentChannel } from '../lib/channel'
 import Payment from '../lib/Payment'
 import * as BigNumber from 'bignumber.js'
 import Storage from '../lib/storage'
@@ -18,7 +16,7 @@ describe('receiver', () => {
   beforeEach(() => {
     web3 = support.fakeWeb3()
 
-    return randomStorage(web3, engineName).then((value: Storage) => {
+    return support.randomStorage(web3, engineName).then((value: Storage) => {
       storage = value
     }).then(() => {
       return storage.engine.drop()
@@ -58,7 +56,7 @@ describe('receiver', () => {
 
         return storage.channels.save(paymentChannel).then(() => {
           return receiver.build(web3, '0xdeadbeaf', storage).findPaymentChannel(payment)
-        }).then((found: PaymentChannel | null) => {
+        }).then((found: channel.PaymentChannel | null) => {
           if (!found) {
             throw new Error('Expected to find a channel.')
           }

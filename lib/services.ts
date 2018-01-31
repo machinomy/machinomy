@@ -5,7 +5,7 @@ import ChannelsDatabase, {
   PostgresChannelsDatabase
 } from './storages/channels_database'
 import PaymentsDatabase, { MongoPaymentsDatabase, PostgresPaymentsDatabase, NedbPaymentsDatabase } from './storages/payments_database'
-import {default as ChannelManager, ChannelManagerImpl } from './channel_manager'
+import { ChannelManager, ChannelManagerImpl } from './channel_manager'
 import TokensDatabase, {
   MongoTokensDatabase, NedbTokensDatabase,
   PostgresTokensDatabase

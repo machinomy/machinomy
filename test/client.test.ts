@@ -6,7 +6,6 @@ import { AcceptPaymentRequestSerde, AcceptPaymentResponse, AcceptTokenResponse, 
 import expectsRejection from './util/expects_rejection'
 import * as Request from 'request-promise-native'
 import { PaymentSerde } from '../lib/Payment'
-import { SinonStub } from 'sinon'
 
 const expect = require('expect')
 
@@ -93,7 +92,7 @@ describe('ClientImpl', () => {
   describe('doPayment', () => {
     let paymentJson: any
 
-    let post: SinonStub
+    let post: sinon.SinonStub
 
     beforeEach(() => {
       paymentJson = {
@@ -190,7 +189,7 @@ describe('ClientImpl', () => {
   })
 
   describe('doVerify', () => {
-    let post: SinonStub
+    let post: sinon.SinonStub
 
     beforeEach(() => {
       post = sinon.stub(Request, 'post')

@@ -2,7 +2,6 @@ import Web3 = require('web3')
 import { default as Storage, build } from './lib/storage'
 import Engine from './lib/engines/engine'
 import * as channel from './lib/channel'
-import { ChannelContract, id } from './lib/channel'
 import { PaymentChannel } from './lib/paymentChannel'
 import * as BigNumber from 'bignumber.js'
 import Payment from './lib/Payment'
@@ -38,7 +37,7 @@ export interface BuyOptions {
  * and token as a proof of purchase.
  */
 export interface BuyResult {
-  channelId: channel.ChannelId
+  channelId: string
   token: string
 }
 
@@ -99,7 +98,7 @@ export default class Machinomy {
   private storage: Storage
   private settlementPeriod?: number
 
-  private channelContract: ChannelContract
+  private channelContract: channel.ChannelContract
 
   private serviceContainer: Container
 
@@ -175,10 +174,10 @@ export default class Machinomy {
   async buy (options: BuyOptions): Promise<BuyResult> {
     const price = new BigNumber.BigNumber(options.price)
 
-    const channel: PaymentChannel = await this.channelManager.requireOpenChannel(this.account, options.receiver, price)
+    const channel = await this.channelManager.requireOpenChannel(this.account, options.receiver, price)
     const payment: Payment = await this.channelManager.nextPayment(channel.channelId, price, options.meta)
     const res: AcceptPaymentResponse = await this.client.doPayment(payment, options.gateway)
-    return { token: res.token, channelId: id(channel.channelId) }
+    return { token: res.token, channelId: channel.channelId }
   }
 
   buyUrl (uri: string): Promise<BuyResult> {

@@ -1,5 +1,4 @@
-import * as channel from '../channel'
-import { ChannelContract, ChannelId, PaymentChannel, PaymentChannelJSON } from '../channel'
+import { ChannelContract, ChannelId, PaymentChannel, PaymentChannelJSON, contract } from '../channel'
 import Engine, { EngineMongo, EnginePostgres, EngineNedb } from '../engines/engine'
 import * as BigNumber from 'bignumber.js'
 import { namespaced } from '../util/namespaced'
@@ -44,7 +43,7 @@ export abstract class AbstractChannelsDatabase<T extends Engine> implements Chan
     this.web3 = web3
     this.kind = namespaced(namespace, 'channel')
     this.engine = engine
-    this.contract = channel.contract(web3)
+    this.contract = contract(web3)
   }
 
   inflatePaymentChannels (channels: Array<PaymentChannelJSON>): Promise<Array<PaymentChannel>> {
@@ -56,13 +55,13 @@ export abstract class AbstractChannelsDatabase<T extends Engine> implements Chan
     return Promise.all(channels.map((chan: PaymentChannelJSON) => this.inflatePaymentChannel(chan))) as Promise<Array<PaymentChannel>>
   }
 
-  inflatePaymentChannel (json: PaymentChannelJSON): Promise<PaymentChannel|null> {
+  inflatePaymentChannel (json: PaymentChannelJSON): Promise<PaymentChannel | null> {
     if (!json) {
       return Promise.resolve(null)
     }
 
     const doc = PaymentChannel.fromDocument(json)
-    return this.contract.getState(doc).then((state: any) => new channel.PaymentChannel(
+    return this.contract.getState(doc).then((state: any) => new PaymentChannel(
       doc.sender,
       doc.receiver,
       doc.channelId,
@@ -97,7 +96,7 @@ export abstract class AbstractChannelsDatabase<T extends Engine> implements Chan
 
   abstract allOpen (): Promise<PaymentChannel[]>
 
-  abstract findUsable (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel|null>
+  abstract findUsable (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel | null>
 
   abstract findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>>
 
@@ -193,13 +192,13 @@ export class NedbChannelsDatabase extends AbstractChannelsDatabase<EngineNedb> i
 
   findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>> {
     return this.engine.exec((client: any) => {
-      return pify((cb: Function) => client.find({sender, receiver, kind: this.kind}, cb))
+      return pify((cb: Function) => client.find({ sender, receiver, kind: this.kind }, cb))
     }).then((res) => this.inflatePaymentChannels(res))
   }
 
   findBySenderReceiverChannelId (sender: string, receiver: string, channelId: ChannelId | string): Promise<Array<PaymentChannel>> {
     return this.engine.exec((client: any) => {
-      return pify((cb: Function) => client.find({sender, receiver, channelId: channelId.toString(), kind: this.kind}, cb))
+      return pify((cb: Function) => client.find({ sender, receiver, channelId: channelId.toString(), kind: this.kind }, cb))
     }).then((res) => this.inflatePaymentChannels(res))
   }
 
@@ -289,7 +288,7 @@ export class MongoChannelsDatabase extends AbstractChannelsDatabase<EngineMongo>
 
   allOpen (): Promise<PaymentChannel[]> {
     return this.engine.exec((client: any) => {
-      return pify((cb: Function) => client.collection('channel').find({ state: { $lt: 2 }}).toArray(cb))
+      return pify((cb: Function) => client.collection('channel').find({ state: { $lt: 2 } }).toArray(cb))
     }).then((res: any) => this.inflatePaymentChannels(res))
   }
 
@@ -310,13 +309,13 @@ export class MongoChannelsDatabase extends AbstractChannelsDatabase<EngineMongo>
 
   findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>> {
     return this.engine.exec((client: any) => {
-      return pify((cb: Function) => client.collection('channel').find({sender, receiver}).toArray(cb))
+      return pify((cb: Function) => client.collection('channel').find({ sender, receiver }).toArray(cb))
     }).then((res: any) => this.inflatePaymentChannels(res))
   }
 
   findBySenderReceiverChannelId (sender: string, receiver: string, channelId: ChannelId | string): Promise<Array<PaymentChannel>> {
     return this.engine.exec((client: any) => {
-      return pify((cb: Function) => client.collection('channel').find({sender, receiver, channelId: channelId.toString()}).toArray(cb))
+      return pify((cb: Function) => client.collection('channel').find({ sender, receiver, channelId: channelId.toString() }).toArray(cb))
     }).then((res: any) => this.inflatePaymentChannels(res))
   }
 

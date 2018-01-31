@@ -28,7 +28,7 @@ let f = async () => {
   /////// ERC20
   console.log('================================')
   console.log('ERC20')
-  let machinomy = new Machinomy(sender, web3, {engine: 'nedb'})
+  let machinomy = new Machinomy(sender, web3, { engine: 'nedb' })
   let contractAddress = '0x8ad5c3cd38676d630b060a09baa40b0a3cb0b4b5'
   let checkBalanceERC20 = async (message: string, web3: Web3, sender: string, cb: Function) => {
     let instanceERC20 = await buildERC20Contract(contractAddress, web3)
@@ -47,7 +47,7 @@ let f = async () => {
 
   let message = 'This is first buy:'
   let resultFirstERC20 = await checkBalanceERC20(message, web3, sender, async () => {
-    return await machinomy.buy({
+    return machinomy.buy({
       receiver: receiver,
       price: 1,
       gateway: 'http://localhost:3001/machinomy',
@@ -60,7 +60,7 @@ let f = async () => {
 
   message = 'This is second buy:'
   let resultSecondERC20 = await checkBalanceERC20(message, web3, sender, async () => {
-    return await machinomy.buy({
+    return machinomy.buy({
       receiver: receiver,
       price: 1,
       gateway: 'http://localhost:3001/machinomy',
@@ -89,7 +89,7 @@ let f = async () => {
 
   message = 'Once more buy'
   let resultThirdERC20 = await checkBalanceERC20(message, web3, sender, async () => {
-    return await machinomy.buy({
+    return machinomy.buy({
       receiver: receiver,
       price: 1,
       gateway: 'http://localhost:3001/machinomy',

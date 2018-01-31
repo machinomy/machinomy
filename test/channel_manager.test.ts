@@ -1,5 +1,4 @@
 import * as sinon from 'sinon'
-import { SinonStub } from 'sinon'
 // line below is false positive
 // tslint:disable-next-line
 import * as BigNumber from 'bignumber.js'
@@ -51,7 +50,7 @@ describe('ChannelManagerImpl', () => {
     it('puts a new channel on the blockchain', () => {
       return manager.openChannel('0xcafe', '0xbeef', new BigNumber.BigNumber(10))
         .then(() => {
-          expect((channelContract.buildPaymentChannel as SinonStub)
+          expect((channelContract.buildPaymentChannel as sinon.SinonStub)
             .calledWith('0xcafe', sinon.match.instanceOf(PaymentRequired), new BigNumber.BigNumber(100), DEFAULT_SETTLEMENT_PERIOD))
             .toBe(true)
         })
@@ -60,7 +59,7 @@ describe('ChannelManagerImpl', () => {
     it('saves the new payment channel in the database', () => {
       return manager.openChannel('0xcafe', '0xbeef', new BigNumber.BigNumber(10))
         .then(() => {
-          expect((channelsDao.save as SinonStub).calledWith(fakeChan)).toBe(true)
+          expect((channelsDao.save as sinon.SinonStub).calledWith(fakeChan)).toBe(true)
         })
     })
 
@@ -122,7 +121,7 @@ describe('ChannelManagerImpl', () => {
 
       return manager.closeChannel(id).then((res: TransactionResult) => {
         expect(res).toBe(startSettleResult)
-        expect((channelsDao.updateState as SinonStub).calledWith(id, 1)).toBe(true)
+        expect((channelsDao.updateState as sinon.SinonStub).calledWith(id, 1)).toBe(true)
       })
     })
 
@@ -134,7 +133,7 @@ describe('ChannelManagerImpl', () => {
 
       return manager.closeChannel(id).then((res: TransactionResult) => {
         expect(res).toBe(finishSettleResult)
-        expect((channelsDao.updateState as SinonStub).calledWith(id, 2)).toBe(true)
+        expect((channelsDao.updateState as sinon.SinonStub).calledWith(id, 2)).toBe(true)
       })
     })
 
@@ -160,7 +159,7 @@ describe('ChannelManagerImpl', () => {
 
       return manager.closeChannel(id).then((res: TransactionResult) => {
         expect(res).toBe(claimResult)
-        expect((channelsDao.updateState as SinonStub).calledWith(id, 2)).toBe(true)
+        expect((channelsDao.updateState as sinon.SinonStub).calledWith(id, 2)).toBe(true)
       })
     })
 
@@ -220,7 +219,7 @@ describe('ChannelManagerImpl', () => {
       sinon.stub(Payment, 'fromPaymentChannel').withArgs(web3, channel, sinon.match.object).resolves(fakePayment)
       return manager.nextPayment(id, new BigNumber.BigNumber(8), '').then((payment: Payment) => {
         expect(payment).toBe(fakePayment)
-        expect((Payment.fromPaymentChannel as SinonStub).lastCall.args[2].price).toEqual(new BigNumber.BigNumber(10))
+        expect((Payment.fromPaymentChannel as sinon.SinonStub).lastCall.args[2].price).toEqual(new BigNumber.BigNumber(10))
       })
     })
   })
@@ -287,7 +286,7 @@ describe('ChannelManagerImpl', () => {
       return manager.requireOpenChannel('0xcafe', '0xbeef', new BigNumber.BigNumber(10))
         .then((chan: PaymentChannel) => {
           expect(chan).toEqual(fakeChan)
-          expect((channelContract.buildPaymentChannel as SinonStub).called).toBe(false)
+          expect((channelContract.buildPaymentChannel as sinon.SinonStub).called).toBe(false)
         })
     })
 
@@ -297,8 +296,8 @@ describe('ChannelManagerImpl', () => {
       return manager.requireOpenChannel('0xcafe', '0xbeef', new BigNumber.BigNumber(10))
         .then((chan: PaymentChannel) => {
           expect(chan).toEqual(fakeChan)
-          expect((channelContract.buildPaymentChannel as SinonStub).called).toBe(true)
-          expect((channelsDao.save as SinonStub).calledWith(fakeChan)).toBe(true)
+          expect((channelContract.buildPaymentChannel as sinon.SinonStub).called).toBe(true)
+          expect((channelsDao.save as sinon.SinonStub).calledWith(fakeChan)).toBe(true)
         })
     })
   })

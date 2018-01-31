@@ -45,7 +45,7 @@ let server = hub.listen(port, async () => {
 
   let message = 'This is first buy:'
   let resultFirst = await checkBalance(message, web3, sender, async () => {
-    return await machinomy.buy({
+    return machinomy.buy({
       receiver: receiver,
       price: price,
       gateway: 'http://localhost:3001/machinomy',
@@ -57,7 +57,7 @@ let server = hub.listen(port, async () => {
 
   message = 'This is second buy:'
   let resultSecond = await checkBalance(message, web3, sender, async () => {
-    return await machinomy.buy({
+    return machinomy.buy({
       receiver: receiver,
       price: price,
       gateway: 'http://localhost:3001/machinomy',
@@ -85,7 +85,7 @@ let server = hub.listen(port, async () => {
 
   message = 'Once more buy'
   let resultThird = await checkBalance(message, web3, sender, async () => {
-    return await machinomy.buy({
+    return machinomy.buy({
       receiver: receiver,
       price: price,
       gateway: 'http://localhost:3001/machinomy',

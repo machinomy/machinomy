@@ -13,7 +13,7 @@ export interface PaymentJSON {
   price: BigNumber.BigNumber
   value: BigNumber.BigNumber
   channelValue: BigNumber.BigNumber
-  v: number|string
+  v: number | string
   r: string
   s: string
   meta: string
