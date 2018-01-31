@@ -1,9 +1,12 @@
-import Web3 = require('web3')
-import BigNumber from 'bignumber.js'
+import * as Web3 from 'web3'
+import * as BigNumber from 'bignumber.js'
 import { PaymentRequired } from './transport'
 import { PaymentChannel, PaymentChannelJSON } from './paymentChannel'
 import { Broker } from '@machinomy/contracts'
 import { TransactionResult } from 'truffle-contract'
+import log from './util/log'
+
+const LOG = log('ChannelContractDefault')
 
 export { PaymentChannel, PaymentChannelJSON }
 
@@ -17,12 +20,15 @@ export class ChannelContractDefault {
   }
 
   async createChannel (paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: any): Promise<TransactionResult> {
+    LOG(`Creating channel. Value: ${paymentRequired.price} / Duration: ${duration} / Settlement: ${settlementPeriod}`)
     let deployed = await Broker.deployed(this.web3.currentProvider)
     return deployed.createChannel(paymentRequired.receiver, duration, settlementPeriod, options)
   }
 
-  async claim (receiver: string, paymentChannel: PaymentChannel, value: BigNumber, v: number, r: string, s: string): Promise<TransactionResult> {
-    value = new BigNumber(value)
+  async claim (receiver: string, paymentChannel: PaymentChannel, value: BigNumber.BigNumber, v: number, r: string, s: string): Promise<TransactionResult> {
+    LOG(`Claiming channel with id ${paymentChannel.channelId.toString()} on behalf of receiver ${receiver}`)
+    LOG(`Values: ${value} / V: ${v} / R: ${r} / S: ${s}`)
+    value = new BigNumber.BigNumber(value)
     let channelId = paymentChannel.channelId
     let deployed = await Broker.deployed(this.web3.currentProvider)
     let canClaim = await deployed.canClaim(channelId, value, Number(v), r, s)
@@ -32,13 +38,14 @@ export class ChannelContractDefault {
     return deployed.claim(channelId, value, v, r, s, { from: receiver })
   }
 
-  async deposit (sender: string, paymentChannel: PaymentChannel, value: BigNumber): Promise<TransactionResult> {
-    value = new BigNumber(value)
+  async deposit (sender: string, paymentChannel: PaymentChannel, value: BigNumber.BigNumber): Promise<TransactionResult> {
+    LOG(`Depositing ${value} into channel ${paymentChannel.channelId.toString()}`)
+    value = new BigNumber.BigNumber(value)
     let options = {
       from: sender,
       value: value,
       gas: CREATE_CHANNEL_GAS
-    }
+    } as Web3.TxData
     const channelId = paymentChannel.channelId
     let deployed = await Broker.deployed(this.web3.currentProvider)
     let canDeposit = await deployed.canDeposit(sender, channelId)
@@ -57,19 +64,13 @@ export class ChannelContractDefault {
     if (process.env.NODE_ENV === 'test') { // FIXME
       return Promise.resolve(0)
     } else {
-      return new Promise((resolve, reject) => {
-        Broker.deployed(this.web3.currentProvider).then((deployed) => {
-          deployed.getState(paymentChannel.channelId).then((result: any) => {
-            resolve(Number(result))
-          })
-        }).catch((e: Error) => {
-          reject(e)
-        })
-      })
+      return Broker.deployed(this.web3.currentProvider)
+          .then((deployed) => deployed.getState(paymentChannel.channelId))
+          .then((result: any) => Number(result))
     }
   }
 
-  async startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber): Promise<TransactionResult> {
+  async startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber.BigNumber): Promise<TransactionResult> {
     let deployed = await Broker.deployed(this.web3.currentProvider)
     const channelId = paymentChannel.channelId
     let canStart = await this.canStartSettle(account, channelId)

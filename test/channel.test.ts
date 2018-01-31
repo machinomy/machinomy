@@ -51,7 +51,8 @@ describe('channel', () => {
           meta: 'metaexample',
           v: 1,
           r: '0x2',
-          s: '0x3'
+          s: '0x3',
+          token: undefined
         })
         let paymentChannel = channel.PaymentChannel.fromPayment(payment)
         expect(paymentChannel.channelId).toBe(payment.channelId)

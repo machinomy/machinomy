@@ -1,16 +1,11 @@
-import * as channel from './channel'
-import * as transport from './transport'
-import * as storage from './storage'
 import * as configuration from './configuration'
 import Web3 = require('web3')
-import { PaymentPair, default as Sender } from './sender'
-
-// const UNLOCK_PERIOD = 1000
+import Machinomy, { BuyResult } from '../index'
 
 /**
  * Shortcut for Sender.buy.
  */
-export function buyContent (uri: string, account: string, password: string): Promise<string> {
+export function buyContent (uri: string, account: string, password: string): Promise<BuyResult> {
   let settings = configuration.sender()
   let web3 = new Web3()
   web3.setProvider(configuration.currentProvider())
@@ -18,12 +13,8 @@ export function buyContent (uri: string, account: string, password: string): Pro
     // web3.personal.unlockAccount(account, password, UNLOCK_PERIOD) // FIXME
   }
 
-  let _transport = transport.build()
-  let _storage = storage.build(web3, settings.databaseFile, 'sender', false, settings.engine)
-  let contract = channel.contract(web3)
-  let client = new Sender(web3, account, contract, _transport, _storage)
-  return client.buy({ uri: uri }).then((pair: PaymentPair) => {
-    let response = pair.response
-    return response.body
+  let client = new Machinomy(account, web3, settings)
+  return client.buyUrl(uri).then((pair: BuyResult) => {
+    return client.shutdown().then(() => pair)
   })
 }

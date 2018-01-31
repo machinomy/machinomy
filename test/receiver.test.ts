@@ -1,163 +1,144 @@
 import * as support from './support'
 import * as receiver from '../lib/receiver'
 import * as channel from '../lib/channel'
-import { randomStorage } from './support'
-import { PaymentChannel } from '../lib/channel'
 import Payment from '../lib/Payment'
-import mongo from '../lib/mongo'
-import BigNumber from 'bignumber.js'
+import * as BigNumber from 'bignumber.js'
+import Storage from '../lib/storage'
+import Web3 = require('web3')
+
 let expect = require('expect')
 
 const engineName = process.env.ENGINE_NAME || 'nedb'
 
 describe('receiver', () => {
-  before((done) => {
-    if (process.env.ENGINE_NAME === 'mongo') {
-      mongo.connectToServer().then(() => {
-        done()
-      }).catch((e: Error) => {
-        console.log(e)
-      })
-    } else {
-      done()
-    }
+  let storage: Storage
+  let web3: Web3
+  beforeEach(() => {
+    web3 = support.fakeWeb3()
+
+    return support.randomStorage(web3, engineName).then((value: Storage) => {
+      storage = value
+    }).then(() => {
+      return storage.engine.drop()
+    })
   })
 
-  beforeEach((done) => {
-    if (process.env.ENGINE_NAME === 'mongo') {
-      mongo.db().dropDatabase(() => {
-        done()
-      })
-    } else {
-      done()
-    }
+  afterEach(() => {
+    return storage.close()
   })
-
-  after((done) => {
-    if (process.env.ENGINE_NAME === 'mongo') {
-      mongo.db().close()
-    }
-    done()
-  })
-
-  let web3 = support.fakeWeb3()
 
   describe('.build', () => {
-    it('build Receiver', done => {
-      randomStorage(web3, engineName).then(storage => {
-        let result = receiver.build(support.fakeWeb3(), '0xdeadbeaf', storage)
-        expect(typeof result).toBe('object')
-      }).then(done)
+    it('build Receiver', () => {
+      let result = receiver.build(support.fakeWeb3(), '0xdeadbeaf', storage)
+      expect(typeof result).toBe('object')
     })
   })
 
   describe('Receiver', () => {
-    let web3 = support.fakeWeb3()
+    describe('#findPaymentChannel', () => {
+      it('find a channel if saved before', () => {
+        let channelId = support.randomChannelId()
+        let payment = new Payment({
+          channelId: channelId.toString(),
+          sender: 'sender',
+          receiver: 'receiver',
+          price: new BigNumber.BigNumber(10),
+          value: new BigNumber.BigNumber(12),
+          channelValue: new BigNumber.BigNumber(10),
+          meta: 'metaexample',
+          v: 1,
+          r: '0x2',
+          s: '0x3',
+          token: undefined
+        })
+
+        let paymentChannel = channel.PaymentChannel.fromPayment(payment)
+
+        return storage.channels.save(paymentChannel).then(() => {
+          return receiver.build(web3, '0xdeadbeaf', storage).findPaymentChannel(payment)
+        }).then((found: channel.PaymentChannel | null) => {
+          if (!found) {
+            throw new Error('Expected to find a channel.')
+          }
+
+          expect(found.channelId).toBe(channelId.toString())
+          expect(found.sender).toBe(payment.sender)
+          expect(found.receiver).toBe(payment.receiver)
+        })
+      })
+    })
 
     describe('#findPaymentChannel', () => {
-      it('find a channel if saved before', done => {
+      it('return null if not channel present', () => {
         let channelId = support.randomChannelId()
         let payment = new Payment({
           channelId: channelId.toString(),
           sender: 'sender',
           receiver: 'receiver',
-          price: new BigNumber(10),
-          value: new BigNumber(12),
-          channelValue: new BigNumber(10),
+          price: new BigNumber.BigNumber(10),
+          value: new BigNumber.BigNumber(12),
+          channelValue: new BigNumber.BigNumber(10),
           meta: 'metaexample',
           v: 1,
           r: '0x2',
-          s: '0x3'
+          s: '0x3',
+          token: undefined
         })
-        let paymentChannel = channel.PaymentChannel.fromPayment(payment)
-        randomStorage(web3, engineName).then(storage => {
-          return storage.channels.save(paymentChannel).then(() => {
-            return receiver.build(web3, '0xdeadbeaf', storage).findPaymentChannel(payment)
-          }).then((found: PaymentChannel|null) => {
-            expect(found).not.toBeNull()
-            if (found) {
-              expect(found.channelId).toBe(channelId.toString())
-              expect(found.sender).toBe(payment.sender)
-              expect(found.receiver).toBe(payment.receiver)
-            }
-          })
-        }).then(done)
+
+        return receiver.build(web3, '0xdeadbeaf', storage).findPaymentChannel(payment).then(found => {
+          expect(found).toBeNull()
+        })
       })
     })
-    describe('#findPaymentChannel', () => {
-      it('return null if not channel present', done => {
-        let channelId = support.randomChannelId()
-        let payment = new Payment({
-          channelId: channelId.toString(),
-          sender: 'sender',
-          receiver: 'receiver',
-          price: new BigNumber(10),
-          value: new BigNumber(12),
-          channelValue: new BigNumber(10),
-          meta: 'metaexample',
-          v: 1,
-          r: '0x2',
-          s: '0x3'
-        })
-        randomStorage(web3, engineName).then(storage => {
-          return receiver.build(web3, '0xdeadbeaf', storage).findPaymentChannel(payment).then(found => {
-            expect(found).toBeNull()
-          })
-        }).then(done)
-      })
-    })
+
     describe('#whenValidPayment', () => {
       let channelId = support.randomChannelId()
       let payment = new Payment({
         channelId: channelId.toString(),
         sender: 'sender',
         receiver: 'receiver',
-        price: new BigNumber(10),
-        value: new BigNumber(12),
-        channelValue: new BigNumber(10),
+        price: new BigNumber.BigNumber(10),
+        value: new BigNumber.BigNumber(12),
+        channelValue: new BigNumber.BigNumber(10),
         meta: 'metaexample',
         v: 1,
         r: '0x2',
-        s: '0x3'
-      })
-      it('return token', done => {
-        randomStorage(web3, engineName).then(storage => {
-          return receiver.build(web3, '0xdeadbeaf', storage).whenValidPayment(payment).then(token => {
-            expect(token).not.toBeNull()
-          })
-        }).then(done)
+        s: '0x3',
+        token: undefined
       })
 
-      it('save payment', () => {
-        return randomStorage(web3, engineName).then(storage => {
-          return receiver.build(web3, '0xdeadbeaf', storage).whenValidPayment(payment).then(() => {
-            return storage.payments.firstMaximum(payment.channelId)
-          }).then(savedPayment => {
-            // console.log(savedPayment)
-            expect(savedPayment).not.toBeNull()
-            if (savedPayment) {
-              expect(payment.channelId).toBe(savedPayment.channelId)
-              expect(payment.sender).toBe(savedPayment.sender)
-              expect(payment.receiver).toBe(savedPayment.receiver)
-              expect(payment.price).toEqual(savedPayment.price)
-              expect(payment.value).toEqual(savedPayment.value)
-              expect(payment.channelValue).toEqual(savedPayment.channelValue)
-              expect(payment.v).toBe(savedPayment.v)
-              expect(payment.r).toBe(savedPayment.r)
-              expect(payment.s).toBe(savedPayment.s)
-            }
-          })
+      it('return token', () => {
+        return receiver.build(web3, '0xdeadbeaf', storage).whenValidPayment(payment).then(token => {
+          expect(token).not.toBeNull()
         })
       })
 
-      it('save token', done => {
-        randomStorage(web3, engineName).then(storage => {
-          return receiver.build(web3, '0xdeadbeaf', storage).whenValidPayment(payment).then(token => {
-            return storage.tokens.isPresent(token)
-          }).then(isPresent => {
-            expect(isPresent).toBeTruthy()
-          })
-        }).then(done)
+      it('save payment', () => {
+        return receiver.build(web3, '0xdeadbeaf', storage).whenValidPayment(payment).then(() => {
+          return storage.payments.firstMaximum(payment.channelId)
+        }).then(savedPayment => {
+          if (savedPayment === null) {
+            throw new Error('payment should not be null')
+          }
+
+          expect(savedPayment.channelId).toBe(payment.channelId)
+          expect(savedPayment.sender).toBe(payment.sender)
+          expect(savedPayment.receiver).toBe(payment.receiver)
+          expect(savedPayment.price).toEqual(payment.price)
+          expect(savedPayment.value).toEqual(payment.value)
+          expect(savedPayment.channelValue).toEqual(payment.channelValue)
+          expect(savedPayment.v).toBe(payment.v)
+          expect(savedPayment.r).toBe(payment.r)
+          expect(savedPayment.s).toBe(payment.s)
+        })
+      })
+
+      it('save token', () => {
+        return receiver.build(web3, '0xdeadbeaf', storage).whenValidPayment(payment).then(token => {
+          return storage.tokens.isPresent(token)
+        }).then(isPresent => {
+          expect(isPresent).toBeTruthy()
+        })
       })
     })
 
@@ -167,34 +148,31 @@ describe('receiver', () => {
         channelId: channelId.toString(),
         sender: 'sender',
         receiver: 'receiver',
-        price: new BigNumber(10),
-        value: new BigNumber(12),
-        channelValue: new BigNumber(10),
+        price: new BigNumber.BigNumber(10),
+        value: new BigNumber.BigNumber(12),
+        channelValue: new BigNumber.BigNumber(10),
         meta: 'metaexample',
         v: 1,
         r: '0x2',
-        s: '0x3'
+        s: '0x3',
+        token: undefined
       })
 
-      it('check if token is present', done => {
-        randomStorage(web3, engineName).then(storage => {
-          let r = receiver.build(web3, '0xdeadbeaf', storage)
-          return r.whenValidPayment(payment).then(token => {
-            return r.acceptToken(token)
-          }).then(isPresent => {
-            expect(isPresent).toBeTruthy()
-          })
-        }).then(done)
+      it('check if token is present', () => {
+        let r = receiver.build(web3, '0xdeadbeaf', storage)
+        return r.whenValidPayment(payment).then(token => {
+          return r.acceptToken(token)
+        }).then(isPresent => {
+          expect(isPresent).toBeTruthy()
+        })
       })
 
-      it('check if token is absent', done => {
+      it('check if token is absent', () => {
         let randomToken = support.randomInteger().toString()
-        randomStorage(web3, engineName).then(storage => {
-          let r = receiver.build(web3, '0xdeadbeaf', storage)
-          return r.acceptToken(randomToken).then(isPresent => {
-            expect(isPresent).toBeFalsy()
-          })
-        }).then(done)
+        let r = receiver.build(web3, '0xdeadbeaf', storage)
+        return r.acceptToken(randomToken).then(isPresent => {
+          expect(isPresent).toBeFalsy()
+        })
       })
     })
 
@@ -204,22 +182,21 @@ describe('receiver', () => {
         channelId: channelId.toString(),
         sender: 'sender',
         receiver: 'receiver',
-        price: new BigNumber(10),
-        value: new BigNumber(12),
-        channelValue: new BigNumber(10),
+        price: new BigNumber.BigNumber(10),
+        value: new BigNumber.BigNumber(12),
+        channelValue: new BigNumber.BigNumber(10),
         meta: 'metaexample',
         v: 1,
         r: '0x2',
-        s: '0x3'
+        s: '0x3',
+        token: undefined
       })
 
-      it('throw an error if can not', () => {
-        randomStorage(web3, engineName).then(storage => {
-          let r = receiver.build(web3, '0xdeadbeaf', storage)
-          expect(() => {
-            r.ensureCanAcceptPayment(payment)
-          }).toThrow()
-        })
+      it.skip('throw an error if can not', () => {
+        let r = receiver.build(web3, '0xdeadbeaf', storage)
+        expect(() => {
+          r.ensureCanAcceptPayment(payment)
+        }).toThrow()
       })
     })
 
@@ -230,22 +207,21 @@ describe('receiver', () => {
         channelId: channelId.toString(),
         sender: 'sender',
         receiver: receiverAccount,
-        price: new BigNumber(10),
-        value: new BigNumber(12),
-        channelValue: new BigNumber(10),
+        price: new BigNumber.BigNumber(10),
+        value: new BigNumber.BigNumber(12),
+        channelValue: new BigNumber.BigNumber(10),
         meta: 'metaexample',
         v: 1,
         r: '0x2',
-        s: '0x3'
+        s: '0x3',
+        token: undefined
       })
 
-      it('accept new payment, and return a token', done => {
-        randomStorage(web3, engineName).then(storage => {
-          let r = receiver.build(web3, receiverAccount, storage)
-          return r.acceptPayment(payment).then(token => {
-            expect(token).not.toBeNull()
-          })
-        }).then(done)
+      it('accept new payment, and return a token', () => {
+        let r = receiver.build(web3, receiverAccount, storage)
+        return r.acceptPayment(payment).then(token => {
+          expect(token).not.toBeNull()
+        })
       })
     })
   })

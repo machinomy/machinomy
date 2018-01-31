@@ -1,0 +1,45 @@
+@startuml
+hide empty members
+skinparam monochrome true
+skinparam defaultFontName PT Sans
+skinparam shadowing false
+skinparam dpi 96
+
+class Payment {
+  channelId: ChannelId
+  amount: Amount
+  signature: Signature
+}
+
+class Channel {
+  id: ChannelId
+  sender: Address
+  receiver: Address
+  value: Amount
+  state: ChannelState
+}
+
+class Token {
+  value: string
+  expiration: DateTime
+}
+
+enum ChannelState {
+  Open
+  Settling
+  Settled
+}
+
+class Amount {
+}
+
+class Address {
+}
+
+class ChannelId {
+}
+
+class Signature {
+}
+
+@enduml

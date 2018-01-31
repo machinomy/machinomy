@@ -18,7 +18,7 @@ let f = (async () => {
   /**
    * Create machinomy instance that provides API for accepting payments.
    */
-  let machinomy = new Machinomy(sender, web3, { engine: 'nedb', databaseFile: 'machinomy_client'})
+  let machinomy = new Machinomy(sender, web3, { engine: 'nedb', databaseFile: 'machinomy_client' })
 
   let response = await fetch('http://localhost:3000/content')
   let headers = response.headers.map

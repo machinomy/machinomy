@@ -1,8 +1,7 @@
 import * as configuration from '../lib/configuration'
-import Web3 = require('web3')
 import CommandPrompt from './CommandPrompt'
-import mongo from '../lib/mongo'
 import Machinomy from '../index'
+import Web3 = require('web3')
 
 let provider = configuration.currentProvider()
 let web3 = new Web3(provider)
@@ -25,27 +24,19 @@ function close (channelId: string, options: CommandPrompt): void {
 
   if (settings.account) {
     let account = settings.account
-    if (settings.engine === 'mongo') {
-      mongo.connectToServer().then(() => {
-        let machinomy = new Machinomy(account, web3, {engine: settings.engine})
-        machinomy.close(channelId).then(() => {
-          mongo.db().close()
-          console.log('closed')
-        }).catch((e: Error) => {
-          console.log(e)
-        })
-      }).catch((e: Error) => {
-        console.log(e)
-      })
-    } else {
-      let machinomy = new Machinomy(account, web3, { engine: settings.engine })
-      machinomy.close(channelId).then(() => {
-        mongo.db().close()
-        console.log('closed')
-      }).catch((e: Error) => {
-        console.log(e)
-      })
-    }
+
+    let machinomy = new Machinomy(account, web3, { engine: settings.engine })
+    machinomy.close(channelId).then(() => {
+      console.log('closed')
+    }).catch((e: Error) => {
+      console.log(e)
+    }).then(() => {
+      return machinomy.shutdown()
+    }).catch((e) => {
+      console.error('Failed to cleanly shut down:')
+      console.error(e)
+      process.exit(1)
+    })
   }
 }
 

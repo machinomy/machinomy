@@ -2,7 +2,7 @@ import { Log } from 'typescript-logger'
 import _ = require('lodash')
 import { RequestResponse, RequiredUriUrl, CoreOptions } from 'request'
 import Payment from './Payment'
-import BigNumber from 'bignumber.js'
+import * as BigNumber from 'bignumber.js'
 let req = require('request')
 
 const request: (opts: RequiredUriUrl & CoreOptions) => Promise<RequestResponse> = (opts: RequiredUriUrl & CoreOptions) => {
@@ -113,12 +113,12 @@ export class Transport {
 
 export class PaymentRequired {
   receiver: string
-  price: BigNumber
+  price: BigNumber.BigNumber
   gateway: string
   meta: string
   contractAddress?: string
 
-  constructor (receiver: string, price: BigNumber, gateway: string, meta: string, contractAddress?: string) {
+  constructor (receiver: string, price: BigNumber.BigNumber, gateway: string, meta: string, contractAddress?: string) {
     this.receiver = receiver
     this.price = price
     this.gateway = gateway
@@ -128,7 +128,7 @@ export class PaymentRequired {
 
   static parse = function (headers: any): PaymentRequired {
     let receiver = headers['paywall-address']
-    let price = new BigNumber(headers['paywall-price'])
+    let price = new BigNumber.BigNumber(headers['paywall-price'])
     let gateway = headers['paywall-gateway']
     let contractAddress = headers['paywall-token-address']
     let meta = headers['paywall-meta']

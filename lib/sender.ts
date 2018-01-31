@@ -3,15 +3,14 @@ import { Log } from 'typescript-logger'
 import _ = require('lodash')
 import Web3 = require('web3')
 
-import * as transport from './transport'
-import * as channel from './channel'
 import * as configuration from './configuration'
-import { ChannelContract, PaymentChannel } from './channel'
-import { PaymentRequired, RequestTokenOpts, Transport } from './transport'
 import Storage from './storage'
 import { RequestResponse } from 'request'
 import Payment from './Payment'
-import BigNumber from 'bignumber.js'
+import * as BigNumber from 'bignumber.js'
+import { PaymentRequired, RequestTokenOpts, STATUS_CODES, Transport } from './transport'
+import { ChannelContract } from './channel'
+import { PaymentChannel } from './paymentChannel'
 
 const log = Log.create('sender')
 
@@ -20,7 +19,7 @@ const VERSION = configuration.VERSION
 const DAY_IN_SECONDS = 86400
 
 /** Default settlement period for a payment channel */
-const DEFAULT_SETTLEMENT_PERIOD = 2 * DAY_IN_SECONDS
+export const DEFAULT_SETTLEMENT_PERIOD = 2 * DAY_IN_SECONDS
 
 export interface FreshChannelOpts extends RequestTokenOpts {
   onWillOpenChannel?: () => void
@@ -53,10 +52,10 @@ export default class Sender {
   contract: ChannelContract
   transport: Transport
   storage: Storage
-  minimumChannelAmount: BigNumber
+  minimumChannelAmount: BigNumber.BigNumber
   settlementPeriod: number
 
-  constructor (web3: Web3, account: string, contract: ChannelContract, transport: Transport, storage: Storage, minimumChannelAmount: BigNumber = new BigNumber(0), settlementPeriod?: number) {
+  constructor (web3: Web3, account: string, contract: ChannelContract, transport: Transport, storage: Storage, minimumChannelAmount: BigNumber.BigNumber = new BigNumber.BigNumber(0), settlementPeriod?: number) {
     this.web3 = web3
     this.account = account
     this.contract = contract
@@ -73,7 +72,7 @@ export default class Sender {
   /**
    * Make request to +uri+ building a new payment channel. Returns HTTP response.
    */
-  freshChannel (uri: string, paymentRequired: PaymentRequired, channelValue: BigNumber, opts: FreshChannelOpts = {}): Promise<any> {
+  freshChannel (uri: string, paymentRequired: PaymentRequired, channelValue: BigNumber.BigNumber, opts: FreshChannelOpts = {}): Promise<any> {
     if (_.isFunction(opts.onWillOpenChannel)) {
       opts.onWillOpenChannel()
     }
@@ -96,11 +95,11 @@ export default class Sender {
    */
   existingChannel (uri: string, paymentRequired: PaymentRequired, paymentChannel: PaymentChannel, opts: RequestTokenOpts = {}): Promise<any> {
     return Payment.fromPaymentChannel(this.web3, paymentChannel, paymentRequired).then(payment => {
-      let nextPaymentChannel = channel.PaymentChannel.fromPayment(payment)
+      let nextPaymentChannel = PaymentChannel.fromPayment(payment)
       return this.storage.channels.saveOrUpdate(nextPaymentChannel).then(() => {
         return this.transport.requestToken(paymentRequired.gateway, payment, opts)
       }).then(token => {
-        return {payment, token}
+        return { payment, token }
       })
     })
   }
@@ -127,7 +126,7 @@ export default class Sender {
 
     let version = response.headers['paywall-version']
     if (version === VERSION) {
-      let paymentRequired = transport.PaymentRequired.parse(response.headers)
+      let paymentRequired = PaymentRequired.parse(response.headers)
       return Promise.resolve(paymentRequired)
     } else {
       return Promise.reject(new Error(`Unsupported version ${version}, expected ${VERSION}`))
@@ -135,7 +134,7 @@ export default class Sender {
   }
 
   findOpenChannel (paymentRequired: PaymentRequired): Promise<PaymentChannel | undefined> {
-    return this.storage.channels.allByQuery({ sender: this.account, receiver: paymentRequired.receiver }).then(paymentChannels => {
+    return this.storage.channels.findBySenderReceiver(this.account, paymentRequired.receiver).then(paymentChannels => {
       return Bluebird.filter(paymentChannels, paymentChannel => {
         return this.canUseChannel(paymentChannel, paymentRequired)
       }).then(openChannels => {
@@ -173,10 +172,10 @@ export default class Sender {
   pry (uri: string): Promise<PaymentRequired> {
     return this.transport.get(uri).then(response => {
       switch (response.statusCode) {
-        case transport.STATUS_CODES.PAYMENT_REQUIRED:
+        case STATUS_CODES.PAYMENT_REQUIRED:
           let version = response.headers['paywall-version']
           if (version === VERSION) {
-            return transport.PaymentRequired.parse(response.headers)
+            return PaymentRequired.parse(response.headers)
           } else {
             throw new Error(`Unsupported version ${version}, expected ${VERSION}`)
           }
@@ -203,8 +202,8 @@ export default class Sender {
         opts.onDidPreflight()
       }
       switch (response.statusCode) {
-        case transport.STATUS_CODES.PAYMENT_REQUIRED:
-        case transport.STATUS_CODES.OK:
+        case STATUS_CODES.PAYMENT_REQUIRED:
+        case STATUS_CODES.OK:
           return this.handlePaymentRequired(uri, response, opts).then((res: any) => {
             let payment = res.payment
             let token = res.token
@@ -223,7 +222,7 @@ export default class Sender {
 
   buyMeta (options: any): any {
     let uri = 'http://localhost:3000/paid/erc20'
-    let price = new BigNumber(options.price)
+    let price = new BigNumber.BigNumber(options.price)
     if (price.isNaN() || !price.isFinite() || price.isNegative()) return Promise.reject(new Error('Price is incorrect'))
     let paymentRequired = new PaymentRequired(
       options.receiver,
