@@ -1,22 +1,22 @@
 import Web3 = require('web3')
-import {ChannelContract} from './channel'
+import { ChannelContract } from './channel'
 import ChannelsDatabase, {
   MongoChannelsDatabase, NedbChannelsDatabase,
   PostgresChannelsDatabase
 } from './storages/channels_database'
-import PaymentsDatabase, {MongoPaymentsDatabase, PostgresPaymentsDatabase, NedbPaymentsDatabase} from './storages/payments_database'
-import {default as ChannelManager, ChannelManagerImpl} from './channel_manager'
+import PaymentsDatabase, { MongoPaymentsDatabase, PostgresPaymentsDatabase, NedbPaymentsDatabase } from './storages/payments_database'
+import {default as ChannelManager, ChannelManagerImpl } from './channel_manager'
 import TokensDatabase, {
   MongoTokensDatabase, NedbTokensDatabase,
   PostgresTokensDatabase
 } from './storages/tokens_database'
-import {ClientImpl} from './client'
-import {Transport} from './transport'
-import {MachinomyOptions} from '../index'
-import Engine, {EngineMongo, EngineNedb, EnginePostgres} from './engines/engine'
-import {Registry} from './container'
+import { ClientImpl } from './client'
+import { Transport } from './transport'
+import { MachinomyOptions } from '../index'
+import Engine, { EngineMongo, EngineNedb, EnginePostgres } from './engines/engine'
+import { Registry } from './container'
 
-export default function defaultRegistry(): Registry {
+export default function defaultRegistry (): Registry {
   const serviceRegistry = new Registry()
 
   serviceRegistry.bind('ChannelContract', (web3: Web3) => new ChannelContract(web3), ['Web3'])

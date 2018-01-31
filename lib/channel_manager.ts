@@ -28,7 +28,7 @@ export interface ChannelManager extends EventEmitter {
   verifyToken (token: string): Promise<boolean>
 }
 
-export default ChannelManager;
+export default ChannelManager
 
 export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
   private account: string
@@ -189,5 +189,3 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     })
   }
 }
-
-
