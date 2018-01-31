@@ -2,7 +2,6 @@ import * as BigNumber from 'bignumber.js'
 import { PaymentChannel } from './paymentChannel'
 import ChannelsDatabase from './storages/channels_database'
 import { ChannelContract, ChannelId } from './channel'
-import serviceRegistry from './container'
 import { EventEmitter } from 'events'
 import Mutex from './util/mutex'
 import { PaymentRequired } from './transport'
@@ -191,13 +190,4 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
   }
 }
 
-serviceRegistry.bind('ChannelManager',
-  (
-    account: string,
-    web3: Web3,
-    channelsDao: ChannelsDatabase,
-    paymentsDao: PaymentsDatabase,
-    tokensDao: TokensDatabase,
-    channelContract: ChannelContract
-  ) => new ChannelManagerImpl(account, web3, channelsDao, paymentsDao, tokensDao, channelContract),
-  ['account', 'Web3', 'ChannelsDatabase', 'PaymentsDatabase', 'TokensDatabase', 'ChannelContract'])
+

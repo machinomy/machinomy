@@ -2,7 +2,6 @@ import Engine, { EngineMongo, EngineNedb, EnginePostgres } from '../engines/engi
 import { ChannelId } from '../channel'
 import { namespaced } from '../util/namespaced'
 import pify from '../util/pify'
-import serviceRegistry from '../container'
 
 export default interface TokensDatabase {
   save (token: string, channelId: ChannelId | string): Promise<void>
@@ -91,19 +90,3 @@ export class PostgresTokensDatabase extends AbstractTokensDatabase<EnginePostgre
     )).then((res: any) => (res.rows[0].count > 0))
   }
 }
-
-serviceRegistry.bind('TokensDatabase', (engine: Engine, namespace: string) => {
-  if (engine instanceof EngineMongo) {
-    return new MongoTokensDatabase(engine, namespace)
-  }
-
-  if (engine instanceof EnginePostgres) {
-    return new PostgresTokensDatabase(engine, namespace)
-  }
-
-  if (engine instanceof EngineNedb) {
-    return new NedbTokensDatabase(engine, namespace)
-  }
-
-  throw new Error('Invalid engine.')
-}, ['Engine', 'namespace'])

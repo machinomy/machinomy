@@ -1,9 +1,3 @@
-// use raw import statements to prevent Typescript from tree-shaking these requires in
-// the emitted JavaScript
-import './lib/channel_manager';
-import './lib/storage';
-import './lib/client';
-
 import Web3 = require('web3')
 import { default as Storage, build } from './lib/storage'
 import Engine from './lib/engines/engine'
@@ -13,7 +7,7 @@ import { PaymentChannel } from './lib/paymentChannel'
 import * as BigNumber from 'bignumber.js'
 import Payment from './lib/Payment'
 import { TransactionResult } from 'truffle-contract'
-import mainRegistry, { Container, Registry } from './lib/container'
+import { Container } from './lib/container'
 import ChannelManager from './lib/channel_manager'
 import ChannelsDatabase from './lib/storages/channels_database'
 import Client, {
@@ -21,6 +15,7 @@ import Client, {
   AcceptTokenResponse
 } from './lib/client'
 import { PaymentRequired } from './lib/transport'
+import defaultRegistry from './lib/services'
 
 /**
  * Options for machinomy buy.
@@ -131,7 +126,7 @@ export default class Machinomy {
    * @param options - Options object
    */
   constructor (account: string, web3: Web3, options: MachinomyOptions) {
-    const serviceRegistry = new Registry(mainRegistry)
+    const serviceRegistry = defaultRegistry()
 
     serviceRegistry.bind('Web3', () => web3)
     serviceRegistry.bind('MachinomyOptions', () => options)

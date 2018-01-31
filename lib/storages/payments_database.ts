@@ -4,7 +4,6 @@ import Payment, { PaymentJSON } from '../Payment'
 import pify from '../util/pify'
 import { namespaced } from '../util/namespaced'
 import Engine, { EngineMongo, EngineNedb, EnginePostgres } from '../engines/engine'
-import serviceRegistry from '../container'
 /* tslint:enable */
 
 export default interface PaymentsDatabase {
@@ -171,19 +170,3 @@ export class PostgresPaymentsDatabase extends AbstractPaymentsDatabase<EnginePos
     )).then((res: any) => this.inflatePayment(res.rows[0]))
   }
 }
-
-serviceRegistry.bind('PaymentsDatabase', (engine: Engine, namespace: string) => {
-  if (engine instanceof EngineMongo) {
-    return new MongoPaymentsDatabase(engine, namespace)
-  }
-
-  if (engine instanceof EnginePostgres) {
-    return new PostgresPaymentsDatabase(engine, namespace)
-  }
-
-  if (engine instanceof EngineNedb) {
-    return new NedbPaymentsDatabase(engine, namespace)
-  }
-
-  throw new Error('Invalid engine.')
-}, ['Engine', 'namespace'])

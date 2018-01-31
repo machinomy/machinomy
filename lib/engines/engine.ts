@@ -1,11 +1,8 @@
-import serviceRegistry from '../container'
-
 const MongoClient = require('mongodb').MongoClient
 const PGClient = require('pg').Client
 
 import Datastore = require('nedb')
 import pify from '../util/pify'
-import { MachinomyOptions } from '../../index'
 
 export default interface Engine {
   connect (): Promise<any>
@@ -171,24 +168,3 @@ export class EnginePostgres implements Engine {
     return this.connect()
   }
 }
-
-serviceRegistry.bind('Engine', (options: MachinomyOptions): Engine => {
-  if (options.engine === 'nedb' && !options.databaseFile) {
-    throw new Error('No database file found.')
-  }
-
-  switch (options.engine) {
-    case 'nedb':
-      return new EngineNedb(options.databaseFile as string, false)
-    case 'mongo':
-      return new EngineMongo()
-    case 'postgres':
-      return new EnginePostgres()
-  }
-
-  if (typeof options.engine === 'object') {
-    return options.engine
-  }
-
-  throw new Error(`Invalid engine: ${options.engine}.`)
-}, ['MachinomyOptions'])

@@ -5,7 +5,6 @@ import * as BigNumber from 'bignumber.js'
 import { namespaced } from '../util/namespaced'
 import pify from '../util/pify'
 import Web3 = require('web3')
-import serviceRegistry from '../container'
 import log from '../util/log'
 
 export default interface ChannelsDatabase {
@@ -435,19 +434,3 @@ export class PostgresChannelsDatabase extends AbstractChannelsDatabase<EnginePos
     ))
   }
 }
-
-serviceRegistry.bind('ChannelsDatabase', (web3: Web3, engine: Engine, namespace: string): ChannelsDatabase => {
-  if (engine instanceof EngineMongo) {
-    return new MongoChannelsDatabase(web3, engine, namespace)
-  }
-
-  if (engine instanceof EnginePostgres) {
-    return new PostgresChannelsDatabase(web3, engine, namespace)
-  }
-
-  if (engine instanceof EngineNedb) {
-    return new NedbChannelsDatabase(web3, engine, namespace)
-  }
-
-  throw new Error('Invalid engine.')
-}, ['Web3', 'Engine', 'namespace'])

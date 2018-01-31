@@ -5,7 +5,6 @@ import Payment, { PaymentSerde } from './Payment'
 import { Transport } from './transport'
 import ChannelManager from './channel_manager'
 import Serde from './serde'
-import serviceRegistry from './container'
 import { RequestResponse } from 'request'
 import log from './util/log'
 
@@ -227,7 +226,3 @@ export class ClientImpl extends EventEmitter implements Client {
     return PaymentRequired.parse(headers)
   }
 }
-
-serviceRegistry.bind('Client', (transport: Transport, channelManager: ChannelManager) => {
-  return new ClientImpl(transport, channelManager)
-}, ['Transport', 'ChannelManager'])

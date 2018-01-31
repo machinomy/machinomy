@@ -109,7 +109,3 @@ export class Container {
     return instance as T
   }
 }
-
-export const serviceRegistry = new Registry()
-
-export default serviceRegistry
