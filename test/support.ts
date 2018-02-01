@@ -1,6 +1,6 @@
 import * as tmp from 'tmp'
-import Web3 = require('web3')
-import FakeProvider = require('web3-fake-provider')
+import * as Web3 from 'web3'
+import * as FakeProvider from 'web3-fake-provider'
 import { ChannelId } from '../lib/channel'
 import Storage from '../lib/storage'
 import * as BigNumber from 'bignumber.js'

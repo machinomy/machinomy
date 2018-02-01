@@ -46,30 +46,27 @@ describe('storage', () => {
   let web3 = support.fakeWeb3()
 
   describe('.engine', () => {
-    it('return Engine instance', done => {
-      support.tmpFileName().then(filename => {
-        let engine = storage.engine(filename, true, engineName)
-        expect(typeof engine).toBe('object')
-      }).then(done)
+    it('return Engine instance', async () => {
+      let filename = await support.tmpFileName()
+      let engine = storage.engine(filename, true, engineName)
+      expect(typeof engine).toBe('object')
     })
   })
 
   describe('.build', () => {
-    it('return Storage', done => {
-      support.tmpFileName().then(filename => {
-        let s = storage.build(web3, filename, 'namespace', true, engineName)
-        expect(typeof s).toBe('object')
-      }).then(done)
+    it('return Storage', async () => {
+      let filename = await support.tmpFileName()
+      let s = storage.build(web3, filename, 'namespace', true, engineName)
+      expect(typeof s).toBe('object')
     })
   })
 
   describe('.channels', () => {
-    it('return ChannelsDatabase instance', () => {
-      support.tmpFileName().then(filename => {
-        let engine = storage.engine(filename)
-        let channels = storage.channels(web3, engine, null)
-        expect(typeof channels).toBe('object')
-      })
+    it('return ChannelsDatabase instance', async () => {
+      let filename = await support.tmpFileName()
+      let engine = storage.engine(filename)
+      let channels = storage.channels(web3, engine, null)
+      expect(typeof channels).toBe('object')
     })
   })
 

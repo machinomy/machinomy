@@ -64,6 +64,7 @@
     "url-join": "^3.0.0",
     "web3": "^0.20.1",
     "web3-provider-engine": "^13.2.9",
+    "web3-typescript-typings": "^0.9.7",
     "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {
@@ -100,10 +101,8 @@
     "types-bn": "^0.0.1",
     "types-ethereumjs-util": "^0.0.5",
     "types-rlp": "^0.0.1",
-    "types-web3-fake-provider": "^0.0.2",
     "types-web3-provider-engine": "^0.0.2",
     "typescript": "2.5.3",
-    "web3-fake-provider": "^0.1.0",
-    "web3-typescript-typings": "https://github.com/machinomy/web3-typescript-typings"
+    "web3-fake-provider": "^0.1.0"
   }
 }

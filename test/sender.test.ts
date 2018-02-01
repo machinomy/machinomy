@@ -42,11 +42,10 @@ describe('sender', () => {
         token: undefined
       })
       let paymentRequired = new transport.PaymentRequired(payment.receiver, payment.price, 'meta', 'gateway')
-      it('determine if channel can be used', done => {
+      it('determine if channel can be used', async () => {
         let paymentChannel = channel.PaymentChannel.fromPayment(payment)
-        randomSender().then(s => {
-          expect(s.canUseChannel(paymentChannel, paymentRequired)).toBeTruthy()
-        }).then(done)
+        let sender = await randomSender()
+        expect(sender.canUseChannel(paymentChannel, paymentRequired)).toBeTruthy()
       })
     })
   })

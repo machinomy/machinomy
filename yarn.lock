@@ -806,7 +806,7 @@ big.js@^3.1.3:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/big.js/-/big.js-3.2.0.tgz#a5fc298b81b9e0dca2e458824784b65c52ba588e"
 
-bignumber.js@^4.0.2, bignumber.js@^4.1.0:
+bignumber.js@^4.0.2, bignumber.js@^4.1.0, bignumber.js@~4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-4.1.0.tgz#db6f14067c140bd46624815a7916c92d9b6c24b1"
 
@@ -5155,12 +5155,6 @@ types-rlp@^0.0.1:
   dependencies:
     rlp "^2.0.0"
 
-types-web3-fake-provider@^0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/types-web3-fake-provider/-/types-web3-fake-provider-0.0.2.tgz#7e7b3e0a5d1e6ce7fe9761c316fdd15ab283087b"
-  dependencies:
-    web3-fake-provider "^0.1.0"
-
 types-web3-provider-engine@^0.0.2:
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/types-web3-provider-engine/-/types-web3-provider-engine-0.0.2.tgz#52fa33479f2d45ba55f642111fdba42e545f898d"
@@ -5337,15 +5331,15 @@ web3-provider-engine@^13.2.8, web3-provider-engine@^13.2.9:
     xhr "^2.2.0"
     xtend "^4.0.1"
 
+web3-typescript-typings@^0.9.7:
+  version "0.9.7"
+  resolved "https://registry.yarnpkg.com/web3-typescript-typings/-/web3-typescript-typings-0.9.7.tgz#c3f89dbabad2799acd60c0b844a9c3f67bef2c00"
+  dependencies:
+    bignumber.js "~4.1.0"
+
 "web3-typescript-typings@https://github.com/0xProject/web3-typescript-typings":
   version "0.9.0"
   resolved "https://github.com/0xProject/web3-typescript-typings#f6df0e1238282207535f0b7c2f6fcda697c8b855"
-  dependencies:
-    bignumber.js "^4.0.2"
-
-"web3-typescript-typings@https://github.com/machinomy/web3-typescript-typings":
-  version "0.6.2"
-  resolved "https://github.com/machinomy/web3-typescript-typings#9dc1b34664b08c5fdc9aba13c2546fb4d00bd2d3"
   dependencies:
     bignumber.js "^4.0.2"
 
