@@ -42,8 +42,8 @@ export class MongoTokensDatabase extends AbstractTokensDatabase<EngineMongo> {
 
   isPresent (token: string): Promise<boolean> {
     return this.engine.exec((client: any) => {
-      const query = {kind: this.kind, token: token}
-      return pify((cb: Function) => client.collection('token').count(query, {limit: 1}, cb))
+      const query = { kind: this.kind, token: token }
+      return pify((cb: Function) => client.collection('token').count(query, { limit: 1 }, cb))
     }).then((res: number) => (res > 0))
   }
 }
@@ -63,7 +63,7 @@ export class NedbTokensDatabase extends AbstractTokensDatabase<EngineNedb> {
 
   isPresent (token: string): Promise<boolean> {
     return this.engine.exec((client: any) => {
-      const query = {kind: this.kind, token: token}
+      const query = { kind: this.kind, token: token }
       return pify((cb: Function) => client.count(query, cb))
     }).then((res: number) => (res > 0))
   }

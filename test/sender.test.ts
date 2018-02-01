@@ -2,16 +2,16 @@ import * as support from './support'
 import Sender from '../lib/sender'
 import * as transport from '../lib/transport'
 import * as channel from '../lib/channel'
-import { randomStorage } from './support'
 import Payment from '../lib/Payment'
-import Promise = require('bluebird')
 import * as BigNumber from 'bignumber.js'
+
+import * as expect from 'expect'
+
 const engineName = process.env.ENGINE_NAME || 'nedb'
-let expect = require('expect')
 
 const randomSender = (): Promise<Sender> => {
   let web3 = support.fakeWeb3()
-  return randomStorage(web3, engineName).then(storage => {
+  return support.randomStorage(web3, engineName).then(storage => {
     return new Sender(web3, '0xdeadbeaf', channel.contract(web3), transport.build(), storage)
   })
 }
@@ -42,11 +42,10 @@ describe('sender', () => {
         token: undefined
       })
       let paymentRequired = new transport.PaymentRequired(payment.receiver, payment.price, 'meta', 'gateway')
-      it('determine if channel can be used', done => {
+      it('determine if channel can be used', async () => {
         let paymentChannel = channel.PaymentChannel.fromPayment(payment)
-        randomSender().then(s => {
-          expect(s.canUseChannel(paymentChannel, paymentRequired)).toBeTruthy()
-        }).then(done)
+        let sender = await randomSender()
+        expect(sender.canUseChannel(paymentChannel, paymentRequired)).toBeTruthy()
       })
     })
   })

@@ -25,7 +25,7 @@ function close (channelId: string, options: CommandPrompt): void {
   if (settings.account) {
     let account = settings.account
 
-    let machinomy = new Machinomy(account, web3, {engine: settings.engine})
+    let machinomy = new Machinomy(account, web3, { engine: settings.engine })
     machinomy.close(channelId).then(() => {
       console.log('closed')
     }).catch((e: Error) => {

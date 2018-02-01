@@ -1,17 +1,15 @@
-import Bluebird = require('bluebird')
 import { Log } from 'typescript-logger'
 import _ = require('lodash')
 import Web3 = require('web3')
 
-import * as transport from './transport'
-import * as channel from './channel'
 import * as configuration from './configuration'
-import { ChannelContract, PaymentChannel } from './channel'
-import { PaymentRequired, RequestTokenOpts, Transport } from './transport'
 import Storage from './storage'
 import { RequestResponse } from 'request'
 import Payment from './Payment'
 import * as BigNumber from 'bignumber.js'
+import { PaymentRequired, RequestTokenOpts, STATUS_CODES, Transport } from './transport'
+import { ChannelContract } from './channel'
+import { PaymentChannel } from './paymentChannel'
 
 const log = Log.create('sender')
 
@@ -96,11 +94,11 @@ export default class Sender {
    */
   existingChannel (uri: string, paymentRequired: PaymentRequired, paymentChannel: PaymentChannel, opts: RequestTokenOpts = {}): Promise<any> {
     return Payment.fromPaymentChannel(this.web3, paymentChannel, paymentRequired).then(payment => {
-      let nextPaymentChannel = channel.PaymentChannel.fromPayment(payment)
+      let nextPaymentChannel = PaymentChannel.fromPayment(payment)
       return this.storage.channels.saveOrUpdate(nextPaymentChannel).then(() => {
         return this.transport.requestToken(paymentRequired.gateway, payment, opts)
       }).then(token => {
-        return {payment, token}
+        return { payment, token }
       })
     })
   }
@@ -127,24 +125,20 @@ export default class Sender {
 
     let version = response.headers['paywall-version']
     if (version === VERSION) {
-      let paymentRequired = transport.PaymentRequired.parse(response.headers)
+      let paymentRequired = PaymentRequired.parse(response.headers)
       return Promise.resolve(paymentRequired)
     } else {
       return Promise.reject(new Error(`Unsupported version ${version}, expected ${VERSION}`))
     }
   }
 
-  findOpenChannel (paymentRequired: PaymentRequired): Promise<PaymentChannel | undefined> {
-    return this.storage.channels.findBySenderReceiver(this.account, paymentRequired.receiver).then(paymentChannels => {
-      return Bluebird.filter(paymentChannels, paymentChannel => {
-        return this.canUseChannel(paymentChannel, paymentRequired)
-      }).then(openChannels => {
-        if (openChannels.length > 1) {
-          log.warn(`Found more than one channel from ${this.account} to ${paymentRequired.receiver}`)
-        }
-        return _.head(openChannels)
-      })
-    })
+  async findOpenChannel (paymentRequired: PaymentRequired): Promise<PaymentChannel | undefined> {
+    let paymentChannels = await this.storage.channels.findBySenderReceiver(this.account, paymentRequired.receiver)
+    let openChannels = paymentChannels.filter(channel => this.canUseChannel(channel, paymentRequired))
+    if (openChannels.length > 1) {
+      log.warn(`Found more than one channel from ${this.account} to ${paymentRequired.receiver}`)
+    }
+    return _.head(openChannels)
   }
 
   /**
@@ -173,10 +167,10 @@ export default class Sender {
   pry (uri: string): Promise<PaymentRequired> {
     return this.transport.get(uri).then(response => {
       switch (response.statusCode) {
-        case transport.STATUS_CODES.PAYMENT_REQUIRED:
+        case STATUS_CODES.PAYMENT_REQUIRED:
           let version = response.headers['paywall-version']
           if (version === VERSION) {
-            return transport.PaymentRequired.parse(response.headers)
+            return PaymentRequired.parse(response.headers)
           } else {
             throw new Error(`Unsupported version ${version}, expected ${VERSION}`)
           }
@@ -203,8 +197,8 @@ export default class Sender {
         opts.onDidPreflight()
       }
       switch (response.statusCode) {
-        case transport.STATUS_CODES.PAYMENT_REQUIRED:
-        case transport.STATUS_CODES.OK:
+        case STATUS_CODES.PAYMENT_REQUIRED:
+        case STATUS_CODES.OK:
           return this.handlePaymentRequired(uri, response, opts).then((res: any) => {
             let payment = res.payment
             let token = res.token

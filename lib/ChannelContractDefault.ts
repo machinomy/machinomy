@@ -4,6 +4,9 @@ import { PaymentRequired } from './transport'
 import { PaymentChannel, PaymentChannelJSON } from './paymentChannel'
 import { Broker } from '@machinomy/contracts'
 import { TransactionResult } from 'truffle-contract'
+import log from './util/log'
+
+const LOG = log('ChannelContractDefault')
 
 export { PaymentChannel, PaymentChannelJSON }
 
@@ -17,11 +20,14 @@ export class ChannelContractDefault {
   }
 
   async createChannel (paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: any): Promise<TransactionResult> {
+    LOG(`Creating channel. Value: ${paymentRequired.price} / Duration: ${duration} / Settlement: ${settlementPeriod}`)
     let deployed = await Broker.deployed(this.web3.currentProvider)
     return deployed.createChannel(paymentRequired.receiver, duration, settlementPeriod, options)
   }
 
   async claim (receiver: string, paymentChannel: PaymentChannel, value: BigNumber.BigNumber, v: number, r: string, s: string): Promise<TransactionResult> {
+    LOG(`Claiming channel with id ${paymentChannel.channelId.toString()} on behalf of receiver ${receiver}`)
+    LOG(`Values: ${value} / V: ${v} / R: ${r} / S: ${s}`)
     value = new BigNumber.BigNumber(value)
     let channelId = paymentChannel.channelId
     let deployed = await Broker.deployed(this.web3.currentProvider)
@@ -33,6 +39,7 @@ export class ChannelContractDefault {
   }
 
   async deposit (sender: string, paymentChannel: PaymentChannel, value: BigNumber.BigNumber): Promise<TransactionResult> {
+    LOG(`Depositing ${value} into channel ${paymentChannel.channelId.toString()}`)
     value = new BigNumber.BigNumber(value)
     let options = {
       from: sender,
@@ -57,15 +64,9 @@ export class ChannelContractDefault {
     if (process.env.NODE_ENV === 'test') { // FIXME
       return Promise.resolve(0)
     } else {
-      return new Promise((resolve, reject) => {
-        Broker.deployed(this.web3.currentProvider).then((deployed) => {
-          deployed.getState(paymentChannel.channelId).then((result: any) => {
-            resolve(Number(result))
-          })
-        }).catch((e: Error) => {
-          reject(e)
-        })
-      })
+      return Broker.deployed(this.web3.currentProvider)
+          .then((deployed) => deployed.getState(paymentChannel.channelId))
+          .then((result: any) => Number(result))
     }
   }
 

@@ -16,7 +16,8 @@ function buy (uri: string, command: CommandPrompt): void {
     }
     buyContent(uri, settings.account, password).then(contents => {
       console.log('Buy result:')
-      console.log(contents)
+      console.log('Token:', contents.token)
+      console.log('Channel ID:', contents.channelId.toString())
     }).catch((error: any) => {
       console.error(error)
     })

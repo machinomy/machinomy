@@ -1,4 +1,4 @@
-export function namespaced (namespace: string|null|undefined, kind: string): string {
+export function namespaced (namespace: string | null | undefined, kind: string): string {
   let result = kind
   if (namespace) {
     result = namespace + ':' + kind

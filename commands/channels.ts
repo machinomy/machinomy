@@ -2,6 +2,7 @@ import CommandPrompt from './CommandPrompt'
 import * as configuration from '../lib/configuration'
 import Machinomy from '../index'
 import Web3 = require('web3')
+import { PaymentChannelSerde } from '../lib/paymentChannel'
 
 function channels (command: CommandPrompt): void {
   let settings = configuration.sender()
@@ -10,9 +11,9 @@ function channels (command: CommandPrompt): void {
 
   if (settings.account) {
     let account = settings.account
-    let machinomy = new Machinomy(account, web3, {engine: settings.engine})
+    let machinomy = new Machinomy(account, web3, settings)
     machinomy.channels().then((channels: any) => {
-      console.log(channels)
+      console.log(channels.map(PaymentChannelSerde.instance.serialize))
     }).catch((e: Error) => {
       console.log(e)
     }).then(() => {

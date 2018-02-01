@@ -1,3 +1,4 @@
+import * as sinon from 'sinon'
 import * as support from './support'
 import * as storage from '../lib/storage'
 import * as channel from '../lib/channel'
@@ -6,6 +7,7 @@ import * as BigNumber from 'bignumber.js'
 import Engine from '../lib/engines/engine'
 import Web3 = require('web3')
 import { PaymentChannel } from '../lib/paymentChannel'
+import { AbstractChannelsDatabase } from '../lib/storages/channels_database'
 
 let expect = require('expect')
 
@@ -44,30 +46,27 @@ describe('storage', () => {
   let web3 = support.fakeWeb3()
 
   describe('.engine', () => {
-    it('return Engine instance', done => {
-      support.tmpFileName().then(filename => {
-        let engine = storage.engine(filename, true, engineName)
-        expect(typeof engine).toBe('object')
-      }).then(done)
+    it('return Engine instance', async () => {
+      let filename = await support.tmpFileName()
+      let engine = storage.engine(filename, true, engineName)
+      expect(typeof engine).toBe('object')
     })
   })
 
   describe('.build', () => {
-    it('return Storage', done => {
-      support.tmpFileName().then(filename => {
-        let s = storage.build(web3, filename, 'namespace', true, engineName)
-        expect(typeof s).toBe('object')
-      }).then(done)
+    it('return Storage', async () => {
+      let filename = await support.tmpFileName()
+      let s = storage.build(web3, filename, 'namespace', true, engineName)
+      expect(typeof s).toBe('object')
     })
   })
 
   describe('.channels', () => {
-    it('return ChannelsDatabase instance', () => {
-      support.tmpFileName().then(filename => {
-        let engine = storage.engine(filename)
-        let channels = storage.channels(web3, engine, null)
-        expect(typeof channels).toBe('object')
-      })
+    it('return ChannelsDatabase instance', async () => {
+      let filename = await support.tmpFileName()
+      let engine = storage.engine(filename)
+      let channels = storage.channels(web3, engine, null)
+      expect(typeof channels).toBe('object')
     })
   })
 
@@ -167,7 +166,36 @@ describe('storage', () => {
       })
     })
 
-    describe('#firstUsable', () => {
+    describe('#allOpen', () => {
+      it('returns all open channels', () => {
+        let channelId = support.randomChannelId()
+        let channelId2 = support.randomChannelId()
+        let channelId3 = support.randomChannelId()
+        let hexChannelId = channelId.toString()
+        let hexChannelId2 = channelId2.toString()
+        let hexChannelId3 = channelId3.toString()
+        let paymentChannel1 = new channel.PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 0, undefined)
+        let paymentChannel2 = new channel.PaymentChannel('sender', 'receiver', hexChannelId2, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 1, undefined)
+        let paymentChannel3 = new channel.PaymentChannel('sender', 'receiver', hexChannelId3, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 2, undefined)
+
+        return channelsDatabase(web3, engine).then(channels => {
+          return Promise.all([
+            channels.save(paymentChannel1),
+            channels.save(paymentChannel2),
+            channels.save(paymentChannel3)
+          ]).then(() => channels)
+        }).then((channels) => {
+          return channels.allOpen()
+        }).then(found => {
+          expect(found.length).toBe(2)
+          const ids = [found[0].channelId, found[1].channelId]
+          expect(ids).toContain(hexChannelId)
+          expect(ids).toContain(hexChannelId2)
+        })
+      })
+    })
+
+    describe('#findUsable', () => {
       it('returns the first channel for the specified sender and receiver whose value is less than the sum of the channel value and amount', () => {
         const correct = support.randomChannelId().toString()
 
@@ -175,11 +203,27 @@ describe('storage', () => {
           return Promise.all([
             channels.save(new channel.PaymentChannel('sender', 'receiver', support.randomChannelId().toString(), new BigNumber.BigNumber(9), new BigNumber.BigNumber(8), 0, undefined)),
             channels.save(new channel.PaymentChannel('sender', 'receiver', correct, new BigNumber.BigNumber(13), new BigNumber.BigNumber(0), 0, undefined)),
+            channels.save(new channel.PaymentChannel('sender', 'receiver', support.randomChannelId().toString(), new BigNumber.BigNumber(13), new BigNumber.BigNumber(0), 2, undefined)),
             channels.save(new channel.PaymentChannel('sender', 'receiver', support.randomChannelId().toString(), new BigNumber.BigNumber(130), new BigNumber.BigNumber(0), 1, undefined)),
-            channels.save(new channel.PaymentChannel('othersender', 'receiver', support.randomChannelId().toString(), new BigNumber.BigNumber(11), new BigNumber.BigNumber(0), 0, undefined))
+            channels.save(new channel.PaymentChannel('othersender', 'receiver', support.randomChannelId().toString(), new BigNumber.BigNumber(11), new BigNumber.BigNumber(0), 0, undefined)),
+            channels.save(new channel.PaymentChannel('othersender', 'receiver', support.randomChannelId().toString(), new BigNumber.BigNumber(11), new BigNumber.BigNumber(0), 2, undefined))
           ]).then(() => channels)
         }).then((channels) => channels.findUsable('sender', 'receiver', new BigNumber.BigNumber(2)))
           .then((channel: PaymentChannel) => expect(channel.channelId.toString()).toEqual(correct))
+      })
+    })
+
+    describe('#updateState', () => {
+      it('updates the state value', () => {
+        const id = support.randomChannelId().toString()
+
+        return channelsDatabase(web3, engine).then((channels) => {
+          sinon.stub((channels as AbstractChannelsDatabase<Engine>).contract, 'getState').callsFake((doc: PaymentChannel) => Promise.resolve(doc.state))
+          return channels.save(new channel.PaymentChannel('sender', 'receiver', id, new BigNumber.BigNumber(69), new BigNumber.BigNumber(8), 0, undefined))
+            .then(() => channels.updateState(id, 2))
+            .then(() => channels.firstById(id))
+            .then((chan: PaymentChannel) => expect(chan.state).toBe(2))
+        })
       })
     })
   })

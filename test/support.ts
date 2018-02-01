@@ -1,7 +1,6 @@
 import * as tmp from 'tmp'
-import Promise = require('bluebird')
-import Web3 = require('web3')
-import FakeProvider = require('web3-fake-provider')
+import * as Web3 from 'web3'
+import * as FakeProvider from 'web3-fake-provider'
 import { ChannelId } from '../lib/channel'
 import Storage from '../lib/storage'
 import * as BigNumber from 'bignumber.js'
@@ -18,7 +17,13 @@ export function fakeWeb3 (): Web3 {
   return web3
 }
 
-export const tmpFileName: () => Promise<string> = Promise.promisify(tmp.tmpName)
+export function tmpFileName (): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    tmp.tmpName((err, path) => {
+      err ? reject(err) : resolve(path)
+    })
+  })
+}
 
 export function randomInteger (): number {
   return Math.floor(Math.random() * 10000)

@@ -22,6 +22,15 @@ describe('IOC container', () => {
     container = new Container(registry)
   })
 
+  describe('registry', () => {
+    it('should have a working copy constructor', () => {
+      const serviceA = sinon.stub().returns('A')
+      registry.bind('A', serviceA)
+      const reg2 = new Registry(registry)
+      expect(reg2.get('A').factory).toBe(serviceA)
+    })
+  })
+
   it('should resolve bound services and their dependencies', () => {
     const serviceA = sinon.stub().returns('A')
     const serviceB = sinon.stub().returns('B')
