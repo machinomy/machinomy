@@ -3,10 +3,11 @@ import Sender from '../lib/sender'
 import * as transport from '../lib/transport'
 import * as channel from '../lib/channel'
 import Payment from '../lib/Payment'
-import Promise = require('bluebird')
 import * as BigNumber from 'bignumber.js'
+
+import * as expect from 'expect'
+
 const engineName = process.env.ENGINE_NAME || 'nedb'
-let expect = require('expect')
 
 const randomSender = (): Promise<Sender> => {
   let web3 = support.fakeWeb3()

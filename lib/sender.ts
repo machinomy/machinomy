@@ -1,4 +1,3 @@
-import Bluebird = require('bluebird')
 import { Log } from 'typescript-logger'
 import _ = require('lodash')
 import Web3 = require('web3')
@@ -133,17 +132,13 @@ export default class Sender {
     }
   }
 
-  findOpenChannel (paymentRequired: PaymentRequired): Promise<PaymentChannel | undefined> {
-    return this.storage.channels.findBySenderReceiver(this.account, paymentRequired.receiver).then(paymentChannels => {
-      return Bluebird.filter(paymentChannels, paymentChannel => {
-        return this.canUseChannel(paymentChannel, paymentRequired)
-      }).then(openChannels => {
-        if (openChannels.length > 1) {
-          log.warn(`Found more than one channel from ${this.account} to ${paymentRequired.receiver}`)
-        }
-        return _.head(openChannels)
-      })
-    })
+  async findOpenChannel (paymentRequired: PaymentRequired): Promise<PaymentChannel | undefined> {
+    let paymentChannels = await this.storage.channels.findBySenderReceiver(this.account, paymentRequired.receiver)
+    let openChannels = paymentChannels.filter(channel => this.canUseChannel(channel, paymentRequired))
+    if (openChannels.length > 1) {
+      log.warn(`Found more than one channel from ${this.account} to ${paymentRequired.receiver}`)
+    }
+    return _.head(openChannels)
   }
 
   /**
