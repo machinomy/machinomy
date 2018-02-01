@@ -1,15 +1,9 @@
+import * as BigNumber from 'bignumber.js'
 import { ChannelId } from '../channel'
 import Payment, { PaymentJSON } from '../Payment'
-import EngineMongo from '../engines/engine_mongo'
 import pify from '../util/pify'
-import Engine from '../engines/engine'
-import EngineNedb from '../engines/engine_nedb'
-import EnginePostgres from '../engines/engine_postgres'
 import { namespaced } from '../util/namespaced'
-
-// linter false positive below
-/* tslint:disable */
-import BigNumber from '../bignumber'
+import Engine, { EngineMongo, EngineNedb, EnginePostgres } from '../engines/engine'
 /* tslint:enable */
 
 export default interface PaymentsDatabase {
@@ -30,7 +24,7 @@ export abstract class AbstractPaymentsDatabase<T extends Engine> implements Paym
     this.engine = engine
   }
 
-  inflatePayment (json: PaymentJSON): Payment|null {
+  inflatePayment (json: PaymentJSON): Payment | null {
     if (!json) {
       return null
     }
@@ -39,9 +33,9 @@ export abstract class AbstractPaymentsDatabase<T extends Engine> implements Paym
       channelId: json.channelId,
       sender: json.sender,
       receiver: json.receiver,
-      price: new BigNumber(json.price),
-      value: new BigNumber(json.value),
-      channelValue: new BigNumber(json.channelValue),
+      price: new BigNumber.BigNumber(json.price),
+      value: new BigNumber.BigNumber(json.value),
+      channelValue: new BigNumber.BigNumber(json.channelValue),
       v: Number(json.v),
       r: json.r,
       s: json.s,
@@ -79,10 +73,10 @@ export class MongoPaymentsDatabase extends AbstractPaymentsDatabase<EngineMongo>
    */
   firstMaximum (channelId: ChannelId | string): Promise<Payment | null> {
     // log.info(`Trying to find last payment for channel ${channelId.toString()}`)
-    let query = {kind: this.kind, channelId: channelId.toString()}
+    let query = { kind: this.kind, channelId: channelId.toString() }
 
     return this.engine.exec((client: any) => pify((cb: Function) => client.collection('payment')
-      .find(query).sort({value: -1}).limit(1).toArray(cb)))
+      .find(query).sort({ value: -1 }).limit(1).toArray(cb)))
       .then((res: any) => this.inflatePayment(res[0]))
   }
 
@@ -90,7 +84,7 @@ export class MongoPaymentsDatabase extends AbstractPaymentsDatabase<EngineMongo>
    * Find a payment by token.
    */
   findByToken (token: string): Promise<Payment | null> {
-    let query = {kind: this.kind, token: token}
+    let query = { kind: this.kind, token: token }
 
     return this.engine.exec((client: any) => pify((cb: Function) => client.collection('payment').findOne(query, cb)))
       .then((res: any) => this.inflatePayment(res))
@@ -112,8 +106,8 @@ export class NedbPaymentsDatabase extends AbstractPaymentsDatabase<EngineNedb> {
    */
   firstMaximum (channelId: ChannelId | string): Promise<Payment | null> {
     // log.info(`Trying to find last payment for channel ${channelId.toString()}`)
-    let query = {kind: this.kind, channelId: channelId.toString()}
-    return this.engine.exec((client: any) => pify((cb: Function) => client.findOne(query).sort({value: -1}).exec(cb)))
+    let query = { kind: this.kind, channelId: channelId.toString() }
+    return this.engine.exec((client: any) => pify((cb: Function) => client.findOne(query).sort({ value: -1 }).exec(cb)))
       .then((res) => this.inflatePayment(res))
   }
 
@@ -121,7 +115,7 @@ export class NedbPaymentsDatabase extends AbstractPaymentsDatabase<EngineNedb> {
    * Find a payment by token.
    */
   findByToken (token: string): Promise<Payment | null> {
-    let query = {kind: this.kind, token: token}
+    let query = { kind: this.kind, token: token }
 
     return this.engine.exec((client: any) => pify((cb: Function) => client.collection('payment').findOne(query, cb)))
       .then((res) => this.inflatePayment(res))

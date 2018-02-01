@@ -1,10 +1,7 @@
-import Engine from '../engines/engine'
+import Engine, { EngineMongo, EngineNedb, EnginePostgres } from '../engines/engine'
 import { ChannelId } from '../channel'
 import { namespaced } from '../util/namespaced'
-import EngineMongo from '../engines/engine_mongo'
 import pify from '../util/pify'
-import EngineNedb from '../engines/engine_nedb'
-import EnginePostgres from '../engines/engine_postgres'
 
 export default interface TokensDatabase {
   save (token: string, channelId: ChannelId | string): Promise<void>
@@ -45,8 +42,8 @@ export class MongoTokensDatabase extends AbstractTokensDatabase<EngineMongo> {
 
   isPresent (token: string): Promise<boolean> {
     return this.engine.exec((client: any) => {
-      const query = {kind: this.kind, token: token}
-      return pify((cb: Function) => client.collection('token').count(query, {limit: 1}, cb))
+      const query = { kind: this.kind, token: token }
+      return pify((cb: Function) => client.collection('token').count(query, { limit: 1 }, cb))
     }).then((res: number) => (res > 0))
   }
 }
@@ -66,7 +63,7 @@ export class NedbTokensDatabase extends AbstractTokensDatabase<EngineNedb> {
 
   isPresent (token: string): Promise<boolean> {
     return this.engine.exec((client: any) => {
-      const query = {kind: this.kind, token: token}
+      const query = { kind: this.kind, token: token }
       return pify((cb: Function) => client.count(query, cb))
     }).then((res: number) => (res > 0))
   }

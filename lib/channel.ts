@@ -1,6 +1,6 @@
 import { Log } from 'typescript-logger'
 import Web3 = require('web3')
-import BigNumber from './bignumber'
+import * as BigNumber from 'bignumber.js'
 import { PaymentRequired } from './transport'
 import { ChannelContractDefault } from './ChannelContractDefault'
 import { ChannelContractToken } from './ChannelContractToken'
@@ -54,7 +54,7 @@ export class ChannelContract {
     }
   }
 
-  buildPaymentChannel (sender: string, paymentRequired: PaymentRequired, value: BigNumber, settlementPeriod: number): Promise<PaymentChannel> {
+  buildPaymentChannel (sender: string, paymentRequired: PaymentRequired, value: BigNumber.BigNumber, settlementPeriod: number): Promise<PaymentChannel> {
     const receiver = paymentRequired.receiver
     return new Promise<PaymentChannel>((resolve, reject) => {
       log.info('Building payment channel from ' + sender + ' to ' + receiver + ', initial amount set to ' + value)
@@ -66,7 +66,7 @@ export class ChannelContract {
       } as Web3.TxData
       this.createChannel(paymentRequired, duration, settlementPeriod, options).then((res: any) => {
         const channelId = res.logs[0].args.channelId
-        const paymentChannel = new PaymentChannel(sender, receiver, channelId, value, new BigNumber(0), undefined, paymentRequired.contractAddress)
+        const paymentChannel = new PaymentChannel(sender, receiver, channelId, value, new BigNumber.BigNumber(0), undefined, paymentRequired.contractAddress)
         resolve(paymentChannel)
       }).catch((e: Error) => {
         reject(e)
@@ -74,12 +74,12 @@ export class ChannelContract {
     })
   }
 
-  claim (receiver: string, paymentChannel: PaymentChannel, value: BigNumber, v: number, r: string, s: string): Promise<TransactionResult> {
+  claim (receiver: string, paymentChannel: PaymentChannel, value: BigNumber.BigNumber, v: number, r: string, s: string): Promise<TransactionResult> {
     let channelContract = this.buildChannelContract(paymentChannel)
     return channelContract.claim(receiver, paymentChannel, value, v, r, s)
   }
 
-  deposit (sender: string, paymentChannel: PaymentChannel, value: BigNumber): Promise<TransactionResult> {
+  deposit (sender: string, paymentChannel: PaymentChannel, value: BigNumber.BigNumber): Promise<TransactionResult> {
     let channelContract = this.buildChannelContract(paymentChannel)
     return channelContract.deposit(sender, paymentChannel, value)
   }
@@ -93,7 +93,7 @@ export class ChannelContract {
     }
   }
 
-  startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber): Promise<TransactionResult> {
+  startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber.BigNumber): Promise<TransactionResult> {
     let channelContract = this.buildChannelContract(paymentChannel)
     return channelContract.startSettle(account, paymentChannel, payment)
   }

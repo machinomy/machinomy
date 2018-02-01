@@ -1,5 +1,7 @@
 'use strict';
 
+var bigNumberColumn = require('./util/bigNumberColumn');
+
 var dbm;
 var type;
 var seed;
@@ -32,9 +34,9 @@ exports.up = function(db, callback) {
     token: 'string',
     sender: 'string',
     receiver: 'string',
-    price: 'string',
-    value: 'string',
-    channelValue: 'string',
+    price: bigNumberColumn,
+    value: bigNumberColumn,
+    channelValue: bigNumberColumn,
     v: 'int',
     r: 'string',
     s: 'string',

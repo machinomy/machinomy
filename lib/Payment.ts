@@ -3,16 +3,17 @@ import * as util from 'ethereumjs-util'
 import { PaymentChannel } from './channel'
 import { PaymentRequired } from './transport'
 import { Broker, TokenBroker, sign, paymentDigest } from '@machinomy/contracts'
-import BigNumber from './bignumber'
+import * as BigNumber from 'bignumber.js'
+import Serde from './serde'
 
 export interface PaymentJSON {
   channelId: string
   sender: string
   receiver: string
-  price: BigNumber
-  value: BigNumber
-  channelValue: BigNumber
-  v: number|string
+  price: BigNumber.BigNumber
+  value: BigNumber.BigNumber
+  channelValue: BigNumber.BigNumber
+  v: number | string
   r: string
   s: string
   meta: string
@@ -35,9 +36,9 @@ export default class Payment {
   channelId: string
   sender: string
   receiver: string
-  price: BigNumber
-  value: BigNumber
-  channelValue: BigNumber
+  price: BigNumber.BigNumber
+  value: BigNumber.BigNumber
+  channelValue: BigNumber.BigNumber
   v: number
   r: string
   s: string
@@ -67,7 +68,7 @@ export default class Payment {
     let validChannelId = paymentChannel.channelId === payment.channelId
     let validPaymentValue = paymentChannel.value.lessThanOrEqualTo(payment.channelValue)
     let validSender = paymentChannel.sender === payment.sender
-    let isPositive = payment.value.greaterThanOrEqualTo(new BigNumber(0)) && payment.price.greaterThanOrEqualTo(new BigNumber(0))
+    let isPositive = payment.value.greaterThanOrEqualTo(new BigNumber.BigNumber(0)) && payment.price.greaterThanOrEqualTo(new BigNumber.BigNumber(0))
     let deployed
     if (paymentChannel.contractAddress) {
       deployed = await TokenBroker.deployed(web3.currentProvider)
@@ -138,5 +139,61 @@ export default class Payment {
       contractAddress: payment.contractAddress,
       token: payment.token
     }
+  }
+}
+
+export class PaymentSerde implements Serde<Payment> {
+  static instance: PaymentSerde = new PaymentSerde()
+
+  static required = [
+    'channelId',
+    'value',
+    'sender',
+    'receiver',
+    'price',
+    'channelValue',
+    'v',
+    'r',
+    's',
+    'contractAddress'
+  ]
+
+  serialize (obj: Payment): object {
+    return {
+      channelId: obj.channelId.toString(),
+      value: obj.value.toString(),
+      sender: obj.sender,
+      receiver: obj.receiver,
+      price: obj.price.toString(),
+      channelValue: obj.channelValue.toString(),
+      v: Number(obj.v),
+      r: obj.r,
+      s: obj.s,
+      contractAddress: obj.contractAddress,
+      token: obj.token
+    }
+  }
+
+  deserialize (data: any): Payment {
+    PaymentSerde.required.forEach((field: string) => {
+      if (!data[field]) {
+        throw new Error(`Required field not found: ${field}`)
+      }
+    })
+
+    return new Payment({
+      channelId: data.channelId,
+      value: new BigNumber.BigNumber(data.value),
+      sender: data.sender,
+      receiver: data.receiver,
+      price: new BigNumber.BigNumber(data.price),
+      channelValue: new BigNumber.BigNumber(data.channelValue),
+      v: Number(data.v),
+      r: data.r,
+      s: data.s,
+      contractAddress: data.contractAddress,
+      token: data.token,
+      meta: data.meta
+    })
   }
 }

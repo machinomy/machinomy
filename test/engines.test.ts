@@ -1,10 +1,7 @@
 import Datastore = require('nedb')
-import EngineMongo from '../lib/engines/engine_mongo'
 import * as sinon from 'sinon'
-import { SinonSpy } from 'sinon'
-import EngineNedb from '../lib/engines/engine_nedb'
 import { tmpFileName } from './support'
-import EnginePostgres from '../lib/engines/engine_postgres'
+import { EngineMongo, EngineNedb, EnginePostgres } from '../lib/engines/engine'
 
 const expect = require('expect')
 
@@ -66,7 +63,7 @@ describe('EngineMongo', () => {
     it('closes the connection', () => {
       const close = sinon.stub().resolves()
       const stub = sinon.stub(MongoClient, 'connect')
-        .callsFake((conn: string, cb: Function) => setImmediate(cb(null, {close})))
+        .callsFake((conn: string, cb: Function) => setImmediate(cb(null, { close })))
 
       return engine.connect()
         .then(() => engine.close())
@@ -79,7 +76,7 @@ describe('EngineMongo', () => {
     it('marks isConnected as false', () => {
       const close = sinon.stub().resolves()
       const stub = sinon.stub(MongoClient, 'connect')
-        .callsFake((conn: string, cb: Function) => setImmediate(cb(null, {close})))
+        .callsFake((conn: string, cb: Function) => setImmediate(cb(null, { close })))
 
       return engine.connect()
         .then(() => engine.close())
@@ -94,7 +91,7 @@ describe('EngineMongo', () => {
     it('drops the database', () => {
       const dropDatabase = sinon.stub().callsFake((cb: Function) => cb(null))
       const stub = sinon.stub(MongoClient, 'connect')
-        .callsFake((conn: string, cb: Function) => setImmediate(cb(null, {dropDatabase})))
+        .callsFake((conn: string, cb: Function) => setImmediate(cb(null, { dropDatabase })))
 
       return engine.connect()
         .then(() => engine.drop())
@@ -105,7 +102,7 @@ describe('EngineMongo', () => {
     it('lazily connects to the database', () => {
       const dropDatabase = sinon.stub().callsFake((cb: Function) => cb(null))
       const stub = sinon.stub(MongoClient, 'connect')
-        .callsFake((conn: string, cb: Function) => setImmediate(cb(null, {dropDatabase})))
+        .callsFake((conn: string, cb: Function) => setImmediate(cb(null, { dropDatabase })))
 
       return engine.drop()
         .then(() => expect(stub.callCount).toBe(1))
@@ -138,7 +135,7 @@ describe('EngineMongo', () => {
 describe('EngineNedb', () => {
   let engine: EngineNedb
 
-  let removeStub: SinonSpy
+  let removeStub: sinon.SinonSpy
 
   beforeEach(() => {
     removeStub = sinon.stub(Datastore.prototype, 'remove')
@@ -160,7 +157,7 @@ describe('EngineNedb', () => {
       return engine.drop()
         .then(() => {
           expect(removeStub.callCount).toBe(1)
-          expect(removeStub.calledWith({}, {multi: true}, sinon.match.func))
+          expect(removeStub.calledWith({}, { multi: true }, sinon.match.func))
             .toBe(true)
         })
     })

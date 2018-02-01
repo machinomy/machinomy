@@ -1,7 +1,5 @@
 import Web3 = require('web3')
-import Engine from './engines/engine'
-import EngineMongo from './engines/engine_mongo'
-import EngineNedb from './engines/engine_nedb'
+import Engine, { EngineMongo, EngineNedb, EnginePostgres } from './engines/engine'
 
 import ChannelsDatabase, {
   MongoChannelsDatabase, NedbChannelsDatabase,
@@ -15,7 +13,6 @@ import PaymentsDatabase, {
   MongoPaymentsDatabase, NedbPaymentsDatabase,
   PostgresPaymentsDatabase
 } from './storages/payments_database'
-import EnginePostgres from './engines/engine_postgres'
 
 const defaultEngineName = 'nedb'
 
@@ -75,7 +72,7 @@ export const engine = (path: string, inMemoryOnly: boolean = false, engineName?:
     engineName = defaultEngineName
   }
 
-  let engine: Engine|null
+  let engine: Engine | null
 
   switch (engineName) {
     case 'nedb':
@@ -88,7 +85,7 @@ export const engine = (path: string, inMemoryOnly: boolean = false, engineName?:
       engine = new EnginePostgres()
       break
     default:
-      engine = typeof engineName === 'string' ? null : (engineName as Engine)
+      engine = typeof engineName === 'string' ? null : engineName
       break
   }
 
@@ -100,14 +97,14 @@ export const engine = (path: string, inMemoryOnly: boolean = false, engineName?:
 }
 
 export default class Storage {
-  namespace: string|null
+  namespace: string | null
   // db: any
   channels: ChannelsDatabase
   tokens: TokensDatabase
   payments: PaymentsDatabase
   engine: Engine
 
-  constructor (web3: Web3, path: string, namespace: string|null, inMemoryOnly?: boolean, engineName?: string | Engine) {
+  constructor (web3: Web3, path: string, namespace: string | null, inMemoryOnly?: boolean, engineName?: string | Engine) {
     if (!engineName) {
       engineName = defaultEngineName
     }
