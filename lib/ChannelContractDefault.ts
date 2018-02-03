@@ -1,27 +1,25 @@
 import * as Web3 from 'web3'
 import * as BigNumber from 'bignumber.js'
 import { PaymentRequired } from './transport'
-import { PaymentChannel, PaymentChannelJSON } from './paymentChannel'
-import { Broker } from '@machinomy/contracts'
+import { PaymentChannel } from './paymentChannel'
 import { TransactionResult } from 'truffle-contract'
 import log from './util/log'
+import ChainManager from './chain_manager'
 
 const LOG = log('ChannelContractDefault')
-
-export { PaymentChannel, PaymentChannelJSON }
 
 const CREATE_CHANNEL_GAS = 300000
 
 export class ChannelContractDefault {
-  web3: Web3
+  chainManager: ChainManager
 
-  constructor (web3: Web3) {
-    this.web3 = web3
+  constructor (chainManager: ChainManager) {
+    this.chainManager = chainManager
   }
 
   async createChannel (paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: any): Promise<TransactionResult> {
     LOG(`Creating channel. Value: ${paymentRequired.price} / Duration: ${duration} / Settlement: ${settlementPeriod}`)
-    let deployed = await Broker.deployed(this.web3.currentProvider)
+    const deployed = await this.chainManager.defaultBroker()
     return deployed.createChannel(paymentRequired.receiver, duration, settlementPeriod, options)
   }
 
@@ -30,7 +28,7 @@ export class ChannelContractDefault {
     LOG(`Values: ${value} / V: ${v} / R: ${r} / S: ${s}`)
     value = new BigNumber.BigNumber(value)
     let channelId = paymentChannel.channelId
-    let deployed = await Broker.deployed(this.web3.currentProvider)
+    const deployed = await this.chainManager.defaultBroker()
     let canClaim = await deployed.canClaim(channelId, value, Number(v), r, s)
     if (!canClaim) {
       return Promise.reject(new Error('Claim isn\'t possible'))
@@ -47,7 +45,7 @@ export class ChannelContractDefault {
       gas: CREATE_CHANNEL_GAS
     } as Web3.TxData
     const channelId = paymentChannel.channelId
-    let deployed = await Broker.deployed(this.web3.currentProvider)
+    const deployed = await this.chainManager.defaultBroker()
     let canDeposit = await deployed.canDeposit(sender, channelId)
     if (!canDeposit) {
       return Promise.reject(new Error('Deposit isn\'t possible'))
@@ -56,7 +54,7 @@ export class ChannelContractDefault {
   }
 
   async canStartSettle (account: string, channelId: string): Promise<boolean> {
-    let deployed = await Broker.deployed(this.web3.currentProvider)
+    const deployed = await this.chainManager.defaultBroker()
     return deployed.canStartSettle(account, channelId)
   }
 
@@ -64,14 +62,13 @@ export class ChannelContractDefault {
     if (process.env.NODE_ENV === 'test') { // FIXME
       return Promise.resolve(0)
     } else {
-      return Broker.deployed(this.web3.currentProvider)
+      return this.chainManager.defaultBroker()
           .then((deployed) => deployed.getState(paymentChannel.channelId))
-          .then((result: any) => Number(result))
     }
   }
 
   async startSettle (account: string, paymentChannel: PaymentChannel, payment: BigNumber.BigNumber): Promise<TransactionResult> {
-    let deployed = await Broker.deployed(this.web3.currentProvider)
+    const deployed = await this.chainManager.defaultBroker()
     const channelId = paymentChannel.channelId
     let canStart = await this.canStartSettle(account, channelId)
     if (!canStart) {
@@ -82,7 +79,7 @@ export class ChannelContractDefault {
 
   async finishSettle (account: string, paymentChannel: PaymentChannel): Promise<TransactionResult> {
     const channelId = paymentChannel.channelId
-    let deployed = await Broker.deployed(this.web3.currentProvider)
+    const deployed = await this.chainManager.defaultBroker()
     let canFinish = deployed.canFinishSettle(account, channelId)
     if (!canFinish) {
       return Promise.reject(new Error('Settle finish isn\'t possible'))

@@ -1,4 +1,3 @@
-import { Log } from 'typescript-logger'
 import Web3 = require('web3')
 import * as BigNumber from 'bignumber.js'
 import { PaymentRequired } from './transport'
@@ -7,14 +6,9 @@ import { ChannelContractToken } from './ChannelContractToken'
 import { PaymentChannelJSON, PaymentChannel } from './paymentChannel'
 export { PaymentChannelJSON, PaymentChannel }
 import { TransactionResult } from 'truffle-contract'
-const log = Log.create('channel')
-Log.setProductionMode()
+import log from './util/log'
 
-export interface Signature {
-  v: number
-  r: Buffer
-  s: Buffer
-}
+const LOG = log('ChannelContract')
 
 const DAY_IN_SECONDS = 86400
 
@@ -26,13 +20,15 @@ const CREATE_CHANNEL_GAS = 500000
 
 /** Wrapper for the payment channel contract. */
 export class ChannelContract {
+  channelContractDefault: ChannelContractDefault
+
+  channelContractToken: ChannelContractToken
+
   web3: Web3
 
-  /**
-   * @param web3 - Instance of Web3.
-   */
-  constructor (web3: Web3) {
-    this.web3 = web3
+  constructor (channelContractDefault: ChannelContractDefault, channelContractToken: ChannelContractToken) {
+    this.channelContractDefault = channelContractDefault
+    this.channelContractToken = channelContractToken
   }
 
   createChannel (paymentRequired: PaymentRequired, duration: number, settlementPeriod: number, options: any): any {
@@ -48,16 +44,16 @@ export class ChannelContract {
 
   buildChannelContract (paymentRequired: PaymentRequired | PaymentChannel) {
     if (paymentRequired.contractAddress) {
-      return new ChannelContractToken(this.web3)
+      return this.channelContractToken
     } else {
-      return new ChannelContractDefault(this.web3)
+      return this.channelContractDefault
     }
   }
 
   buildPaymentChannel (sender: string, paymentRequired: PaymentRequired, value: BigNumber.BigNumber, settlementPeriod: number): Promise<PaymentChannel> {
     const receiver = paymentRequired.receiver
     return new Promise<PaymentChannel>((resolve, reject) => {
-      log.info('Building payment channel from ' + sender + ' to ' + receiver + ', initial amount set to ' + value)
+      LOG('Building payment channel from ' + sender + ' to ' + receiver + ', initial amount set to ' + value)
       const duration = DEFAULT_CHANNEL_TTL
       const options = {
         from: sender,
@@ -128,8 +124,4 @@ export function id (something: string | Buffer | ChannelId): ChannelId {
   } else {
     throw new Error(`Can not transform ${something} to ChannelId`)
   }
-}
-
-export function contract (web3: Web3, _address?: string): ChannelContract {
-  return new ChannelContract(web3)
 }

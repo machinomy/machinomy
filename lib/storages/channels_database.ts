@@ -1,9 +1,8 @@
-import { ChannelContract, ChannelId, PaymentChannel, PaymentChannelJSON, contract } from '../channel'
+import { ChannelContract, ChannelId, PaymentChannel, PaymentChannelJSON } from '../channel'
 import Engine, { EngineMongo, EnginePostgres, EngineNedb } from '../engines/engine'
 import * as BigNumber from 'bignumber.js'
 import { namespaced } from '../util/namespaced'
 import pify from '../util/pify'
-import Web3 = require('web3')
 import log from '../util/log'
 
 export default interface ChannelsDatabase {
@@ -31,19 +30,16 @@ export default interface ChannelsDatabase {
 export abstract class AbstractChannelsDatabase<T extends Engine> implements ChannelsDatabase {
   static LOG = log('AbstractChannelsDatabase')
 
-  web3: Web3
-
   engine: T
 
   kind: string
 
   contract: ChannelContract
 
-  constructor (web3: Web3, engine: T, namespace: string | null) {
-    this.web3 = web3
+  constructor (engine: T, channelContract: ChannelContract, namespace: string | null) {
     this.kind = namespaced(namespace, 'channel')
     this.engine = engine
-    this.contract = contract(web3)
+    this.contract = channelContract
   }
 
   inflatePaymentChannels (channels: Array<PaymentChannelJSON>): Promise<Array<PaymentChannel>> {

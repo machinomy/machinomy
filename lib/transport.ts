@@ -1,8 +1,8 @@
-import { Log } from 'typescript-logger'
 import _ = require('lodash')
 import { RequestResponse, RequiredUriUrl, CoreOptions } from 'request'
 import Payment from './Payment'
 import * as BigNumber from 'bignumber.js'
+import log from './util/log'
 let req = require('request')
 
 const request: (opts: RequiredUriUrl & CoreOptions) => Promise<RequestResponse> = (opts: RequiredUriUrl & CoreOptions) => {
@@ -16,7 +16,7 @@ const request: (opts: RequiredUriUrl & CoreOptions) => Promise<RequestResponse> 
   })
 }
 
-const log = Log.create('transport')
+const LOG = log('Transport')
 
 // noinspection MagicNumberJS
 export const STATUS_CODES = {
@@ -33,7 +33,7 @@ export const STATUS_CODES = {
 const extractPaywallToken = (response: RequestResponse): string => {
   let token = response.headers['paywall-token'] as string
   if (token) {
-    log.info('Got token from the server')
+    LOG('Got token from the server')
     return token
   } else {
     throw new Error('Can not find a token in the response')
@@ -59,7 +59,7 @@ export class Transport {
     let headers = {
       'authorization': 'Paywall ' + token
     }
-    log.info(`Getting ${uri} using access token ${token}`)
+    LOG(`Getting ${uri} using access token ${token}`)
     if (_.isFunction(opts.onWillLoad)) {
       opts.onWillLoad()
     }
@@ -77,7 +77,7 @@ export class Transport {
       uri: uri,
       headers: headers
     }
-    log.info(`Getting ${uri} using headers and options`, headers, options)
+    LOG(`Getting ${uri} using headers and options`, headers, options)
     return request(options)
   }
 
@@ -98,7 +98,7 @@ export class Transport {
       json: true,
       body: payment
     }
-    log.info('Getting request token in exchange for payment', payment)
+    LOG('Getting request token in exchange for payment', payment)
     if (_.isFunction(opts.onWillSendPayment)) {
       opts.onWillSendPayment()
     }

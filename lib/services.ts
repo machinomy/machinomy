@@ -15,11 +15,21 @@ import { Transport } from './transport'
 import { MachinomyOptions } from '../index'
 import Engine, { EngineMongo, EngineNedb, EnginePostgres } from './engines/engine'
 import { Registry } from './container'
+import ChainManager from './chain_manager'
+import { ChannelContractDefault } from './ChannelContractDefault'
+import { ChannelContractToken } from './ChannelContractToken'
 
 export default function defaultRegistry (): Registry {
   const serviceRegistry = new Registry()
 
-  serviceRegistry.bind('ChannelContract', (web3: Web3) => new ChannelContract(web3), ['Web3'])
+  serviceRegistry.bind('ChainManager', (web3: Web3) => new ChainManager(web3), ['Web3'])
+
+  serviceRegistry.bind('ChannelContractDefault', (chainManager: ChainManager) => new ChannelContractDefault(chainManager), ['ChainManager'])
+
+  serviceRegistry.bind('ChannelContractToken', (chainManager: ChainManager) => new ChannelContractToken(chainManager), ['ChainManager'])
+
+  serviceRegistry.bind('ChannelContract', (chanDefault: ChannelContractDefault, chanToken: ChannelContractToken) => new ChannelContract(chanDefault, chanToken),
+    ['ChannelContractDefault', 'ChannelContractToken'])
 
   serviceRegistry.bind('ChannelManager',
     (
@@ -59,21 +69,21 @@ export default function defaultRegistry (): Registry {
     throw new Error(`Invalid engine: ${options.engine}.`)
   }, ['MachinomyOptions'])
 
-  serviceRegistry.bind('ChannelsDatabase', (web3: Web3, engine: Engine, namespace: string): ChannelsDatabase => {
+  serviceRegistry.bind('ChannelsDatabase', (engine: Engine, channelContract: ChannelContract, namespace: string): ChannelsDatabase => {
     if (engine instanceof EngineMongo) {
-      return new MongoChannelsDatabase(web3, engine, namespace)
+      return new MongoChannelsDatabase(engine, channelContract, namespace)
     }
 
     if (engine instanceof EnginePostgres) {
-      return new PostgresChannelsDatabase(web3, engine, namespace)
+      return new PostgresChannelsDatabase(engine, channelContract, namespace)
     }
 
     if (engine instanceof EngineNedb) {
-      return new NedbChannelsDatabase(web3, engine, namespace)
+      return new NedbChannelsDatabase(engine, channelContract, namespace)
     }
 
     throw new Error('Invalid engine.')
-  }, ['Web3', 'Engine', 'namespace'])
+  }, ['Engine', 'ChannelContract', 'namespace'])
 
   serviceRegistry.bind('PaymentsDatabase', (engine: Engine, namespace: string) => {
     if (engine instanceof EngineMongo) {

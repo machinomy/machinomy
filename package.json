@@ -102,7 +102,6 @@
     "types-ethereumjs-util": "^0.0.5",
     "types-rlp": "^0.0.1",
     "types-web3-provider-engine": "^0.0.2",
-    "typescript": "2.5.3",
-    "web3-fake-provider": "^0.1.0"
+    "typescript": "2.5.3"
   }
 }

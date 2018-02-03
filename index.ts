@@ -1,5 +1,4 @@
 import Web3 = require('web3')
-import { default as Storage, build } from './lib/storage'
 import Engine from './lib/engines/engine'
 import * as channel from './lib/channel'
 import { PaymentChannel } from './lib/paymentChannel'
@@ -14,6 +13,7 @@ import Client, {
   AcceptTokenResponse
 } from './lib/client'
 import { PaymentRequired } from './lib/transport'
+import PaymentsDatabase from './lib/storages/payments_database'
 import defaultRegistry from './lib/services'
 
 /**
@@ -92,10 +92,9 @@ export default class Machinomy {
   private account: string
   /** Web3 instance that manages {@link Machinomy.account}'s private key */
   private web3: Web3
-  private engine: string | Engine
+  private engine: Engine
   private databaseFile: string
   private minimumChannelAmount?: BigNumber.BigNumber
-  private storage: Storage
   private settlementPeriod?: number
 
   private channelContract: channel.ChannelContract
@@ -105,6 +104,8 @@ export default class Machinomy {
   private channelsDao: ChannelsDatabase
 
   private channelManager: ChannelManager
+
+  private paymentsDao: PaymentsDatabase
 
   private client: Client
 
@@ -136,12 +137,13 @@ export default class Machinomy {
     this.channelContract = this.serviceContainer.resolve('ChannelContract')
     this.channelsDao = this.serviceContainer.resolve('ChannelsDatabase')
     this.channelManager = this.serviceContainer.resolve('ChannelManager')
+    this.paymentsDao = this.serviceContainer.resolve('PaymentsDatabase')
     this.client = this.serviceContainer.resolve('Client')
     this.transport = this.serviceContainer.resolve('Transport')
 
     this.account = account
     this.web3 = web3
-    this.engine = options.engine || 'nedb'
+    this.engine = this.serviceContainer.resolve('Engine')
     this.settlementPeriod = options.settlementPeriod
 
     if (options.minimumChannelAmount) {
@@ -152,7 +154,6 @@ export default class Machinomy {
     } else {
       this.databaseFile = 'machinomy'
     }
-    this.storage = build(this.web3, this.databaseFile, 'shared', false, this.engine)
   }
 
   /**
@@ -178,6 +179,10 @@ export default class Machinomy {
     const payment: Payment = await this.channelManager.nextPayment(channel.channelId, price, options.meta)
     const res: AcceptPaymentResponse = await this.client.doPayment(payment, options.gateway)
     return { token: res.token, channelId: channel.channelId }
+  }
+
+  async pry (uri: string): Promise<PaymentRequired> {
+    return this.client.doPreflight(uri)
   }
 
   buyUrl (uri: string): Promise<BuyResult> {
@@ -248,7 +253,7 @@ export default class Machinomy {
    * Return information about the payment by id.
    */
   paymentById (id: string): Promise <Payment | null> {
-    return this.storage.payments.findByToken(id)
+    return this.paymentsDao.findByToken(id)
   }
 
   acceptToken (req: AcceptTokenRequest): Promise<AcceptTokenResponse> {
@@ -256,6 +261,6 @@ export default class Machinomy {
   }
 
   shutdown (): Promise<void> {
-    return this.storage.close()
+    return this.engine.close()
   }
 }

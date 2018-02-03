@@ -5256,10 +5256,6 @@ watchpack@^1.4.0:
     chokidar "^1.7.0"
     graceful-fs "^4.1.2"
 
-web3-fake-provider@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/web3-fake-provider/-/web3-fake-provider-0.1.0.tgz#25aaee7524864c54b26929b5db725d29257af832"
-
 web3-provider-engine@^13.2.8, web3-provider-engine@^13.2.9:
   version "13.3.2"
   resolved "https://registry.yarnpkg.com/web3-provider-engine/-/web3-provider-engine-13.3.2.tgz#a5954aa637f96f0dde5131bc20a6ce9e33e6fcd1"

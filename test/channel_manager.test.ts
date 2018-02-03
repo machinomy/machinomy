@@ -2,11 +2,10 @@ import * as sinon from 'sinon'
 // line below is false positive
 // tslint:disable-next-line
 import * as BigNumber from 'bignumber.js'
-import ChannelManager, { ChannelManagerImpl } from '../lib/channel_manager'
+import ChannelManager, { ChannelManagerImpl, DEFAULT_SETTLEMENT_PERIOD } from '../lib/channel_manager'
 import ChannelsDatabase from '../lib/storages/channels_database'
 import { ChannelContract } from '../lib/channel'
 import { PaymentChannel } from '../lib/paymentChannel'
-import { DEFAULT_SETTLEMENT_PERIOD } from '../lib/sender'
 import { PaymentRequired } from '../lib/transport'
 import PaymentsDatabase from '../lib/storages/payments_database'
 import TokensDatabase from '../lib/storages/tokens_database'

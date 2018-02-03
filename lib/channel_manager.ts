@@ -5,16 +5,19 @@ import { ChannelContract, ChannelId } from './channel'
 import { EventEmitter } from 'events'
 import Mutex from './util/mutex'
 import { PaymentRequired } from './transport'
-import { DEFAULT_SETTLEMENT_PERIOD } from './sender'
 import { TransactionResult } from 'truffle-contract'
 import PaymentsDatabase from './storages/payments_database'
 import Payment from './Payment'
 import Web3 = require('web3')
-import { isPaymentValid } from './receiver'
 import TokensDatabase from './storages/tokens_database'
 import log from './util/log'
 
 const LOG = log('ChannelManager')
+
+const DAY_IN_SECONDS = 86400
+
+/** Default settlement period for a payment channel */
+export const DEFAULT_SETTLEMENT_PERIOD = 2 * DAY_IN_SECONDS
 
 export interface ChannelManager extends EventEmitter {
   openChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber): Promise<PaymentChannel>
@@ -106,7 +109,7 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
 
       LOG(`Adding ${payment.price.toString()} Wei to channel with ID ${channel.channelId.toString()}.`)
 
-      if (!isPaymentValid(payment, channel)) {
+      if (!this.isPaymentValid(payment, channel)) {
         throw new Error('Invalid payment.')
       }
 
@@ -187,5 +190,12 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
       return this.channelContract.claim(channel.receiver, channel, payment.value, Number(payment.v), payment.r, payment.s)
         .then((res: TransactionResult) => this.channelsDao.updateState(channel.channelId, 2).then(() => res))
     })
+  }
+
+  private isPaymentValid (payment: Payment, paymentChannel: PaymentChannel): boolean {
+    const validIncrement = (paymentChannel.spent.plus(payment.price)).lessThanOrEqualTo(paymentChannel.value)
+    const validChannelValue = paymentChannel.value.equals(payment.channelValue)
+    const validPaymentValue = paymentChannel.value.lessThanOrEqualTo(payment.channelValue)
+    return validIncrement && validChannelValue && validPaymentValue
   }
 }
