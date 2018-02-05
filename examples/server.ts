@@ -28,7 +28,7 @@ import Web3 = require('web3')
 import Machinomy from '../index'
 import * as bodyParser from 'body-parser'
 import { AcceptTokenRequestSerde } from '../lib/client'
-import { PaymentChannelSerde } from '../lib/paymentChannel'
+import { PaymentChannelSerde } from '../lib/payment_channel'
 let fetch = require('whatwg-fetch').fetch
 
 /**

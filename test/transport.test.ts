@@ -2,8 +2,9 @@ import nock = require('nock')
 import * as channel from '../lib/channel'
 import * as transport from '../lib/transport'
 import { randomInteger } from './support'
-import Payment from '../lib/Payment'
+import Payment from '../lib/payment'
 import * as BigNumber from 'bignumber.js'
+import Signature from '../lib/signature'
 let expect = require('expect')
 
 describe('transport', () => {
@@ -61,10 +62,13 @@ describe('transport', () => {
         value: new BigNumber.BigNumber(12),
         channelValue: new BigNumber.BigNumber(10),
         meta: 'metaexample',
-        v: 1,
-        r: '0x2',
-        s: '0x3',
-        token: undefined
+        signature: Signature.fromParts({
+          v: 27,
+          r: '0x2',
+          s: '0x3'
+        }),
+        token: undefined,
+        contractAddress: undefined
       })
 
       let randomToken = randomInteger().toString()

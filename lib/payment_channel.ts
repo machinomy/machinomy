@@ -1,4 +1,4 @@
-import Payment from './Payment'
+import Payment from './payment'
 import * as BigNumber from 'bignumber.js'
 import Serde from './serde'
 

@@ -1,7 +1,7 @@
 import * as Request from 'request-promise-native'
 import { EventEmitter } from 'events'
 import { PaymentRequired, STATUS_CODES, Transport } from './transport'
-import Payment, { PaymentSerde } from './Payment'
+import Payment, { PaymentSerde } from './payment'
 import ChannelManager from './channel_manager'
 import Serde from './serde'
 import { RequestResponse } from 'request'

@@ -1,7 +1,7 @@
 import * as configuration from '../lib/configuration'
 import Machinomy from '../index'
 import Web3 = require('web3')
-import { PaymentChannelSerde } from '../lib/paymentChannel'
+import { PaymentChannelSerde } from '../lib/payment_channel'
 
 function channels (): void {
   const settings = configuration.sender()

@@ -1,6 +1,6 @@
 import _ = require('lodash')
 import { RequestResponse, RequiredUriUrl, CoreOptions } from 'request'
-import Payment from './Payment'
+import Payment from './payment'
 import * as BigNumber from 'bignumber.js'
 import log from './util/log'
 let req = require('request')

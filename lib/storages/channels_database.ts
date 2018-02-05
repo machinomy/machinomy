@@ -1,9 +1,10 @@
-import { ChannelContract, ChannelId, PaymentChannel, PaymentChannelJSON } from '../channel'
+import { ChannelId, PaymentChannel, PaymentChannelJSON } from '../channel'
 import Engine, { EngineMongo, EnginePostgres, EngineNedb } from '../engines/engine'
 import * as BigNumber from 'bignumber.js'
 import { namespaced } from '../util/namespaced'
 import pify from '../util/pify'
 import log from '../util/log'
+import ChannelContract from '../channel_contract'
 
 export default interface ChannelsDatabase {
   save (paymentChannel: PaymentChannel): Promise<void>
@@ -57,7 +58,7 @@ export abstract class AbstractChannelsDatabase<T extends Engine> implements Chan
     }
 
     const doc = PaymentChannel.fromDocument(json)
-    return this.contract.getState(doc).then((state: any) => new PaymentChannel(
+    return this.contract.getState(json.channelId).then((state: any) => new PaymentChannel(
       doc.sender,
       doc.receiver,
       doc.channelId,
@@ -166,7 +167,7 @@ export class NedbChannelsDatabase extends AbstractChannelsDatabase<EngineNedb> i
 
   allOpen (): Promise<PaymentChannel[]> {
     return this.engine.exec((client: any) => {
-      return pify((cb: Function) => client.find({ kind: this.kind, state: { $lt: 2 } }, cb))
+      return pify((cb: Function) => client.find({ kind: this.kind, state: 0 }, cb))
     }).then((res) => this.inflatePaymentChannels(res))
   }
 
@@ -284,7 +285,7 @@ export class MongoChannelsDatabase extends AbstractChannelsDatabase<EngineMongo>
 
   allOpen (): Promise<PaymentChannel[]> {
     return this.engine.exec((client: any) => {
-      return pify((cb: Function) => client.collection('channel').find({ state: { $lt: 2 } }).toArray(cb))
+      return pify((cb: Function) => client.collection('channel').find({ state: 0 }).toArray(cb))
     }).then((res: any) => this.inflatePaymentChannels(res))
   }
 
@@ -380,7 +381,7 @@ export class PostgresChannelsDatabase extends AbstractChannelsDatabase<EnginePos
   allOpen (): Promise<PaymentChannel[]> {
     return this.engine.exec((client: any) => client.query(
       'SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
-      'WHERE state < 2'
+      'WHERE state = 0'
     )).then((res: any) => this.inflatePaymentChannels(res.rows))
   }
 

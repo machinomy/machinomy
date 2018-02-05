@@ -1,16 +1,17 @@
 import * as BigNumber from 'bignumber.js'
-import { PaymentChannel } from './paymentChannel'
+import { PaymentChannel } from './payment_channel'
 import ChannelsDatabase from './storages/channels_database'
-import { ChannelContract, ChannelId } from './channel'
+import { ChannelId } from './channel'
 import { EventEmitter } from 'events'
 import Mutex from './util/mutex'
-import { PaymentRequired } from './transport'
 import { TransactionResult } from 'truffle-contract'
 import PaymentsDatabase from './storages/payments_database'
-import Payment from './Payment'
+import Payment from './payment'
 import Web3 = require('web3')
 import TokensDatabase from './storages/tokens_database'
 import log from './util/log'
+import ChannelContract from './channel_contract'
+import PaymentManager from './payment_manager'
 
 const LOG = log('ChannelManager')
 
@@ -46,9 +47,11 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
 
   private channelContract: ChannelContract
 
+  private paymentManager: PaymentManager
+
   private mutex: Mutex = new Mutex()
 
-  constructor (account: string, web3: Web3, channelsDao: ChannelsDatabase, paymentsDao: PaymentsDatabase, tokensDao: TokensDatabase, channelContract: ChannelContract) {
+  constructor (account: string, web3: Web3, channelsDao: ChannelsDatabase, paymentsDao: PaymentsDatabase, tokensDao: TokensDatabase, channelContract: ChannelContract, paymentManager: PaymentManager) {
     super()
     this.account = account
     this.web3 = web3
@@ -56,6 +59,7 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     this.paymentsDao = paymentsDao
     this.tokensDao = tokensDao
     this.channelContract = channelContract
+    this.paymentManager = paymentManager
   }
 
   openChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber): Promise<PaymentChannel> {
@@ -97,7 +101,7 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
         throw new Error(`Total spend ${toSpend.toString()} is larger than channel value ${channel.value.toString()}`)
       }
 
-      return Payment.fromPaymentChannel(this.web3, channel, new PaymentRequired(channel.receiver, toSpend, '', meta))
+      return this.paymentManager.buildPaymentForChannel(channel, toSpend, toSpend, meta)
     }))
   }
 
@@ -153,8 +157,7 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     }
 
     this.emit('willOpenChannel', sender, receiver, depositAmount)
-    const paymentReq = new PaymentRequired(receiver, depositAmount, '', '')
-    return this.channelContract.buildPaymentChannel(sender, paymentReq, depositAmount, DEFAULT_SETTLEMENT_PERIOD)
+    return this.buildChannel(sender, receiver, depositAmount, DEFAULT_SETTLEMENT_PERIOD)
       .then((paymentChannel: PaymentChannel) => this.channelsDao.save(paymentChannel).then(() => paymentChannel))
       .then((paymentChannel: PaymentChannel) => {
         this.emit('didOpenChannel', paymentChannel)
@@ -163,17 +166,17 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
   }
 
   private settle (channel: PaymentChannel): Promise<TransactionResult> {
-    return this.channelContract.getState(channel).then((state: number) => {
+    return this.channelContract.getState(channel.channelId).then((state: number) => {
       if (state === 2) {
         throw new Error(`Channel ${channel.channelId.toString()} is already settled.`)
       }
 
       switch (state) {
         case 0:
-          return this.channelContract.startSettle(this.account, channel, new BigNumber.BigNumber(channel.spent))
+          return this.channelContract.startSettle(this.account, channel.channelId)
             .then((res: TransactionResult) => this.channelsDao.updateState(channel.channelId, 1).then(() => res))
         case 1:
-          return this.channelContract.finishSettle(this.account, channel)
+          return this.channelContract.finishSettle(this.account, channel.channelId)
             .then((res: TransactionResult) => this.channelsDao.updateState(channel.channelId, 2).then(() => res))
         default:
           throw new Error(`Unknown state: ${state}`)
@@ -187,9 +190,15 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
         throw new Error(`No payment found for channel ID ${channel.channelId.toString()}`)
       }
 
-      return this.channelContract.claim(channel.receiver, channel, payment.value, Number(payment.v), payment.r, payment.s)
+      return this.channelContract.claim(channel.receiver, channel.channelId, payment.value, payment.signature)
         .then((res: TransactionResult) => this.channelsDao.updateState(channel.channelId, 2).then(() => res))
     })
+  }
+
+  private async buildChannel (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number): Promise<PaymentChannel> {
+    const res = await this.channelContract.open(sender, receiver, price, settlementPeriod)
+    const channelId = res.logs[0].args.channelId
+    return new PaymentChannel(sender, receiver, channelId, price, new BigNumber.BigNumber(0), 0, undefined)
   }
 
   private isPaymentValid (payment: Payment, paymentChannel: PaymentChannel): boolean {
