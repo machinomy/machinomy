@@ -5,7 +5,7 @@ import { PaymentRequired, Transport } from '../lib/transport'
 import { AcceptPaymentRequestSerde, AcceptPaymentResponse, AcceptTokenResponse, ClientImpl } from '../lib/client'
 import expectsRejection from './util/expects_rejection'
 import * as Request from 'request-promise-native'
-import { PaymentSerde } from '../lib/Payment'
+import { PaymentSerde } from '../lib/payment'
 
 const expect = require('expect')
 
@@ -103,8 +103,8 @@ describe('ClientImpl', () => {
         price: '100',
         channelValue: '1000',
         v: 27,
-        r: '0xa',
-        s: '0xb',
+        r: '0x000000000000000000000000000000000000000000000000000000000000000a',
+        s: '0x000000000000000000000000000000000000000000000000000000000000000a',
         contractAddress: '0xab',
         token: '0x123'
       }

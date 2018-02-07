@@ -1,6 +1,5 @@
-import * as BigNumber from 'bignumber.js'
 import { ChannelId } from '../channel'
-import Payment, { PaymentJSON } from '../Payment'
+import Payment, { PaymentJSON, PaymentSerde } from '../payment'
 import pify from '../util/pify'
 import { namespaced } from '../util/namespaced'
 import Engine, { EngineMongo, EngineNedb, EnginePostgres } from '../engines/engine'
@@ -29,20 +28,7 @@ export abstract class AbstractPaymentsDatabase<T extends Engine> implements Paym
       return null
     }
 
-    return new Payment({
-      channelId: json.channelId,
-      sender: json.sender,
-      receiver: json.receiver,
-      price: new BigNumber.BigNumber(json.price),
-      value: new BigNumber.BigNumber(json.value),
-      channelValue: new BigNumber.BigNumber(json.channelValue),
-      v: Number(json.v),
-      r: json.r,
-      s: json.s,
-      meta: json.meta,
-      contractAddress: json.contractAddress,
-      token: json.token
-    })
+    return PaymentSerde.instance.deserialize(json)
   }
 
   abstract save (token: string, payment: Payment): Promise<void>
@@ -60,7 +46,7 @@ export class MongoPaymentsDatabase extends AbstractPaymentsDatabase<EngineMongo>
    * Save payment to the database, to check later.
    */
   save (token: string, payment: Payment): Promise<void> {
-    const serialized: any = Payment.serialize(payment)
+    const serialized: any = PaymentSerde.instance.serialize(payment)
     serialized.kind = this.kind
     serialized.token = token
     // log.info(`Saving payment for channel ${payment.channelId} and token ${token}`)
@@ -93,7 +79,7 @@ export class MongoPaymentsDatabase extends AbstractPaymentsDatabase<EngineMongo>
 
 export class NedbPaymentsDatabase extends AbstractPaymentsDatabase<EngineNedb> {
   save (token: string, payment: Payment): Promise<void> {
-    const serialized: any = Payment.serialize(payment)
+    const serialized: any = PaymentSerde.instance.serialize(payment)
     serialized.kind = this.kind
     serialized.token = token
     // log.info(`Saving payment for channel ${payment.channelId} and token ${token}`)
@@ -124,7 +110,7 @@ export class NedbPaymentsDatabase extends AbstractPaymentsDatabase<EngineNedb> {
 
 export class PostgresPaymentsDatabase extends AbstractPaymentsDatabase<EnginePostgres> {
   save (token: string, payment: Payment): Promise<void> {
-    const serialized: any = Payment.serialize(payment)
+    const serialized: any = PaymentSerde.instance.serialize(payment)
     serialized.kind = this.kind
     serialized.token = token
 

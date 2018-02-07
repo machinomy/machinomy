@@ -1,20 +1,20 @@
 import Web3 = require('web3')
 import Engine from './lib/engines/engine'
-import * as channel from './lib/channel'
-import { PaymentChannel } from './lib/paymentChannel'
+import { PaymentChannel } from './lib/payment_channel'
 import * as BigNumber from 'bignumber.js'
-import Payment from './lib/Payment'
+import Payment from './lib/payment'
 import { TransactionResult } from 'truffle-contract'
 import { Container } from './lib/container'
 import ChannelManager from './lib/channel_manager'
 import ChannelsDatabase from './lib/storages/channels_database'
 import Client, {
-  AcceptPaymentRequest, AcceptPaymentResponse, AcceptTokenRequest,
+  AcceptPaymentRequestSerde, AcceptPaymentResponse, AcceptTokenRequest,
   AcceptTokenResponse
 } from './lib/client'
 import { PaymentRequired } from './lib/transport'
 import PaymentsDatabase from './lib/storages/payments_database'
 import defaultRegistry from './lib/services'
+import ChannelContract from './lib/channel_contract'
 
 /**
  * Options for machinomy buy.
@@ -97,7 +97,7 @@ export default class Machinomy {
   private minimumChannelAmount?: BigNumber.BigNumber
   private settlementPeriod?: number
 
-  private channelContract: channel.ChannelContract
+  private channelContract: ChannelContract
 
   private serviceContainer: Container
 
@@ -215,7 +215,7 @@ export default class Machinomy {
         throw new Error('No payment channel found.')
       }
 
-      return this.channelContract.deposit(this.account, paymentChannel, _value)
+      return this.channelContract.deposit(this.account, channelId, _value)
     })
   }
 
@@ -245,8 +245,8 @@ export default class Machinomy {
   /**
    * Save payment into the storage and return an id of the payment. The id can be used by {@link Machinomy.paymentById}.
    */
-  acceptPayment (req: AcceptPaymentRequest): Promise <AcceptPaymentResponse> {
-    return this.client.acceptPayment(req)
+  acceptPayment (req: any): Promise <AcceptPaymentResponse> {
+    return this.client.acceptPayment(AcceptPaymentRequestSerde.instance.deserialize(req))
   }
 
   /**

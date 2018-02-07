@@ -1,6 +1,7 @@
 import * as channel from '../lib/channel'
 import * as support from './support'
-import Payment from '../lib/Payment'
+import Payment from '../lib/payment'
+import Signature from '../lib/signature'
 let expect = require('expect')
 
 const HEX_ADDRESS = 'eb61859a9d74f95bda8a6f9d3efcfe6478e49151'
@@ -49,10 +50,13 @@ describe('channel', () => {
           value: support.randomBigNumber(),
           channelValue: support.randomBigNumber(),
           meta: 'metaexample',
-          v: 1,
-          r: '0x2',
-          s: '0x3',
-          token: undefined
+          signature: Signature.fromParts({
+            v: 27,
+            r: '0x2',
+            s: '0x3'
+          }),
+          token: undefined,
+          contractAddress: undefined
         })
         let paymentChannel = channel.PaymentChannel.fromPayment(payment)
         expect(paymentChannel.channelId).toBe(payment.channelId)

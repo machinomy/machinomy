@@ -1,5 +1,4 @@
 import Web3 = require('web3')
-import { ChannelContract } from './channel'
 import ChannelsDatabase, {
   MongoChannelsDatabase, NedbChannelsDatabase,
   PostgresChannelsDatabase
@@ -16,20 +15,15 @@ import { MachinomyOptions } from '../index'
 import Engine, { EngineMongo, EngineNedb, EnginePostgres } from './engines/engine'
 import { Registry } from './container'
 import ChainManager from './chain_manager'
-import { ChannelContractDefault } from './ChannelContractDefault'
-import { ChannelContractToken } from './ChannelContractToken'
+import ChannelContract from './channel_contract'
+import PaymentManager from './payment_manager'
 
 export default function defaultRegistry (): Registry {
   const serviceRegistry = new Registry()
 
   serviceRegistry.bind('ChainManager', (web3: Web3) => new ChainManager(web3), ['Web3'])
 
-  serviceRegistry.bind('ChannelContractDefault', (chainManager: ChainManager) => new ChannelContractDefault(chainManager), ['ChainManager'])
-
-  serviceRegistry.bind('ChannelContractToken', (chainManager: ChainManager) => new ChannelContractToken(chainManager), ['ChainManager'])
-
-  serviceRegistry.bind('ChannelContract', (chanDefault: ChannelContractDefault, chanToken: ChannelContractToken) => new ChannelContract(chanDefault, chanToken),
-    ['ChannelContractDefault', 'ChannelContractToken'])
+  serviceRegistry.bind('ChannelContract', (web3: Web3) => new ChannelContract(web3), ['Web3'])
 
   serviceRegistry.bind('ChannelManager',
     (
@@ -38,9 +32,10 @@ export default function defaultRegistry (): Registry {
       channelsDao: ChannelsDatabase,
       paymentsDao: PaymentsDatabase,
       tokensDao: TokensDatabase,
-      channelContract: ChannelContract
-    ) => new ChannelManagerImpl(account, web3, channelsDao, paymentsDao, tokensDao, channelContract),
-    ['account', 'Web3', 'ChannelsDatabase', 'PaymentsDatabase', 'TokensDatabase', 'ChannelContract'])
+      channelContract: ChannelContract,
+      paymentManager: PaymentManager
+    ) => new ChannelManagerImpl(account, web3, channelsDao, paymentsDao, tokensDao, channelContract, paymentManager),
+    ['account', 'Web3', 'ChannelsDatabase', 'PaymentsDatabase', 'TokensDatabase', 'ChannelContract', 'PaymentManager'])
 
   serviceRegistry.bind('Client', (transport: Transport, channelManager: ChannelManager) => {
     return new ClientImpl(transport, channelManager)
@@ -116,6 +111,10 @@ export default function defaultRegistry (): Registry {
 
     throw new Error('Invalid engine.')
   }, ['Engine', 'namespace'])
+
+  serviceRegistry.bind('PaymentManager',
+    (chainManager: ChainManager, channelContract: ChannelContract) => new PaymentManager(chainManager, channelContract),
+    ['ChainManager', 'ChannelContract'])
 
   return serviceRegistry
 }

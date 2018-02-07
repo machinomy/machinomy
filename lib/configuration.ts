@@ -17,7 +17,7 @@ const log = Log.create('configuration')
 
 const CONTRACTS = {
   development: '0xede26550428812f833ad7a8d1a9019561d243d6c',
-  ropsten: '0xc365a7c7d222b781e7b50a95e005d89243fc650d'
+  ropsten: '0xc582877dec917b21fa6b0dc68101b5c01f966325'
 }
 
 export const contractAddress = (): string => {
