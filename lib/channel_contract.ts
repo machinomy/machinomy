@@ -63,7 +63,7 @@ export default class ChannelContract {
       return 1
     }
 
-    throw new Error('Undefined state.')
+    return 2
   }
 
   async startSettle (account: string, channelId: string): Promise<TransactionResult> {
@@ -83,9 +83,16 @@ export default class ChannelContract {
     return deployed.paymentDigest(channelId, value)
   }
 
+  async canClaim (channelId: string, payment: BigNumber.BigNumber, receiver: string, signature: Signature) {
+    const deployed = await this.contract()
+    return deployed.canClaim(channelId, payment, receiver, signature.toString())
+  }
+
   private async contract (): Promise<Unidirectional.Contract> {
     if (!this._contract) {
-      this._contract = await Unidirectional.contract(this.web3.currentProvider).deployed()
+      this._contract = process.env.CONTRACT_ADDRESS ?
+        await Unidirectional.contract(this.web3.currentProvider).at(process.env.CONTRACT_ADDRESS as string) :
+        await Unidirectional.contract(this.web3.currentProvider).deployed()
     }
 
     return this._contract

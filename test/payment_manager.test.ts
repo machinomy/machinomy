@@ -21,10 +21,10 @@ describe('PaymentManager', () => {
   })
 
   describe('#buildPaymentForChannel', () => {
-    it('builds a signed payment whose value is the sum of the channel\'s spent and the value', () => {
+    it('builds a signed payment', () => {
       const chan: PaymentChannel = new PaymentChannel('send', 'recv', 'id', new BigNumber.BigNumber(100), new BigNumber.BigNumber(10), 0, '0xcabdab')
 
-      channelContract.paymentDigest = sinon.stub().withArgs('id', new BigNumber.BigNumber(15))
+      channelContract.paymentDigest = sinon.stub().withArgs('id', new BigNumber.BigNumber(15)).resolves('digest')
       chainManager.sign = sinon.stub().withArgs('sender', 'digest').resolves(Signature.fromParts({
         v: 27,
         r: '0x01',
@@ -41,8 +41,8 @@ describe('PaymentManager', () => {
         expect(pmt.channelId).toBe('id')
         expect(pmt.sender).toBe('send')
         expect(pmt.receiver).toBe('recv')
-        expect(pmt.price).toEqual(new BigNumber.BigNumber(6))
-        expect(pmt.value).toEqual(new BigNumber.BigNumber(15))
+        expect(pmt.price).toEqual(new BigNumber.BigNumber(5))
+        expect(pmt.value).toEqual(new BigNumber.BigNumber(6))
         expect(pmt.channelValue).toEqual(new BigNumber.BigNumber(100))
         expect(pmt.signature.isEqual(expSig)).toBe(true)
         expect(pmt.meta).toBe('meta')

@@ -14,8 +14,7 @@ export default class PaymentManager {
     this.channelContract = channelContract
   }
 
-  async buildPaymentForChannel (channel: PaymentChannel, value: BigNumber.BigNumber, price: BigNumber.BigNumber, meta: string): Promise<Payment> {
-    const totalValue = channel.spent.plus(value)
+  async buildPaymentForChannel (channel: PaymentChannel, price: BigNumber.BigNumber, totalValue: BigNumber.BigNumber, meta: string): Promise<Payment> {
     const digest = await this.channelContract.paymentDigest(channel.channelId, totalValue)
     const signature = await this.chainManager.sign(channel.sender, digest)
 
@@ -40,16 +39,14 @@ export default class PaymentManager {
     const validPaymentValue = paymentChannel.value.lessThanOrEqualTo(payment.channelValue)
     const validSender = paymentChannel.sender === payment.sender
     const isPositive = payment.value.greaterThanOrEqualTo(new BigNumber.BigNumber(0)) && payment.price.greaterThanOrEqualTo(new BigNumber.BigNumber(0))
-    const digest = await this.channelContract.paymentDigest(paymentChannel.channelId, payment.value)
-    const signature = await this.chainManager.sign(paymentChannel.sender, digest)
-    const validSignature = payment.signature.isEqual(signature)
+    const canClaim = await this.channelContract.canClaim(payment.channelId, payment.value, payment.receiver, payment.signature)
 
     return validIncrement &&
       validChannelValue &&
       validPaymentValue &&
       validSender &&
       validChannelId &&
-      validSignature &&
+      canClaim &&
       isPositive
   }
 }

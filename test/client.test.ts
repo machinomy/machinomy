@@ -236,7 +236,7 @@ describe('ClientImpl', () => {
 
   describe('acceptVerify', () => {
     it('returns an AcceptTokenResponse based on the request', () => {
-      channelManager.verifyToken = sinon.stub().withArgs('token').resolves()
+      channelManager.verifyToken = sinon.stub().withArgs('token').resolves(true)
 
       return client.acceptVerify({ token: 'token' }).then((res: AcceptTokenResponse) => {
         expect(res.status).toBe(true)

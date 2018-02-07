@@ -131,4 +131,20 @@ describe('ChannelContract', () => {
       })
     })
   })
+
+  describe('#canClaim', () => {
+    it('returns whether the user can claim', () => {
+      const sig = Signature.fromParts({
+        v: 27,
+        r: '0x01',
+        s: '0x02'
+      })
+
+      deployed.canClaim = sinon.stub().withArgs(ID, new BigNumber.BigNumber(10), 'recv', sig.toString()).resolves(true)
+
+      return contract.canClaim(ID, new BigNumber.BigNumber(10), 'recv', sig).then((val: boolean) => {
+        expect(val).toBe(true)
+      })
+    })
+  })
 })

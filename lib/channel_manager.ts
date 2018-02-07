@@ -7,11 +7,11 @@ import Mutex from './util/mutex'
 import { TransactionResult } from 'truffle-contract'
 import PaymentsDatabase from './storages/payments_database'
 import Payment from './payment'
-import Web3 = require('web3')
 import TokensDatabase from './storages/tokens_database'
 import log from './util/log'
 import ChannelContract from './channel_contract'
 import PaymentManager from './payment_manager'
+import Web3 = require('web3')
 
 const LOG = log('ChannelManager')
 
@@ -22,13 +22,21 @@ export const DEFAULT_SETTLEMENT_PERIOD = 2 * DAY_IN_SECONDS
 
 export interface ChannelManager extends EventEmitter {
   openChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber): Promise<PaymentChannel>
+
   closeChannel (channelId: string | ChannelId): Promise<TransactionResult>
+
   nextPayment (channelId: string | ChannelId, amount: BigNumber.BigNumber, meta: string): Promise<Payment>
+
   acceptPayment (payment: Payment): Promise<string>
+
   requireOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber): Promise<PaymentChannel>
+
   channels (): Promise<PaymentChannel[]>
+
   openChannels (): Promise<PaymentChannel[]>
+
   channelById (channelId: ChannelId | string): Promise<PaymentChannel | null>
+
   verifyToken (token: string): Promise<boolean>
 }
 
@@ -67,30 +75,13 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
   }
 
   closeChannel (channelId: string | ChannelId): Promise<TransactionResult> {
-    return this.mutex.synchronize(() => this.channelById(channelId).then((channel: PaymentChannel | null) => {
-      if (!channel) {
-        throw new Error(`Channel with id ${channelId.toString()} not found.`)
-      }
-
-      this.emit('willCloseChannel', channel)
-
-      let res: Promise<TransactionResult>
-
-      if (channel.sender === this.account) {
-        res = this.settle(channel)
-      } else {
-        res = this.claim(channel)
-      }
-
-      return res.then((txn: TransactionResult) => {
-        this.emit('didCloseChannel', channel)
-        return txn
-      })
-    }))
+    return this.mutex.synchronize(() => this.internalCloseChannel(channelId))
   }
 
   nextPayment (channelId: string | ChannelId, amount: BigNumber.BigNumber, meta: string): Promise<Payment> {
-    return this.mutex.synchronize(() => this.channelById(channelId).then((channel: PaymentChannel | null) => {
+    return this.mutex.synchronize(async () => {
+      const channel = await this.channelById(channelId)
+
       if (!channel) {
         throw new Error(`Channel with id ${channelId.toString()} not found.`)
       }
@@ -101,28 +92,42 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
         throw new Error(`Total spend ${toSpend.toString()} is larger than channel value ${channel.value.toString()}`)
       }
 
-      return this.paymentManager.buildPaymentForChannel(channel, toSpend, toSpend, meta)
-    }))
+      const payment = await this.paymentManager.buildPaymentForChannel(channel, amount, toSpend, meta)
+      const chan = PaymentChannel.fromPayment(payment)
+      await this.channelsDao.saveOrUpdate(chan)
+      return payment
+    })
   }
 
   acceptPayment (payment: Payment): Promise<string> {
     LOG(`Queueing payment of ${payment.price.toString()} Wei to channel with ID ${payment.channelId}.`)
 
-    return this.mutex.synchronize(() => this.channelsDao.findBySenderReceiverChannelId(payment.sender, payment.receiver, payment.channelId).then(() => {
+    return this.mutex.synchronize(async () => {
       const channel = PaymentChannel.fromPayment(payment)
 
       LOG(`Adding ${payment.price.toString()} Wei to channel with ID ${channel.channelId.toString()}.`)
 
-      if (!this.isPaymentValid(payment, channel)) {
+      const valid = await this.paymentManager.isValid(payment, channel)
+
+      if (!valid) {
+        LOG(`Received invalid payment from ${payment.sender}!`)
+        const existingChannel = await this.channelsDao.findBySenderReceiverChannelId(payment.sender, payment.receiver, payment.channelId)
+
+        if (existingChannel) {
+          LOG(`Found existing channel with id ${payment.channelId} between ${payment.sender} and ${payment.receiver}.`)
+          LOG('Closing channel due to malfeasance.')
+          await this.internalCloseChannel(channel.channelId)
+        }
+
         throw new Error('Invalid payment.')
       }
 
       const token = this.web3.sha3(JSON.stringify(payment)).toString()
-      return this.channelsDao.saveOrUpdate(channel)
-        .then(() => this.tokensDao.save(token, payment.channelId))
-        .then(() => this.paymentsDao.save(token, payment))
-        .then(() => token)
-    }))
+      await this.channelsDao.saveOrUpdate(channel)
+      await this.tokensDao.save(token, payment.channelId)
+      await this.paymentsDao.save(token, payment)
+      return token
+    })
   }
 
   requireOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber): Promise<PaymentChannel> {
@@ -165,6 +170,29 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
       })
   }
 
+  private internalCloseChannel (channelId: ChannelId | string) {
+    return this.channelById(channelId).then((channel: PaymentChannel | null) => {
+      if (!channel) {
+        throw new Error(`Channel with id ${channelId.toString()} not found.`)
+      }
+
+      this.emit('willCloseChannel', channel)
+
+      let res: Promise<TransactionResult>
+
+      if (channel.sender === this.account) {
+        res = this.settle(channel)
+      } else {
+        res = this.claim(channel)
+      }
+
+      return res.then((txn: TransactionResult) => {
+        this.emit('didCloseChannel', channel)
+        return txn
+      })
+    })
+  }
+
   private settle (channel: PaymentChannel): Promise<TransactionResult> {
     return this.channelContract.getState(channel.channelId).then((state: number) => {
       if (state === 2) {
@@ -199,12 +227,5 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     const res = await this.channelContract.open(sender, receiver, price, settlementPeriod)
     const channelId = res.logs[0].args.channelId
     return new PaymentChannel(sender, receiver, channelId, price, new BigNumber.BigNumber(0), 0, undefined)
-  }
-
-  private isPaymentValid (payment: Payment, paymentChannel: PaymentChannel): boolean {
-    const validIncrement = (paymentChannel.spent.plus(payment.price)).lessThanOrEqualTo(paymentChannel.value)
-    const validChannelValue = paymentChannel.value.equals(payment.channelValue)
-    const validPaymentValue = paymentChannel.value.lessThanOrEqualTo(payment.channelValue)
-    return validIncrement && validChannelValue && validPaymentValue
   }
 }

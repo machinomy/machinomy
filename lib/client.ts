@@ -161,7 +161,7 @@ export class ClientImpl extends EventEmitter implements Client {
   doPayment (payment: Payment, gateway: string): Promise<AcceptPaymentResponse> {
     this.emit('willSendPayment')
 
-    LOG(`Attempting to send payment to ${gateway}.`)
+    LOG(`Attempting to send payment to ${gateway}. Sender: ${payment.sender} / Receiver: ${payment.receiver} / Amount: ${payment.price.toString()}`)
 
     const request = new AcceptPaymentRequest(payment)
 
@@ -208,7 +208,7 @@ export class ClientImpl extends EventEmitter implements Client {
 
   acceptVerify (req: AcceptTokenRequest): Promise<AcceptTokenResponse> {
     return this.channelManager.verifyToken(req.token)
-      .then(() => new AcceptTokenResponse(true))
+      .then((res: boolean) => new AcceptTokenResponse(res))
       .catch(() => new AcceptTokenResponse(false))
   }
 

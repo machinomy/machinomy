@@ -61,6 +61,7 @@
     "src/**/*.ts",
     "lib/*.ts",
     "types/*/index.d.ts",
-    "test/*.ts"
+    "test/*.ts",
+    "integration_test/*.ts"
   ]
 }

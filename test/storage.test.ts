@@ -67,11 +67,13 @@ describe('storage', () => {
 
   let tokens: TokensDatabase
 
+  let fakeContract: ChannelContract
+
   before(() => {
     return support.tmpFileName().then(filename => {
       engine = buildEngine(filename)
 
-      const fakeContract = {} as ChannelContract
+      fakeContract = {} as ChannelContract
       fakeContract.getState = (): Promise<number> => {
         return Promise.resolve(0)
       }
@@ -196,15 +198,21 @@ describe('storage', () => {
 
   describe('#allOpen', () => {
     it('returns all open channels', () => {
-      const channelId = support.randomChannelId()
+      const channelId1 = support.randomChannelId()
       const channelId2 = support.randomChannelId()
       const channelId3 = support.randomChannelId()
-      const hexChannelId = channelId.toString()
+      const channelId4 = support.randomChannelId()
+      const hexChannelId1 = channelId1.toString()
       const hexChannelId2 = channelId2.toString()
       const hexChannelId3 = channelId3.toString()
-      const paymentChannel1 = new PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 0, undefined)
+      const hexChannelId4 = channelId4.toString()
+      const paymentChannel1 = new PaymentChannel('sender', 'receiver', hexChannelId1, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 0, undefined)
       const paymentChannel2 = new PaymentChannel('sender', 'receiver', hexChannelId2, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 1, undefined)
       const paymentChannel3 = new PaymentChannel('sender', 'receiver', hexChannelId3, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 2, undefined)
+      const paymentChannel4 = new PaymentChannel('sender', 'receiver', hexChannelId4, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 0, undefined)
+
+      const getState = fakeContract.getState as sinon.SinonStub
+      getState.withArgs(hexChannelId4).resolves(paymentChannel4)
 
       return Promise.all([
         channels.save(paymentChannel1),
@@ -222,9 +230,14 @@ describe('storage', () => {
       it('returns the first channel for the specified sender and receiver whose value is less than the sum of the channel value and amount', () => {
         const correct = support.randomChannelId().toString()
 
+        const remotelyModifiedId = support.randomChannelId().toString()
+        const getState = fakeContract.getState as sinon.SinonStub
+        getState.withArgs(remotelyModifiedId).resolves(2)
+
         return Promise.all([
           channels.save(new PaymentChannel('sender', 'receiver', support.randomChannelId().toString(), new BigNumber.BigNumber(9), new BigNumber.BigNumber(8), 0, undefined)),
           channels.save(new PaymentChannel('sender', 'receiver', correct, new BigNumber.BigNumber(13), new BigNumber.BigNumber(0), 0, undefined)),
+          channels.save(new PaymentChannel('sender', 'receiver', remotelyModifiedId, new BigNumber.BigNumber(13), new BigNumber.BigNumber(0), 0, undefined)),
           channels.save(new PaymentChannel('sender', 'receiver', support.randomChannelId().toString(), new BigNumber.BigNumber(13), new BigNumber.BigNumber(0), 2, undefined)),
           channels.save(new PaymentChannel('sender', 'receiver', support.randomChannelId().toString(), new BigNumber.BigNumber(130), new BigNumber.BigNumber(0), 1, undefined)),
           channels.save(new PaymentChannel('othersender', 'receiver', support.randomChannelId().toString(), new BigNumber.BigNumber(11), new BigNumber.BigNumber(0), 0, undefined)),

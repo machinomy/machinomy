@@ -115,11 +115,12 @@ describe('ChannelManagerImpl', () => {
     })
 
     it('throws an error when no channels are found', () => {
-      channelsDao.firstById = sinon.stub().resolves([])
+      channelsDao.firstById = sinon.stub().resolves(null)
       return expectsRejection(channelManager.closeChannel('nope'))
     })
 
     it('throws an error if the channel is already settled', () => {
+      channelsDao.firstById = sinon.stub().resolves(fakeChan)
       channelContract.getState = sinon.stub().resolves(2)
       return expectsRejection(channelManager.closeChannel(id))
     })
@@ -221,6 +222,7 @@ describe('ChannelManagerImpl', () => {
     })
 
     it('should throw an error if no channel is found', () => {
+      channelsDao.firstById = sinon.stub().withArgs(id).resolves(null)
       return expectsRejection(channelManager.nextPayment(id, new BigNumber.BigNumber(6), ''))
     })
 
@@ -229,11 +231,31 @@ describe('ChannelManagerImpl', () => {
     })
 
     it('should return a new payment whose spend is the sum of the existing spend plus amount', () => {
-      const fakePayment = {} as Payment
-      paymentManager.buildPaymentForChannel = sinon.stub().withArgs(web3, channel, sinon.match.object).resolves(fakePayment)
+      paymentManager.buildPaymentForChannel = sinon.stub().withArgs(channel, sinon.match.object, sinon.match.object, '').callsFake((channel: PaymentChannel, price: BigNumber.BigNumber, value: BigNumber.BigNumber, meta: string) => {
+        return new Payment({
+          channelId: channel.channelId,
+          sender: 'send',
+          receiver: 'recv',
+          price,
+          value,
+          channelValue: new BigNumber.BigNumber(100),
+          signature: Signature.fromParts({
+            v: 27,
+            r: '0x01',
+            s: '0x02'
+          }),
+          meta,
+          contractAddress: undefined,
+          token: undefined
+        })
+      })
+
+      channelsDao.saveOrUpdate = sinon.stub().resolves()
+
       return channelManager.nextPayment(id, new BigNumber.BigNumber(8), '').then((payment: Payment) => {
-        expect(payment).toBe(fakePayment)
-        expect((paymentManager.buildPaymentForChannel as sinon.SinonStub).lastCall.args[2]).toEqual(new BigNumber.BigNumber(10))
+        expect((channelsDao.saveOrUpdate as sinon.SinonStub).called).toBe(true)
+        expect(payment.value.eq(new BigNumber.BigNumber(10))).toBe(true)
+        expect(payment.price.eq(new BigNumber.BigNumber(8))).toBe(true)
       })
     })
   })
@@ -266,27 +288,46 @@ describe('ChannelManagerImpl', () => {
       channel = new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(10), new BigNumber.BigNumber(2), 0, undefined)
     })
 
-    it('should throw an error if no channels exist', () => {
-      channelsDao.findBySenderReceiverChannelId = sinon.stub().resolves([])
-      return expectsRejection(channelManager.acceptPayment(payment))
-    })
-
-    it('should throw an error if the payment is invalid', () => {
-      payment.price = new BigNumber.BigNumber(100)
-      channelsDao.findBySenderReceiverChannelId = sinon.stub().resolves([channel])
-      return expectsRejection(channelManager.acceptPayment(payment))
-    })
-
     it('should save the payment to the database and return the token when valid', () => {
       web3.sha3 = sinon.stub().returns('token')
-      channelsDao.findBySenderReceiverChannelId = sinon.stub().resolves([channel])
       channelsDao.saveOrUpdate = sinon.stub().withArgs(channelsDao).resolves()
       tokensDao.save = sinon.stub().withArgs('token', payment.channelId).resolves()
       paymentsDao.save = sinon.stub().withArgs('token', payment).resolves()
+      paymentManager.isValid = sinon.stub().resolves(true)
 
       return channelManager.acceptPayment(payment).then((token: string) => {
         expect(token).toBe('token')
       })
+    })
+
+    it('should close the channel if the payment is invalid and a channel exists', () => {
+      const signature = Signature.fromParts({
+        v: 27,
+        r: '0x02',
+        s: '0x03'
+      })
+
+      const newChan = {
+        ...fakeChan,
+        sender: '0xbeef',
+        channelId: '456'
+      }
+
+      paymentManager.isValid = sinon.stub().resolves(false)
+      channelsDao.findBySenderReceiverChannelId = sinon.stub().resolves(newChan)
+      paymentsDao.firstMaximum = sinon.stub().resolves({
+        price: new BigNumber.BigNumber(1),
+        value: new BigNumber.BigNumber(0.5),
+        signature
+      })
+      channelContract.claim = sinon.stub().resolves({})
+      channelContract.getState = sinon.stub().resolves(0)
+      channelsDao.updateState = sinon.stub().resolves()
+      channelsDao.firstById = sinon.stub().withArgs(newChan.channelId).resolves(newChan)
+
+      return expectsRejection(channelManager.acceptPayment(payment))
+        .then(() => expect((channelContract.claim as sinon.SinonStub)
+          .calledWith(fakeChan.receiver, newChan.channelId, new BigNumber.BigNumber(0.5), signature)).toBe(true))
     })
   })
 
