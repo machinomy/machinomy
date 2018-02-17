@@ -1,5 +1,5 @@
 import homedir = require('homedir')
-import { Log } from 'typescript-logger'
+import Log from './util/log'
 import path = require('path')
 import Web3 = require('web3')
 import * as env from './env'
@@ -13,7 +13,7 @@ export const VERSION = '0.0.3'
 export const PROTOCOL = 'machinomy/' + VERSION
 export const PAYWALL_PATH = 'api/paywall/' + PROTOCOL
 
-const log = Log.create('configuration')
+const log = Log('configuration')
 
 const CONTRACTS = {
   development: '0xede26550428812f833ad7a8d1a9019561d243d6c',
@@ -73,7 +73,7 @@ export const configurationOptions = () => {
     const fs = require('fs')
     return JSON.parse(fs.readFileSync(configFilePath(), 'utf8'))
   } catch (error) {
-    log.error(error)
+    log(error)
     return {}
   }
 }
@@ -100,7 +100,7 @@ export const receiver = (): Configuration => {
       engine: process.env.MACHINOMY_SENDER_ENGINE || options.receiver.engine
     })
   } catch (error) {
-    log.error(error)
+    log(error)
     return new Configuration({})
   }
 }

@@ -1,5 +1,5 @@
-import Web3 = require('web3')
-import uuid = require('uuid')
+import * as Web3 from 'web3'
+import * as uuid from 'uuid'
 import * as BigNumber from 'bignumber.js'
 import * as sinon from 'sinon'
 import { Unidirectional } from '@machinomy/contracts'
