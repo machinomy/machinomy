@@ -1,4 +1,4 @@
-import Web3 = require('web3')
+import * as Web3 from 'web3'
 import Engine from './lib/engines/engine'
 import { PaymentChannel } from './lib/payment_channel'
 import * as BigNumber from 'bignumber.js'

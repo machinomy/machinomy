@@ -1,6 +1,6 @@
 import { Container, Registry } from '../lib/container'
 import * as sinon from 'sinon'
-import expect = require('expect')
+import * as expect from 'expect'
 
 let lastId = 0
 
