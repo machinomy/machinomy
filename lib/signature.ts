@@ -1,4 +1,4 @@
-const util = require('ethereumjs-util')
+import * as util from 'ethereumjs-util'
 
 export interface SignatureParts {
   v: number,
