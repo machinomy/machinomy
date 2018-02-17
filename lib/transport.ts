@@ -1,4 +1,3 @@
-import _ = require('lodash')
 import { RequestResponse, RequiredUriUrl, CoreOptions } from 'request'
 import Payment from './payment'
 import * as BigNumber from 'bignumber.js'
@@ -60,11 +59,11 @@ export class Transport {
       'authorization': 'Paywall ' + token
     }
     LOG(`Getting ${uri} using access token ${token}`)
-    if (_.isFunction(opts.onWillLoad)) {
+    if (opts.onWillLoad) {
       opts.onWillLoad()
     }
     return this.get(uri, headers).then(result => {
-      if (_.isFunction(opts.onDidLoad)) {
+      if (opts.onDidLoad) {
         opts.onDidLoad()
       }
       return result
@@ -99,11 +98,11 @@ export class Transport {
       body: payment
     }
     LOG('Getting request token in exchange for payment', payment)
-    if (_.isFunction(opts.onWillSendPayment)) {
+    if (opts.onWillSendPayment) {
       opts.onWillSendPayment()
     }
     return request(options).then(extractPaywallToken).then(result => {
-      if (_.isFunction(opts.onDidSendPayment)) {
+      if (opts.onDidSendPayment) {
         opts.onDidSendPayment()
       }
       return result
