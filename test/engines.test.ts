@@ -12,7 +12,7 @@ describe('EngineMongo', () => {
   let engine: EngineMongo
 
   beforeEach(() => {
-    engine = new EngineMongo()
+    engine = new EngineMongo('mongodb://localhost:27017/machinomy')
   })
 
   describe('isConnected', () => {

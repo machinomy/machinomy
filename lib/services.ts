@@ -44,24 +44,18 @@ export default function defaultRegistry (): Registry {
   serviceRegistry.bind('Transport', () => new Transport())
 
   serviceRegistry.bind('Engine', (options: MachinomyOptions): Engine => {
-    if (options.engine === 'nedb' && !options.databaseFile) {
-      throw new Error('No database file found.')
-    }
+    const splits = options.databaseUrl.split('://')
 
-    switch (options.engine) {
+    switch (splits[0]) {
       case 'nedb':
-        return new EngineNedb(options.databaseFile as string, false)
+        return new EngineNedb(splits[1], false)
       case 'mongo':
-        return new EngineMongo()
-      case 'postgres':
-        return new EnginePostgres()
+        return new EngineMongo(options.databaseUrl)
+      case 'postgresql':
+        return new EnginePostgres(options.databaseUrl)
     }
 
-    if (typeof options.engine === 'object') {
-      return options.engine
-    }
-
-    throw new Error(`Invalid engine: ${options.engine}.`)
+    throw new Error(`Invalid engine: ${splits[0]}.`)
   }, ['MachinomyOptions'])
 
   serviceRegistry.bind('ChannelsDatabase', (engine: Engine, channelContract: ChannelContract, namespace: string): ChannelsDatabase => {

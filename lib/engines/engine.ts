@@ -13,9 +13,15 @@ export default interface Engine {
 }
 
 export class EngineMongo implements Engine {
-  connectionInProgress: Promise<any>
+  private url: string
 
-  _client: any
+  private connectionInProgress: Promise<any>
+
+  private _client: any
+
+  constructor (url: string) {
+    this.url = url
+  }
 
   connect (): Promise<any> {
     if (this.connectionInProgress) {
@@ -23,7 +29,7 @@ export class EngineMongo implements Engine {
     }
 
     this.connectionInProgress = new Promise((resolve, reject) => {
-      MongoClient.connect('mongodb://localhost:27017/machinomy', (err: any, db: any) => {
+      MongoClient.connect(this.url, (err: any, db: any) => {
         if (err) {
           return reject(err)
         }
@@ -114,16 +120,24 @@ export class EngineNedb implements Engine {
 }
 
 export class EnginePostgres implements Engine {
-  connectionInProgress: Promise<any>
+  private url?: string
 
-  _client: any
+  private connectionInProgress: Promise<any>
+
+  private _client: any
+
+  constructor (url?: string) {
+    this.url = url
+  }
 
   connect (): Promise<any> {
     if (this.connectionInProgress) {
       return this.connectionInProgress
     }
 
-    const client = new PGClient()
+    const client = new PGClient(this.url ? {
+      connectionString: this.url
+    } : undefined)
 
     this.connectionInProgress = client.connect().then(() => {
       this._client = client
