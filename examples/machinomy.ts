@@ -15,7 +15,7 @@ let getBalance = async (web3: Web3, account: string) => {
 let provider = configuration.currentProvider()
 let web3 = new Web3(provider)
 
-let machinomyHub = new Machinomy(receiver, web3, { engine: 'nedb', databaseFile: 'hub' })
+let machinomyHub = new Machinomy(receiver, web3, { databaseUrl: 'nedb://./hub' })
 let hub = express()
 hub.use(bodyParser.json())
 hub.use(bodyParser.urlencoded({ extended: false }))
@@ -41,7 +41,7 @@ let port = 3001
 let server = hub.listen(port, async () => {
   const price = 1000000
 
-  let machinomy = new Machinomy(sender, web3, { engine: 'nedb', settlementPeriod: 0, databaseFile: 'client' })
+  let machinomy = new Machinomy(sender, web3, { settlementPeriod: 0, databaseUrl: 'nedb://./client' })
 
   let message = 'This is first buy:'
   let resultFirst = await checkBalance(message, web3, sender, async () => {

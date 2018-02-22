@@ -2,7 +2,7 @@ import * as Web3 from 'web3'
 import Engine from './lib/engines/engine'
 import { PaymentChannel } from './lib/payment_channel'
 import * as BigNumber from 'bignumber.js'
-import Payment from './lib/payment'
+import Payment, { PaymentSerde } from './lib/payment'
 import { TransactionResult } from 'truffle-contract'
 import { Container } from './lib/container'
 import ChannelManager from './lib/channel_manager'
@@ -27,8 +27,8 @@ export interface BuyOptions {
   /** Endpoint for offchain payment that Machinomy send via HTTP.
    * The payment signed by web3 inside Machinomy.
    */
-  gateway: string,
-  meta: string,
+  gateway?: string,
+  meta?: string,
   contractAddress?: string
 }
 
@@ -41,15 +41,16 @@ export interface BuyResult {
   token: string
 }
 
+export interface NextPaymentResult {
+  payment: object
+}
+
 /**
  * Params for Machinomy. Currenty Machinomy supports mongodb and nedb as a database engine.
  * Nedb is a default engine.
  */
 export interface MachinomyOptions {
-  /** "nedb" or "mongo". */
-  engine?: string | Engine
-  /** Path to nedb database file. In the browser will used as name for indexedb. */
-  databaseFile?: string
+  databaseUrl: string
   minimumChannelAmount?: number | BigNumber.BigNumber
   settlementPeriod?: number
 }
@@ -93,7 +94,6 @@ export default class Machinomy {
   /** Web3 instance that manages {@link Machinomy.account}'s private key */
   private web3: Web3
   private engine: Engine
-  private databaseFile: string
   private minimumChannelAmount?: BigNumber.BigNumber
   private settlementPeriod?: number
 
@@ -149,11 +149,6 @@ export default class Machinomy {
     if (options.minimumChannelAmount) {
       this.minimumChannelAmount = new BigNumber.BigNumber(options.minimumChannelAmount)
     }
-    if (options.databaseFile) {
-      this.databaseFile = options.databaseFile
-    } else {
-      this.databaseFile = 'machinomy'
-    }
   }
 
   /**
@@ -173,12 +168,18 @@ export default class Machinomy {
    * </code></pre>
    */
   async buy (options: BuyOptions): Promise<BuyResult> {
-    const price = new BigNumber.BigNumber(options.price)
+    if (!options.gateway) {
+      throw new Error('gateway must be specified.')
+    }
 
-    const channel = await this.channelManager.requireOpenChannel(this.account, options.receiver, price)
-    const payment: Payment = await this.channelManager.nextPayment(channel.channelId, price, options.meta)
+    const payment = await this.nextPayment(options)
     const res: AcceptPaymentResponse = await this.client.doPayment(payment, options.gateway)
-    return { token: res.token, channelId: channel.channelId }
+    return { token: res.token, channelId: payment.channelId }
+  }
+
+  async payment (options: BuyOptions): Promise<NextPaymentResult> {
+    const payment = await this.nextPayment(options)
+    return { payment: PaymentSerde.instance.serialize(payment) }
   }
 
   async pry (uri: string): Promise<PaymentRequired> {
@@ -262,5 +263,12 @@ export default class Machinomy {
 
   shutdown (): Promise<void> {
     return this.engine.close()
+  }
+
+  private async nextPayment (options: BuyOptions): Promise<Payment> {
+    const price = new BigNumber.BigNumber(options.price)
+
+    const channel = await this.channelManager.requireOpenChannel(this.account, options.receiver, price)
+    return this.channelManager.nextPayment(channel.channelId, price, options.meta || '')
   }
 }

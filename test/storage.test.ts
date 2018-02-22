@@ -34,11 +34,11 @@ function buildEngine (filename: string): Engine {
     case 'nedb':
       return new EngineNedb(filename, false)
     case 'mongo':
-      return new EngineMongo()
-    case 'postgres':
+      return new EngineMongo('mongodb://localhost:27017/machinomy')
+    case 'postgresql':
       return new EnginePostgres()
     default:
-      throw new Error('Invalid engine.')
+      throw new Error(`Invalid engine ${engineName}.`)
   }
 }
 

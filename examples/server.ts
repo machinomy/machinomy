@@ -45,7 +45,7 @@ let web3 = new Web3(provider)
 /**
  * Create machinomy instance that provides API for accepting payments.
  */
-let machinomy = new Machinomy(receiver, web3, { engine: 'mongo', databaseFile: 'machinomy' })
+let machinomy = new Machinomy(receiver, web3, { databaseUrl: 'mongodb://localhost:27017/machinomy' })
 
 let hub = express()
 hub.use(bodyParser.json())

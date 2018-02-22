@@ -31,7 +31,11 @@ exports.up = function(db, callback) {
       }
     },
     kind: 'string',
-    token: 'string',
+    token: {
+      type: 'string',
+      notNull: true,
+      unique: true
+    },
     sender: 'string',
     receiver: 'string',
     price: bigNumberColumn,
