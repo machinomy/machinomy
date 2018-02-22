@@ -12,12 +12,15 @@ describe('PaymentManager', () => {
 
   let channelContract: any
 
+  let options: any
+
   let manager: PaymentManager
 
   beforeEach(() => {
     chainManager = {}
     channelContract = {}
-    manager = new PaymentManager(chainManager, channelContract)
+    options = {}
+    manager = new PaymentManager(chainManager, channelContract, options)
   })
 
   describe('#buildPaymentForChannel', () => {

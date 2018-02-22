@@ -107,8 +107,8 @@ export default function defaultRegistry (): Registry {
   }, ['Engine', 'namespace'])
 
   serviceRegistry.bind('PaymentManager',
-    (chainManager: ChainManager, channelContract: ChannelContract) => new PaymentManager(chainManager, channelContract),
-    ['ChainManager', 'ChannelContract'])
+    (chainManager: ChainManager, channelContract: ChannelContract, options: MachinomyOptions) => new PaymentManager(chainManager, channelContract, options),
+    ['ChainManager', 'ChannelContract', 'MachinomyOptions'])
 
   return serviceRegistry
 }

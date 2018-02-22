@@ -15,7 +15,7 @@
   },
   "scripts": {
     "migrate": "db-migrate up",
-    "integration_test": "yarn build && NODE_ENV=test mocha \"integration_test/**/*.test.js\"",
+    "integration_test": "yarn build-test && NODE_ENV=test mocha integration_test/**/*.test.js",
     "test_nedb": "NODE_ENV=test ENGINE_NAME=nedb mocha",
     "test_mongo": "NODE_ENV=test ENGINE_NAME=mongo mocha",
     "test_postgres": "NODE_ENV=test ENGINE_NAME=postgresql mocha",

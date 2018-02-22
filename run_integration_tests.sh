@@ -58,7 +58,7 @@ TMP_DIR="/tmp/machinomy-itests-$NOW"
 mkdir ${TMP_DIR}
 cd ${TMP_DIR}
 echo "Downloading and extracting @machinomy/contracts..."
-wget https://github.com/machinomy/machinomy-contracts/archive/v4.0.1.tar.gz > /dev/null 2>&1
+curl -sL https://github.com/machinomy/machinomy-contracts/archive/v4.0.1.tar.gz --output v4.0.1.tar.gz
 tar -xzf v4.0.1.tar.gz
 cd machinomy-contracts-4.0.1
 echo "Installing contract dependencies..."

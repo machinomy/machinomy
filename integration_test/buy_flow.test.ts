@@ -34,7 +34,8 @@ describe('Buy flow', () => {
     hubPort = randomPort()
 
     hubInstance = new Machinomy(receiver, web3, {
-      databaseUrl: `nedb:///tmp/machinomy-hub-${Date.now()}`
+      databaseUrl: `nedb:///tmp/machinomy-hub-${Date.now()}`,
+      minimumSettlementPeriod: 0
     })
 
     clientInstance = new Machinomy(sender, web3, {

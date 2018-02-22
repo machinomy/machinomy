@@ -66,6 +66,19 @@ export default class ChannelContract {
     return 2
   }
 
+  async getSettlementPeriod (channelId: string): Promise<BigNumber.BigNumber> {
+    LOG(`Fetching settlement period for channel ${channelId}`)
+    const deployed = await this.contract()
+    const exists = await deployed.isPresent(channelId)
+
+    if (!exists) {
+      throw new Error(`Cannot fetch settlement period for non-existent channel ${channelId}.`)
+    }
+
+    const chan = await deployed.channels(channelId)
+    return chan[3]
+  }
+
   async startSettle (account: string, channelId: string): Promise<TransactionResult> {
     LOG(`Starting settle for account ${account} and channel id ${channelId}.`)
     const deployed = await this.contract()

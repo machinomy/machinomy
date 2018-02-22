@@ -52,6 +52,7 @@ export interface NextPaymentResult {
 export interface MachinomyOptions {
   databaseUrl: string
   minimumChannelAmount?: number | BigNumber.BigNumber
+  minimumSettlementPeriod?: number
   settlementPeriod?: number
 }
 
@@ -93,9 +94,8 @@ export default class Machinomy {
   private account: string
   /** Web3 instance that manages {@link Machinomy.account}'s private key */
   private web3: Web3
+
   private engine: Engine
-  private minimumChannelAmount?: BigNumber.BigNumber
-  private settlementPeriod?: number
 
   private channelContract: ChannelContract
 
@@ -144,11 +144,6 @@ export default class Machinomy {
     this.account = account
     this.web3 = web3
     this.engine = this.serviceContainer.resolve('Engine')
-    this.settlementPeriod = options.settlementPeriod
-
-    if (options.minimumChannelAmount) {
-      this.minimumChannelAmount = new BigNumber.BigNumber(options.minimumChannelAmount)
-    }
   }
 
   /**

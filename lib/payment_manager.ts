@@ -3,15 +3,20 @@ import ChainManager from './chain_manager'
 import { PaymentChannel } from './payment_channel'
 import Payment from './payment'
 import ChannelContract from './channel_contract'
+import { MachinomyOptions } from '../index'
+import { DEFAULT_SETTLEMENT_PERIOD } from './channel_manager'
 
 export default class PaymentManager {
   private chainManager: ChainManager
 
   private channelContract: ChannelContract
 
-  constructor (chainManager: ChainManager, channelContract: ChannelContract) {
+  private options: MachinomyOptions
+
+  constructor (chainManager: ChainManager, channelContract: ChannelContract, options: MachinomyOptions) {
     this.chainManager = chainManager
     this.channelContract = channelContract
+    this.options = options
   }
 
   async buildPaymentForChannel (channel: PaymentChannel, price: BigNumber.BigNumber, totalValue: BigNumber.BigNumber, meta: string): Promise<Payment> {
@@ -33,6 +38,7 @@ export default class PaymentManager {
   }
 
   async isValid (payment: Payment, paymentChannel: PaymentChannel): Promise<boolean> {
+    const settlementPeriod = await this.channelContract.getSettlementPeriod(payment.channelId)
     const validIncrement = (paymentChannel.spent.plus(payment.price)).lessThanOrEqualTo(paymentChannel.value)
     const validChannelValue = paymentChannel.value.equals(payment.channelValue)
     const validChannelId = paymentChannel.channelId === payment.channelId
@@ -40,6 +46,8 @@ export default class PaymentManager {
     const validSender = paymentChannel.sender === payment.sender
     const isPositive = payment.value.greaterThanOrEqualTo(new BigNumber.BigNumber(0)) && payment.price.greaterThanOrEqualTo(new BigNumber.BigNumber(0))
     const canClaim = await this.channelContract.canClaim(payment.channelId, payment.value, payment.receiver, payment.signature)
+    const isAboveMinSettlementPeriod = new BigNumber.BigNumber(this.options.minimumSettlementPeriod || DEFAULT_SETTLEMENT_PERIOD)
+      .lessThanOrEqualTo(settlementPeriod)
 
     return validIncrement &&
       validChannelValue &&
@@ -47,6 +55,7 @@ export default class PaymentManager {
       validSender &&
       validChannelId &&
       canClaim &&
-      isPositive
+      isPositive &&
+      isAboveMinSettlementPeriod
   }
 }
