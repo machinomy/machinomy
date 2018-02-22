@@ -131,10 +131,9 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
   }
 
   requireOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber): Promise<PaymentChannel> {
-    return this.mutex.synchronize(() => {
-      return this.channelsDao.findUsable(sender, receiver, amount).then((channel: PaymentChannel) => {
-        return channel || this.internalOpenChannel(sender, receiver, amount, minDepositAmount)
-      })
+    return this.mutex.synchronize(async () => {
+      let channel = await this.channelsDao.findUsable(sender, receiver, amount)
+      return channel || this.internalOpenChannel(sender, receiver, amount, minDepositAmount)
     })
   }
 
@@ -212,15 +211,14 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     })
   }
 
-  private claim (channel: PaymentChannel): Promise<TransactionResult> {
-    return this.paymentsDao.firstMaximum(channel.channelId).then((payment: Payment) => {
-      if (!payment) {
-        throw new Error(`No payment found for channel ID ${channel.channelId.toString()}`)
-      }
-
-      return this.channelContract.claim(channel.receiver, channel.channelId, payment.value, payment.signature)
-        .then((res: TransactionResult) => this.channelsDao.updateState(channel.channelId, 2).then(() => res))
-    })
+  private async claim (channel: PaymentChannel): Promise<TransactionResult> {
+    let payment = await this.paymentsDao.firstMaximum(channel.channelId)
+    if (!payment) {
+      throw new Error(`No payment found for channel ID ${channel.channelId.toString()}`)
+    }
+    let result = await this.channelContract.claim(channel.receiver, channel.channelId, payment.value, payment.signature)
+    await this.channelsDao.updateState(channel.channelId, 2)
+    return result
   }
 
   private async buildChannel (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number): Promise<PaymentChannel> {
