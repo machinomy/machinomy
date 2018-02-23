@@ -10,7 +10,7 @@ const LOG = log('ChannelContract')
 const CREATE_CHANNEL_GAS = 300000
 
 export default class ChannelContract {
-  private _contract: Unidirectional.Contract
+  private _contract?: Unidirectional.Contract
 
   private web3: Web3
 

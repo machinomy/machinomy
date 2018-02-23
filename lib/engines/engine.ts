@@ -15,7 +15,7 @@ export default interface Engine {
 export class EngineMongo implements Engine {
   private url: string
 
-  private connectionInProgress: Promise<any>
+  private connectionInProgress?: Promise<any>
 
   private _client: any
 
@@ -122,7 +122,7 @@ export class EngineNedb implements Engine {
 export class EnginePostgres implements Engine {
   private url?: string
 
-  private connectionInProgress: Promise<any>
+  private connectionInProgress?: Promise<any>
 
   private _client: any
 
@@ -143,7 +143,7 @@ export class EnginePostgres implements Engine {
       this._client = client
     })
 
-    return this.connectionInProgress
+    return this.connectionInProgress!
   }
 
   isConnected (): boolean {
