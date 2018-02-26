@@ -29,26 +29,16 @@
   "main": "./dist/index.js",
   "typings": "./dist/index.d.ts",
   "bin": {
-    "machinomy": "./bin/machinomy.js"
+    "machinomy": "./dist/bin/machinomy.js"
   },
   "types": "./dist/index.d.ts",
   "files": [
-    "bin/",
-    "commands/",
-    "contracts/",
-    "examples/",
-    "lib/",
-    "test/",
-    "integration_test/",
-    "src/",
-    "index.ts",
-    "index.d.ts",
-    "index.js",
-    "index.js.map"
+    "dist/"
   ],
   "dependencies": {
-    "@machinomy/contracts": "^4.0.2",
+    "@machinomy/contracts": "^4.0.5",
     "@machinomy/types-truffle-contract": "https://github.com/machinomy/types-truffle-contract",
+    "@types/bignumber.js": "^4.0.2",
     "@types/body-parser": "^1.16.4",
     "@types/commander": "^2.9.1",
     "@types/debug": "^0.0.30",
@@ -57,7 +47,6 @@
     "@types/nedb": "^1.8.3",
     "@types/request": "^2.0.13",
     "@types/request-promise-native": "^1.0.11",
-    "@types/bignumber.js": "^4.0.2",
     "@types/uuid": "^3.4.3",
     "bignumber.js": "^4.1.0",
     "commander": "^2.9.0",
@@ -82,8 +71,8 @@
   },
   "devDependencies": {
     "@types/mocha": "^2.2.43",
-    "@types/node": "^9.4.0",
     "@types/nock": "^8.2.1",
+    "@types/node": "^9.4.0",
     "@types/sinon": "^4.1.3",
     "@types/tmp": "^0.0.33",
     "body-parser": "^1.15.2",
