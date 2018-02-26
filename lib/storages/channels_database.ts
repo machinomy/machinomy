@@ -28,9 +28,9 @@ export default interface ChannelsDatabase {
   updateState (channelId: ChannelId | string, state: number): Promise<void>
 }
 
-export abstract class AbstractChannelsDatabase<T extends Engine> implements ChannelsDatabase {
-  static LOG = log('AbstractChannelsDatabase')
+const LOG = log('AbstractChannelsDatabase')
 
+export abstract class AbstractChannelsDatabase<T extends Engine> implements ChannelsDatabase {
   engine: T
 
   kind: string
@@ -76,14 +76,14 @@ export abstract class AbstractChannelsDatabase<T extends Engine> implements Chan
   abstract save (paymentChannel: PaymentChannel): Promise<void>
 
   saveOrUpdate (paymentChannel: PaymentChannel): Promise<void> {
-    AbstractChannelsDatabase.LOG(`Saving or updating channel with ID ${paymentChannel.channelId.toString()}`)
+    LOG(`Saving or updating channel with ID ${paymentChannel.channelId.toString()}`)
 
     return this.firstById(paymentChannel.channelId).then((found: PaymentChannel) => {
       if (found) {
-        AbstractChannelsDatabase.LOG(`Spending channel with ID ${paymentChannel.channelId.toString()}`)
+        LOG(`Spending channel with ID ${paymentChannel.channelId.toString()}`)
         return this.spend(paymentChannel.channelId, paymentChannel.spent)
       } else {
-        AbstractChannelsDatabase.LOG(`Spending channel with ID ${paymentChannel.channelId.toString()}`)
+        LOG(`Spending channel with ID ${paymentChannel.channelId.toString()}`)
         return this.save(paymentChannel)
       }
     })

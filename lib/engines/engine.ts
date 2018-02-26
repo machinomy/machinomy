@@ -1,7 +1,29 @@
-const MongoClient = require('mongodb').MongoClient
-const PGClient = require('pg').Client
+let MongoClient: any
+
+try {
+  MongoClient = require('mongodb').MongoClient
+} catch (e) {
+  MongoClient = {}
+}
+
+let PGClient: any
+
+try {
+  PGClient = require('pg').Client
+} catch (e) {
+  PGClient = {}
+}
 
 import Datastore = require('nedb')
+
+let DS: any
+
+try {
+  DS = require('nedb')
+} catch (e) {
+  DS = {}
+}
+
 import pify from '../util/pify'
 
 export default interface Engine {
@@ -92,7 +114,7 @@ export class EngineNedb implements Engine {
     if (db[path]) {
       this.datastore = db[path]
     } else {
-      db[path] = new Datastore({ filename: path, autoload: true, inMemoryOnly: inMemoryOnly })
+      db[path] = new DS({ filename: path, autoload: true, inMemoryOnly: inMemoryOnly })
       this.datastore = db[path]
     }
   }

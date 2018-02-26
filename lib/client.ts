@@ -114,7 +114,7 @@ export class AcceptTokenResponseSerde implements Serde<AcceptTokenResponse> {
   }
 }
 
-export default interface Client {
+export default interface Client extends EventEmitter {
   doPreflight (uri: string): Promise<PaymentRequired>
   doPayment (payment: Payment, gateway: string): Promise<AcceptPaymentResponse>
   acceptPayment (req: AcceptPaymentRequest): Promise<AcceptPaymentResponse>

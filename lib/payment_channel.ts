@@ -12,6 +12,16 @@ export interface PaymentChannelJSON {
   contractAddress: string | undefined
 }
 
+export interface SerializedPaymentChannel {
+  state: number,
+  spent: string,
+  value: string,
+  channelId: string,
+  receiver: string,
+  sender: string,
+  contractAddress: string | undefined
+}
+
 /**
  * The Payment Channel
  */
@@ -62,7 +72,7 @@ export class PaymentChannel {
 export class PaymentChannelSerde implements Serde<PaymentChannel> {
   static instance = new PaymentChannelSerde()
 
-  serialize (obj: PaymentChannel): Object {
+  serialize (obj: PaymentChannel): SerializedPaymentChannel {
     return {
       state: obj.state,
       spent: obj.spent.toString(),
