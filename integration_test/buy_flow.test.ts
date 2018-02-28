@@ -240,6 +240,18 @@ describe('Buy flow', () => {
       expect(balance.greaterThan(receiverOriginalBalance.plus(web3.toWei(0.19, 'ether')))).toBe(true)
     })
   })
+
+  describe('opening a raw channel', () => {
+    let channel: PaymentChannel
+
+    beforeEach(async () => {
+      channel = await clientInstance.open(receiver, new BigNumber.BigNumber(web3.toWei(0.1, 'ether')))
+    })
+
+    it('should open a channel with the provided value', () => {
+      expect(channel.value.eq(web3.toWei(0.1, 'ether'))).toBe(true)
+    })
+  })
 })
 
 function randomPort (): number {
