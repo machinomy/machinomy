@@ -14,6 +14,7 @@ import expectsRejection from './util/expects_rejection'
 import PaymentManager from '../lib/payment_manager'
 import ChannelContract from '../lib/channel_contract'
 import Signature from '../lib/signature'
+import { MachinomyOptions } from '../index'
 
 const expect = require('expect')
 
@@ -49,7 +50,9 @@ describe('ChannelManagerImpl', () => {
     channelsDao = {} as ChannelsDatabase
     channelContract = {} as ChannelContract
     paymentManager = {} as PaymentManager
-    channelManager = new ChannelManagerImpl('0xcafe', web3, channelsDao, paymentsDao, tokensDao, channelContract, paymentManager)
+    channelManager = new ChannelManagerImpl('0xcafe', web3, channelsDao, paymentsDao, tokensDao, channelContract, paymentManager, {
+      settlementPeriod: DEFAULT_SETTLEMENT_PERIOD + 1
+    } as MachinomyOptions)
   })
 
   describe('openChannel', () => {
@@ -62,7 +65,7 @@ describe('ChannelManagerImpl', () => {
       return channelManager.openChannel('0xcafe', '0xbeef', new BigNumber.BigNumber(10))
         .then(() => {
           expect((channelContract.open as sinon.SinonStub)
-            .calledWith('0xcafe', '0xbeef', new BigNumber.BigNumber(100), DEFAULT_SETTLEMENT_PERIOD))
+            .calledWith('0xcafe', '0xbeef', new BigNumber.BigNumber(100), DEFAULT_SETTLEMENT_PERIOD + 1))
             .toBe(true)
         })
     })

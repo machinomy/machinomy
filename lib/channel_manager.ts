@@ -12,6 +12,7 @@ import log from './util/log'
 import ChannelContract from './channel_contract'
 import PaymentManager from './payment_manager'
 import Web3 = require('web3')
+import { MachinomyOptions } from '../index'
 
 const LOG = log('ChannelManager')
 
@@ -59,7 +60,9 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
 
   private mutex: Mutex = new Mutex()
 
-  constructor (account: string, web3: Web3, channelsDao: ChannelsDatabase, paymentsDao: PaymentsDatabase, tokensDao: TokensDatabase, channelContract: ChannelContract, paymentManager: PaymentManager) {
+  private machinomyOptions: MachinomyOptions
+
+  constructor (account: string, web3: Web3, channelsDao: ChannelsDatabase, paymentsDao: PaymentsDatabase, tokensDao: TokensDatabase, channelContract: ChannelContract, paymentManager: PaymentManager, machinomyOptions: MachinomyOptions) {
     super()
     this.account = account
     this.web3 = web3
@@ -68,6 +71,7 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     this.tokensDao = tokensDao
     this.channelContract = channelContract
     this.paymentManager = paymentManager
+    this.machinomyOptions = machinomyOptions
   }
 
   openChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber): Promise<PaymentChannel> {
@@ -161,7 +165,7 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     }
 
     this.emit('willOpenChannel', sender, receiver, depositAmount)
-    return this.buildChannel(sender, receiver, depositAmount, DEFAULT_SETTLEMENT_PERIOD)
+    return this.buildChannel(sender, receiver, depositAmount, this.machinomyOptions.settlementPeriod || DEFAULT_SETTLEMENT_PERIOD)
       .then((paymentChannel: PaymentChannel) => this.channelsDao.save(paymentChannel).then(() => paymentChannel))
       .then((paymentChannel: PaymentChannel) => {
         this.emit('didOpenChannel', paymentChannel)

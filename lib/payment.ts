@@ -72,7 +72,8 @@ export class PaymentSerde implements Serde<Payment> {
       r: sig.r,
       s: sig.s,
       contractAddress: obj.contractAddress,
-      token: obj.token
+      token: obj.token,
+      meta: obj.meta
     }
   }
 

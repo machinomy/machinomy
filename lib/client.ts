@@ -1,11 +1,11 @@
-import * as Request from 'request-promise-native'
 import { EventEmitter } from 'events'
 import { PaymentRequired, STATUS_CODES, Transport } from './transport'
 import Payment, { PaymentSerde } from './payment'
 import ChannelManager from './channel_manager'
 import Serde from './serde'
-import { RequestResponse } from 'request'
+import * as request from 'request'
 import log from './util/log'
+import fetcher from './util/fetch'
 
 const LOG = log('Client')
 
@@ -145,7 +145,7 @@ export class ClientImpl extends EventEmitter implements Client {
   doPreflight (uri: string): Promise<PaymentRequired> {
     this.emit('willPreflight')
 
-    return this.transport.get(uri).then((res: RequestResponse) => {
+    return this.transport.get(uri).then((res: request.RequestResponse) => {
       this.emit('didPreflight')
 
       switch (res.statusCode) {
@@ -158,22 +158,27 @@ export class ClientImpl extends EventEmitter implements Client {
     })
   }
 
-  doPayment (payment: Payment, gateway: string): Promise<AcceptPaymentResponse> {
+  async doPayment (payment: Payment, gateway: string): Promise<AcceptPaymentResponse> {
     this.emit('willSendPayment')
 
     LOG(`Attempting to send payment to ${gateway}. Sender: ${payment.sender} / Receiver: ${payment.receiver} / Amount: ${payment.price.toString()}`)
 
     const request = new AcceptPaymentRequest(payment)
 
-    return Request.post(gateway, {
-      json: true,
-      body: AcceptPaymentRequestSerde.instance.serialize(request)
-    }).then((res: any) => {
-      const deres = AcceptPaymentResponseSerde.instance.deserialize(res)
-      LOG(`Successfully sent payment to ${gateway}.`)
-      this.emit('didSendPayment')
-      return deres
+    const res = await fetcher.fetch(gateway, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      body: JSON.stringify(AcceptPaymentRequestSerde.instance.serialize(request))
     })
+
+    const resJson = await res.json()
+    const deres = AcceptPaymentResponseSerde.instance.deserialize(resJson)
+    LOG(`Successfully sent payment to ${gateway}.`)
+    this.emit('didSendPayment')
+    return deres
   }
 
   acceptPayment (req: AcceptPaymentRequest): Promise<AcceptPaymentResponse> {
@@ -188,22 +193,32 @@ export class ClientImpl extends EventEmitter implements Client {
       })
   }
 
-  doVerify (token: string, gateway: string): Promise<AcceptTokenResponse> {
+  async doVerify (token: string, gateway: string): Promise<AcceptTokenResponse> {
     this.emit('willVerifyToken')
 
     LOG(`Attempting to verify token with ${gateway}.`)
 
     const request = new AcceptTokenRequest(token)
 
-    return Request.post(gateway, {
-      json: true,
-      body: AcceptTokenRequestSerde.instance.serialize(request)
-    }).then((res: any) => {
-      const deres = AcceptTokenResponseSerde.instance.deserialize(res)
+    try {
+      const res = await fetcher.fetch(gateway, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(AcceptTokenRequestSerde.instance.serialize(request))
+      })
+
+      const resJson = await res.json()
+
+      const deres = AcceptTokenResponseSerde.instance.deserialize(resJson)
       LOG(`Successfully verified token with ${gateway}.`)
       this.emit('didVerifyToken')
       return deres
-    }).catch(() => new AcceptTokenResponse(false))
+    } catch (e) {
+      return new AcceptTokenResponse(false)
+    }
   }
 
   acceptVerify (req: AcceptTokenRequest): Promise<AcceptTokenResponse> {
@@ -212,7 +227,7 @@ export class ClientImpl extends EventEmitter implements Client {
       .catch(() => new AcceptTokenResponse(false))
   }
 
-  private handlePaymentRequired (res: RequestResponse): PaymentRequired {
+  private handlePaymentRequired (res: request.RequestResponse): PaymentRequired {
     const headers = res.headers
 
     ClientImpl.REQUIRED_HEADERS.forEach((name: string) => {

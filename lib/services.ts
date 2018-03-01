@@ -33,9 +33,10 @@ export default function defaultRegistry (): Registry {
       paymentsDao: PaymentsDatabase,
       tokensDao: TokensDatabase,
       channelContract: ChannelContract,
-      paymentManager: PaymentManager
-    ) => new ChannelManagerImpl(account, web3, channelsDao, paymentsDao, tokensDao, channelContract, paymentManager),
-    ['account', 'Web3', 'ChannelsDatabase', 'PaymentsDatabase', 'TokensDatabase', 'ChannelContract', 'PaymentManager'])
+      paymentManager: PaymentManager,
+      machinomyOptions: MachinomyOptions
+    ) => new ChannelManagerImpl(account, web3, channelsDao, paymentsDao, tokensDao, channelContract, paymentManager, machinomyOptions),
+    ['account', 'Web3', 'ChannelsDatabase', 'PaymentsDatabase', 'TokensDatabase', 'ChannelContract', 'PaymentManager', 'MachinomyOptions'])
 
   serviceRegistry.bind('Client', (transport: Transport, channelManager: ChannelManager) => {
     return new ClientImpl(transport, channelManager)

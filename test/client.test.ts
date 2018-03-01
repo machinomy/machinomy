@@ -4,8 +4,8 @@ import * as BigNumber from 'bignumber.js'
 import { PaymentRequired, Transport } from '../lib/transport'
 import { AcceptPaymentRequestSerde, AcceptPaymentResponse, AcceptTokenResponse, ClientImpl } from '../lib/client'
 import expectsRejection from './util/expects_rejection'
-import * as Request from 'request-promise-native'
 import { PaymentSerde } from '../lib/payment'
+import fetcher from '../lib/util/fetch'
 
 const expect = require('expect')
 
@@ -109,14 +109,16 @@ describe('ClientImpl', () => {
         token: '0x123'
       }
 
-      post = sinon.stub(Request, 'post')
+      post = sinon.stub(fetcher, 'fetch')
       post.withArgs('gateway', {
-        json: true,
-        body: {
-          payment: paymentJson
-        }
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: sinon.match.string
       }).resolves({
-        token: 'beep'
+        json: () => Promise.resolve({ token: 'beep' })
       })
     })
 
@@ -192,12 +194,14 @@ describe('ClientImpl', () => {
     let post: sinon.SinonStub
 
     beforeEach(() => {
-      post = sinon.stub(Request, 'post')
+      post = sinon.stub(fetcher, 'fetch')
       post.withArgs('gateway', {
-        json: true,
-        body: {
-          token: 'token'
-        }
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ token: 'token' })
       })
     })
 
@@ -207,7 +211,7 @@ describe('ClientImpl', () => {
 
     it('returns an AcceptTokenResponse if the token is accepted', () => {
       post.resolves({
-        status: true
+        json: () => Promise.resolve({ status: true })
       })
 
       return client.doVerify('token', 'gateway').then((res: AcceptTokenResponse) => {
