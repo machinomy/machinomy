@@ -23,7 +23,7 @@
     "build": "tsc -p tsconfig.json",
     "build-test": "tsc -p tsconfig.json --outDir .",
     "lint": "tslint -t stylish -p '.' -e './node_modules/**/*.ts'",
-    "prepublish": "yarn lint && yarn build",
+    "prepublish": "yarn lint && yarn build"
   },
   "main": "./dist/index.js",
   "typings": "./dist/index.d.ts",
