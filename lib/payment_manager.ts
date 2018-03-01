@@ -3,7 +3,7 @@ import ChainManager from './chain_manager'
 import { PaymentChannel } from './payment_channel'
 import Payment from './payment'
 import ChannelContract from './channel_contract'
-import { MachinomyOptions } from '../index'
+import { MachinomyOptions } from '../MachinomyOptions'
 import { DEFAULT_SETTLEMENT_PERIOD } from './channel_manager'
 
 export default class PaymentManager {

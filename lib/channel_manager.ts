@@ -12,7 +12,7 @@ import log from './util/log'
 import ChannelContract from './channel_contract'
 import PaymentManager from './payment_manager'
 import Web3 = require('web3')
-import { MachinomyOptions } from '../index'
+import { MachinomyOptions } from '../MachinomyOptions'
 
 const LOG = log('ChannelManager')
 

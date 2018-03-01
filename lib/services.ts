@@ -11,7 +11,7 @@ import TokensDatabase, {
 } from './storages/tokens_database'
 import { ClientImpl } from './client'
 import { Transport } from './transport'
-import { MachinomyOptions } from '../index'
+import { MachinomyOptions } from '../MachinomyOptions'
 import Engine, { EngineMongo, EngineNedb, EnginePostgres } from './engines/engine'
 import { Registry } from './container'
 import ChainManager from './chain_manager'

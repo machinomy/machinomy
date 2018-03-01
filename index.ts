@@ -8,13 +8,16 @@ import { Container } from './lib/container'
 import ChannelManager from './lib/channel_manager'
 import ChannelsDatabase from './lib/storages/channels_database'
 import Client, {
-  AcceptPaymentRequestSerde, AcceptPaymentResponse, AcceptTokenRequest,
+  AcceptPaymentRequestSerde,
+  AcceptPaymentResponse,
+  AcceptTokenRequest,
   AcceptTokenResponse
 } from './lib/client'
 import { PaymentRequired } from './lib/transport'
 import PaymentsDatabase from './lib/storages/payments_database'
 import defaultRegistry from './lib/services'
 import ChannelContract from './lib/channel_contract'
+import { MachinomyOptions } from './MachinomyOptions'
 
 /**
  * Options for machinomy buy.
@@ -43,17 +46,6 @@ export interface BuyResult {
 
 export interface NextPaymentResult {
   payment: object
-}
-
-/**
- * Params for Machinomy. Currenty Machinomy supports mongodb and nedb as a database engine.
- * Nedb is a default engine.
- */
-export interface MachinomyOptions {
-  databaseUrl: string
-  minimumChannelAmount?: number | BigNumber.BigNumber
-  minimumSettlementPeriod?: number
-  settlementPeriod?: number
 }
 
 /**

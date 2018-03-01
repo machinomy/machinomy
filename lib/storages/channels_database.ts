@@ -379,7 +379,7 @@ export class PostgresChannelsDatabase extends AbstractChannelsDatabase<EnginePos
 
   spend (channelId: ChannelId | string, spent: BigNumber.BigNumber): Promise<void> {
     return this.engine.exec((client: any) => client.query(
-      'UPDATE channel SET (spent)=ROW($2) WHERE "channelId" = $1',
+      'UPDATE channel SET spent = $2 WHERE "channelId" = $1',
       [
         channelId.toString(),
         spent.toString()
@@ -439,7 +439,7 @@ export class PostgresChannelsDatabase extends AbstractChannelsDatabase<EnginePos
 
   updateState (channelId: ChannelId | string, state: number): Promise<void> {
     return this.engine.exec((client: any) => client.query(
-      'UPDATE channel SET (state)=($1) WHERE "channelId" = $2',
+      'UPDATE channel SET state = $1 WHERE "channelId" = $2',
       [
         state,
         channelId.toString()
