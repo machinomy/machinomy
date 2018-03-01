@@ -17,8 +17,8 @@
     js-tokens "^3.0.0"
 
 "@machinomy/contracts@^4.0.5":
-  version "4.0.5"
-  resolved "https://registry.yarnpkg.com/@machinomy/contracts/-/contracts-4.0.5.tgz#91e44943c68c8f5084be2ad19f7ffb7040dd6fc9"
+  version "4.0.6"
+  resolved "https://registry.yarnpkg.com/@machinomy/contracts/-/contracts-4.0.6.tgz#abf4d40d75de2683946c43e7a982ac4270325995"
   dependencies:
     bignumber.js "4.1.0"
     buffer "^5.0.7"
@@ -3943,26 +3943,25 @@ trim-right@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/trim-right/-/trim-right-1.0.1.tgz#cb2e1203067e0c8de1f614094b9fe45704ea6003"
 
-truffle-blockchain-utils@^0.0.3:
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/truffle-blockchain-utils/-/truffle-blockchain-utils-0.0.3.tgz#ae8a111ec124d96504f0e042c6f205c0b3817e29"
-  dependencies:
-    web3 "^0.20.1"
+truffle-blockchain-utils@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/truffle-blockchain-utils/-/truffle-blockchain-utils-0.0.4.tgz#e31a346db61775c80ccd6f632de5e72f97f20ea5"
 
-truffle-contract-schema@^1.0.0:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/truffle-contract-schema/-/truffle-contract-schema-1.0.1.tgz#08ceaefe71062a8ac9ab881a77a30fda3744176e"
+truffle-contract-schema@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/truffle-contract-schema/-/truffle-contract-schema-2.0.0.tgz#535378c0b6a7f58011ea8d84f57771771cb45163"
   dependencies:
     ajv "^5.1.1"
     crypto-js "^3.1.9-1"
+    debug "^3.1.0"
 
 truffle-contract@^3.0.0:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/truffle-contract/-/truffle-contract-3.0.3.tgz#b14fb318f9a743db8b061046e24978d91f31dbfb"
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/truffle-contract/-/truffle-contract-3.0.4.tgz#be169ce00a14d025431e95318e8bae049fca9cfc"
   dependencies:
     ethjs-abi "0.1.8"
-    truffle-blockchain-utils "^0.0.3"
-    truffle-contract-schema "^1.0.0"
+    truffle-blockchain-utils "^0.0.4"
+    truffle-contract-schema "^2.0.0"
     truffle-error "0.0.2"
     web3 "^0.20.1"
 
