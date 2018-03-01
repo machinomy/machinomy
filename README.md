@@ -114,12 +114,6 @@ You could test it with `machinomy buy` command described above.
 
 **Developers:** Machinomy is for you. Feel free to use it, break it, fork it, and make the world better. The code is plain old JavaScript, no special skills required.
 
-If you want to generate html documentation into "documentation" folder:
-
-    $ npm install -g typedoc
-    $ yarn build
-    $ typedoc --excludeExternals  --out ./documentation --ignoreCompilerErrors index.ts
-
 **Non-Developers:** You are lovely. As a starter, help us spread the word! Tell a friend right now.
 If not enough, developers need flesh-world guidance. It starts with proper documentation and a pinch of fantasy.
 Really anything, whether it is a short post on a use case of IoT micropayments, addition to the documentation (code comments, yay!),

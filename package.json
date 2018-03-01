@@ -24,7 +24,6 @@
     "build-test": "tsc -p tsconfig.json --outDir .",
     "lint": "tslint -t stylish -p '.' -e './node_modules/**/*.ts'",
     "prepublish": "yarn lint && yarn build",
-    "doc": "typedoc --ignoreCompilerErrors --out ./documentation --readme README.md --theme ../typedoc-theme index.ts "
   },
   "main": "./dist/index.js",
   "typings": "./dist/index.d.ts",
