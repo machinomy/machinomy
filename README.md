@@ -112,7 +112,9 @@ You could test it with `machinomy buy` command described above.
 
 ## Contributing
 
-**Developers:** Machinomy is for you. Feel free to use it, break it, fork it, and make the world better. The code is plain old JavaScript, no special skills required.
+**Developers:** Machinomy is for you. Feel free to use it, break it, fork it, and make the world better. The code is standard TypeScript, no special skills required:
+
+    $ yarn install -g machinomy
 
 **Non-Developers:** You are lovely. As a starter, help us spread the word! Tell a friend right now.
 If not enough, developers need flesh-world guidance. It starts with proper documentation and a pinch of fantasy.
