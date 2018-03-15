@@ -103,7 +103,7 @@ export class NedbPaymentsDatabase extends AbstractPaymentsDatabase<EngineNedb> {
   findByToken (token: string): Promise<Payment | null> {
     let query = { kind: this.kind, token: token }
 
-    return this.engine.exec((client: any) => pify((cb: Function) => client.collection('payment').findOne(query, cb)))
+    return this.engine.exec((client: any) => pify((cb: Function) => client.findOne(query, cb)))
       .then((res) => this.inflatePayment(res))
   }
 }
