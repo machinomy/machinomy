@@ -223,6 +223,10 @@ export default class Machinomy {
     return this.channelManager.channelById(channelId)
   }
 
+  channelByIdFromContract (channelId: string) {
+    return this.channelManager.channelByIdFromContract(channelId)
+  }
+
   /**
    * Share the money between sender and reciver according to payments made.
    *
@@ -242,14 +246,14 @@ export default class Machinomy {
   /**
    * Save payment into the storage and return an id of the payment. The id can be used by {@link Machinomy.paymentById}.
    */
-  acceptPayment (req: any): Promise <AcceptPaymentResponse> {
+  acceptPayment (req: any): Promise<AcceptPaymentResponse> {
     return this.client.acceptPayment(AcceptPaymentRequestSerde.instance.deserialize(req))
   }
 
   /**
    * Return information about the payment by id.
    */
-  paymentById (id: string): Promise <Payment | null> {
+  paymentById (id: string): Promise<Payment | null> {
     return this.paymentsDao.findByToken(id)
   }
 
