@@ -102,7 +102,7 @@ export default class ChannelContract {
     return deployed.canClaim(channelId, payment, receiver, signature.toString())
   }
 
-  async channelByIdFromContract (channelId: string) {
+  async channelById (channelId: string) {
     const deployed = await this.contract()
     return deployed.channels(channelId)
   }

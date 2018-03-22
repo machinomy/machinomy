@@ -223,10 +223,6 @@ export default class Machinomy {
     return this.channelManager.channelById(channelId)
   }
 
-  channelByIdFromContract (channelId: string) {
-    return this.channelManager.channelByIdFromContract(channelId)
-  }
-
   /**
    * Share the money between sender and reciver according to payments made.
    *

@@ -38,8 +38,6 @@ export interface ChannelManager extends EventEmitter {
 
   channelById (channelId: ChannelId | string): Promise<PaymentChannel | null>
 
-  channelByIdFromContract (channelId: string): Promise<any>
-
   verifyToken (token: string): Promise<boolean>
 }
 
@@ -151,12 +149,15 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     return this.channelsDao.allOpen()
   }
 
-  channelById (channelId: ChannelId | string): Promise<PaymentChannel | null> {
-    return this.channelsDao.firstById(channelId)
-  }
-
-  async channelByIdFromContract (channelId: string) {
-    return this.channelContract.channelByIdFromContract(channelId)
+  async channelById (channelId: ChannelId | string): Promise<PaymentChannel | null> {
+    let channel = await this.channelsDao.firstById(channelId)
+    if (channel) {
+      let channelC = await this.channelContract.channelById(channelId.toString())
+      channel.value = channelC[2]
+      return channel
+    } else {
+      return null
+    }
   }
 
   verifyToken (token: string): Promise<boolean> {
