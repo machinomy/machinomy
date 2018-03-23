@@ -26,6 +26,8 @@ export interface ChannelManager extends EventEmitter {
 
   closeChannel (channelId: string | ChannelId): Promise<TransactionResult>
 
+  deposit (channelId: string, value: BigNumber.BigNumber): Promise<TransactionResult>
+
   nextPayment (channelId: string | ChannelId, amount: BigNumber.BigNumber, meta: string): Promise<Payment>
 
   acceptPayment (payment: Payment): Promise<string>
@@ -80,6 +82,20 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
 
   closeChannel (channelId: string | ChannelId): Promise<TransactionResult> {
     return this.mutex.synchronize(() => this.internalCloseChannel(channelId))
+  }
+
+  deposit (channelId: string, value: BigNumber.BigNumber): Promise<TransactionResult> {
+    return this.mutex.synchronize(async () => {
+      const channel = await this.channelById(channelId)
+
+      if (!channel) {
+        throw new Error('No payment channel found.')
+      }
+
+      const res = await this.channelContract.deposit(this.account, channelId, value)
+      await this.channelsDao.deposit(channelId, value)
+      return res
+    })
   }
 
   nextPayment (channelId: string | ChannelId, amount: BigNumber.BigNumber, meta: string): Promise<Payment> {
@@ -150,14 +166,7 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
   }
 
   async channelById (channelId: ChannelId | string): Promise<PaymentChannel | null> {
-    let channel = await this.channelsDao.firstById(channelId)
-    if (channel) {
-      let channelC = await this.channelContract.channelById(channelId.toString())
-      channel.value = channelC[2]
-      return channel
-    } else {
-      return null
-    }
+    return this.channelsDao.firstById(channelId)
   }
 
   verifyToken (token: string): Promise<boolean> {

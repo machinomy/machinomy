@@ -197,14 +197,7 @@ export default class Machinomy {
    */
   async deposit (channelId: string, value: BigNumber.BigNumber | number): Promise<TransactionResult> {
     const _value = new BigNumber.BigNumber(value)
-
-    const channel = await this.channelManager.channelById(channelId)
-
-    if (!channel) {
-      throw new Error('No payment channel found.')
-    }
-
-    return this.channelContract.deposit(this.account, channelId, _value)
+    return this.channelManager.deposit(channelId, _value)
   }
 
   async open (receiver: string, value: BigNumber.BigNumber | number): Promise<PaymentChannel> {

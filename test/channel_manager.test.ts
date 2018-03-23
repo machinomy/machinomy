@@ -242,6 +242,36 @@ describe('ChannelManagerImpl', () => {
     })
   })
 
+  describe('deposit', () => {
+    let id = '0xdead'
+
+    it('should throw an error if no channel is found', () => {
+      channelsDao.firstById = sinon.stub().withArgs(id).resolves(null)
+      return expectsRejection(channelManager.deposit(id, new BigNumber.BigNumber(6)))
+    })
+
+    it('should not update the database if depositing into the channel contract fails', () => {
+      channelsDao.firstById = sinon.stub().withArgs(id).resolves({} as PaymentChannel)
+      channelsDao.deposit = sinon.stub()
+      channelContract.deposit = sinon.stub().rejects('oh no')
+
+      return expectsRejection(channelManager.deposit(id, new BigNumber.BigNumber(1))).then(() => {
+        expect((channelsDao.deposit as sinon.SinonStub).notCalled).toBe(true)
+      })
+    })
+
+    it('should return a transaction receipt on success', () => {
+      const value = new BigNumber.BigNumber(10)
+      channelsDao.firstById = sinon.stub().withArgs(id).resolves({} as PaymentChannel)
+      channelsDao.deposit = sinon.stub().withArgs('0xcafe', id, new BigNumber.BigNumber(10)).resolves()
+      channelContract.deposit = sinon.stub().resolves({ tx: '123abc' } as TransactionResult)
+
+      return channelManager.deposit(id, value).then((res: TransactionResult) => {
+        expect(res.tx).toEqual('123abc')
+      })
+    })
+  })
+
   describe('nextPayment', () => {
     const id = '0xdead'
 
