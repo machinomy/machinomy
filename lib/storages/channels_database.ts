@@ -19,6 +19,8 @@ export default interface ChannelsDatabase {
 
   allOpen (): Promise<PaymentChannel[]>
 
+  allSettling (): Promise<PaymentChannel[]>
+
   findUsable (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel | null>
 
   findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>>
@@ -96,6 +98,11 @@ export abstract class AbstractChannelsDatabase<T extends Engine> implements Chan
   abstract all (): Promise<Array<PaymentChannel>>
 
   abstract allOpen (): Promise<PaymentChannel[]>
+
+  async allSettling (): Promise<PaymentChannel[]> {
+    const all = await this.all()
+    return this.filterByState(1, all)
+  }
 
   abstract findUsable (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel | null>
 

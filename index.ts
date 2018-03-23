@@ -219,6 +219,14 @@ export default class Machinomy {
     return this.channelManager.openChannels()
   }
 
+  openChannels (): Promise<PaymentChannel[]> {
+    return this.channels()
+  }
+
+  settlingChannels (): Promise<PaymentChannel[]> {
+    return this.channelManager.settlingChannels()
+  }
+
   channelById (channelId: string): Promise<PaymentChannel | null> {
     return this.channelManager.channelById(channelId)
   }
