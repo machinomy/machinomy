@@ -336,6 +336,8 @@ describe('storage', () => {
             contractAddress: undefined
           })
 
+          sinon.stub(Date, 'now').returns(12345)
+
           return channels.save(new PaymentChannel('sender', 'receiver', channelId.toString(), new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), undefined, undefined))
             .then(() => {
               return payments.save(randomToken, payment).then(() => {
@@ -345,6 +347,7 @@ describe('storage', () => {
               expect(found.channelId).toBe(payment.channelId)
               expect(found.token).toBe(randomToken)
               expect(found.signature.isEqual(payment.signature)).toBe(true)
+              expect(found.createdAt).toBe(12345)
             })
         })
       })
