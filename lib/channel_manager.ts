@@ -38,6 +38,8 @@ export interface ChannelManager extends EventEmitter {
 
   openChannels (): Promise<PaymentChannel[]>
 
+  settlingChannels (): Promise<PaymentChannel[]>
+
   channelById (channelId: ChannelId | string): Promise<PaymentChannel | null>
 
   verifyToken (token: string): Promise<boolean>
@@ -165,7 +167,11 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     return this.channelsDao.allOpen()
   }
 
-  async channelById (channelId: ChannelId | string): Promise<PaymentChannel | null> {
+  settlingChannels (): Promise<PaymentChannel[]> {
+    return this.channelsDao.allSettling()
+  }
+
+  channelById (channelId: ChannelId | string): Promise<PaymentChannel | null> {
     return this.channelsDao.firstById(channelId)
   }
 

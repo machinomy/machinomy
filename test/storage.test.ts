@@ -229,23 +229,41 @@ describe('storage', () => {
     })
   })
 
+  describe('#allSettling', () => {
+    it('returns all settling channels', () => {
+      const channelId1 = support.randomChannelId()
+      const channelId2 = support.randomChannelId()
+      const hexChannelId1 = channelId1.toString()
+      const hexChannelId2 = channelId2.toString()
+      const paymentChannel1 = new PaymentChannel('sender', 'receiver', hexChannelId1, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 0, undefined)
+      const paymentChannel2 = new PaymentChannel('sender', 'receiver', hexChannelId2, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 1, undefined)
+
+      const getState = fakeContract.getState as sinon.SinonStub
+      getState.withArgs(hexChannelId2).resolves(1)
+
+      return Promise.all([
+        channels.save(paymentChannel1),
+        channels.save(paymentChannel2)
+      ]).then(() => {
+        return channels.allSettling()
+      }).then(found => {
+        expect(found.length).toBe(1)
+        expect(found[0].channelId).toBe(paymentChannel2.channelId)
+      })
+    })
+  })
+
   describe('#allOpen', () => {
     it('returns all open channels', () => {
       const channelId1 = support.randomChannelId()
       const channelId2 = support.randomChannelId()
       const channelId3 = support.randomChannelId()
-      const channelId4 = support.randomChannelId()
       const hexChannelId1 = channelId1.toString()
       const hexChannelId2 = channelId2.toString()
       const hexChannelId3 = channelId3.toString()
-      const hexChannelId4 = channelId4.toString()
       const paymentChannel1 = new PaymentChannel('sender', 'receiver', hexChannelId1, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 0, undefined)
       const paymentChannel2 = new PaymentChannel('sender', 'receiver', hexChannelId2, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 1, undefined)
       const paymentChannel3 = new PaymentChannel('sender', 'receiver', hexChannelId3, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 2, undefined)
-      const paymentChannel4 = new PaymentChannel('sender', 'receiver', hexChannelId4, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 0, undefined)
-
-      const getState = fakeContract.getState as sinon.SinonStub
-      getState.withArgs(hexChannelId4).resolves(paymentChannel4)
 
       return Promise.all([
         channels.save(paymentChannel1),
