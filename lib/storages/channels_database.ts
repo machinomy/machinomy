@@ -11,6 +11,8 @@ export default interface ChannelsDatabase {
 
   saveOrUpdate (paymentChannel: PaymentChannel): Promise<void>
 
+  deposit (channelId: ChannelId | string, value: BigNumber.BigNumber): Promise<void>
+
   firstById (channelId: ChannelId | string): Promise<PaymentChannel | null>
 
   spend (channelId: ChannelId | string, spent: BigNumber.BigNumber): Promise<void>
@@ -54,21 +56,24 @@ export abstract class AbstractChannelsDatabase<T extends Engine> implements Chan
     return Promise.all(channels.map((chan: PaymentChannelJSON) => this.inflatePaymentChannel(chan))) as Promise<Array<PaymentChannel>>
   }
 
-  inflatePaymentChannel (json: PaymentChannelJSON): Promise<PaymentChannel | null> {
+  async inflatePaymentChannel (json: PaymentChannelJSON): Promise<PaymentChannel | null> {
     if (!json) {
       return Promise.resolve(null)
     }
 
+    const state = await this.contract.getState(json.channelId)
+    const value = (await this.contract.channelById(json.channelId))[2]
+
     const doc = PaymentChannel.fromDocument(json)
-    return this.contract.getState(json.channelId).then((state: any) => new PaymentChannel(
+    return new PaymentChannel(
       doc.sender,
       doc.receiver,
       doc.channelId,
-      doc.value,
+      value,
       doc.spent,
       state === -1 ? 2 : state,
       doc.contractAddress || undefined
-    ))
+    )
   }
 
   filterByState (state: number, channels: PaymentChannel[]): PaymentChannel[] {
@@ -90,6 +95,8 @@ export abstract class AbstractChannelsDatabase<T extends Engine> implements Chan
       }
     })
   }
+
+  abstract deposit (channelId: ChannelId | string, value: BigNumber.BigNumber): Promise<void>
 
   abstract firstById (channelId: ChannelId | string): Promise<PaymentChannel | null>
 
@@ -158,6 +165,31 @@ export class NedbChannelsDatabase extends AbstractChannelsDatabase<EngineNedb> i
       const update = {
         $set: {
           spent: spent.toString()
+        }
+      }
+
+      return pify((cb: Function) => client.update(query, update, {}, cb))
+    })
+  }
+
+  deposit (channelId: ChannelId | string, value: BigNumber.BigNumber): Promise<void> {
+    return this.engine.exec(async (client: any) => {
+      const channel = await this.firstById(channelId)
+
+      if (!channel) {
+        throw new Error('Channel not found.')
+      }
+
+      const query = {
+        kind: this.kind,
+        channelId: channelId.toString()
+      }
+
+      const newValue = channel.value.add(value)
+
+      const update = {
+        $set: {
+          value: newValue.toString()
         }
       }
 
@@ -289,6 +321,31 @@ export class MongoChannelsDatabase extends AbstractChannelsDatabase<EngineMongo>
     })
   }
 
+  deposit (channelId: ChannelId | string, value: BigNumber.BigNumber): Promise<void> {
+    return this.engine.exec(async (client: any) => {
+      const channel = await this.firstById(channelId)
+
+      if (!channel) {
+        throw new Error('Channel not found.')
+      }
+
+      const query = {
+        kind: this.kind,
+        channelId: channelId.toString()
+      }
+
+      const newValue = channel.value.add(value)
+
+      const update = {
+        $set: {
+          value: newValue.toString()
+        }
+      }
+
+      return pify((cb: Function) => client.collection('channel').update(query, update, {}, cb))
+    })
+  }
+
   /**
    * Retrieve all the payment channels stored.
    *
@@ -392,6 +449,26 @@ export class PostgresChannelsDatabase extends AbstractChannelsDatabase<EnginePos
         spent.toString()
       ]
     ))
+  }
+
+  deposit (channelId: ChannelId | string, value: BigNumber.BigNumber): Promise<void> {
+    return this.engine.exec(async (client: any) => {
+      const channel = await this.firstById(channelId)
+
+      if (!channel) {
+        throw new Error('Channel not found.')
+      }
+
+      const newValue = channel.value.add(value)
+
+      return client.query(
+        'UPDATE channel SET value = $2 WHERE "channelId" = $1',
+        [
+          channelId.toString(),
+          newValue.toString()
+        ]
+      )
+    })
   }
 
   all (): Promise<Array<PaymentChannel>> {

@@ -197,14 +197,7 @@ export default class Machinomy {
    */
   async deposit (channelId: string, value: BigNumber.BigNumber | number): Promise<TransactionResult> {
     const _value = new BigNumber.BigNumber(value)
-
-    const channel = await this.channelManager.channelById(channelId)
-
-    if (!channel) {
-      throw new Error('No payment channel found.')
-    }
-
-    return this.channelContract.deposit(this.account, channelId, _value)
+    return this.channelManager.deposit(channelId, _value)
   }
 
   async open (receiver: string, value: BigNumber.BigNumber | number): Promise<PaymentChannel> {
@@ -250,14 +243,14 @@ export default class Machinomy {
   /**
    * Save payment into the storage and return an id of the payment. The id can be used by {@link Machinomy.paymentById}.
    */
-  acceptPayment (req: any): Promise <AcceptPaymentResponse> {
+  acceptPayment (req: any): Promise<AcceptPaymentResponse> {
     return this.client.acceptPayment(AcceptPaymentRequestSerde.instance.deserialize(req))
   }
 
   /**
    * Return information about the payment by id.
    */
-  paymentById (id: string): Promise <Payment | null> {
+  paymentById (id: string): Promise<Payment | null> {
     return this.paymentsDao.findByToken(id)
   }
 

@@ -5,6 +5,7 @@ import { TransactionResult } from 'truffle-contract'
 import log from './util/log'
 import Signature from './signature'
 import { Unidirectional } from '@machinomy/contracts'
+
 const LOG = log('ChannelContract')
 
 const CREATE_CHANNEL_GAS = 300000
@@ -99,6 +100,11 @@ export default class ChannelContract {
   async canClaim (channelId: string, payment: BigNumber.BigNumber, receiver: string, signature: Signature) {
     const deployed = await this.contract()
     return deployed.canClaim(channelId, payment, receiver, signature.toString())
+  }
+
+  async channelById (channelId: string): Promise<any> {
+    const deployed = await this.contract()
+    return deployed.channels(channelId)
   }
 
   private async contract (): Promise<Unidirectional.Contract> {

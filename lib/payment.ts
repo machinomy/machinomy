@@ -15,6 +15,7 @@ export interface PaymentJSON {
   meta: string
   contractAddress?: string
   token: string | undefined
+  createdAt?: number
 }
 
 export default class Payment {
@@ -28,6 +29,7 @@ export default class Payment {
   meta: string
   contractAddress: string | undefined
   token: string | undefined
+  createdAt?: number
 
   constructor (options: Payment) {
     this.channelId = options.channelId
@@ -40,6 +42,7 @@ export default class Payment {
     this.meta = options.meta
     this.contractAddress = options.contractAddress
     this.token = options.token
+    this.createdAt = options.createdAt
   }
 }
 
@@ -73,7 +76,8 @@ export class PaymentSerde implements Serde<Payment> {
       s: sig.s,
       contractAddress: obj.contractAddress,
       token: obj.token,
-      meta: obj.meta
+      meta: obj.meta,
+      createdAt: obj.createdAt
     }
   }
 
@@ -98,7 +102,8 @@ export class PaymentSerde implements Serde<Payment> {
       }),
       contractAddress: data.contractAddress,
       token: data.token,
-      meta: data.meta
+      meta: data.meta,
+      createdAt: Number(data.createdAt)
     })
   }
 }

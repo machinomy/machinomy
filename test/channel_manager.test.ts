@@ -15,6 +15,8 @@ import PaymentManager from '../lib/payment_manager'
 import ChannelContract from '../lib/channel_contract'
 import Signature from '../lib/signature'
 import { MachinomyOptions } from '../MachinomyOptions'
+import * as uuid from 'uuid'
+import { Unidirectional } from '@machinomy/contracts'
 
 const expect = require('expect')
 
@@ -43,16 +45,40 @@ describe('ChannelManagerImpl', () => {
 
   let paymentManager: PaymentManager
 
+  let deployed: any
+
+  let contractStub: sinon.SinonStub
+
+  let uuidStub: sinon.SinonStub
+
   beforeEach(() => {
-    web3 = {} as Web3
+    web3 = {
+      currentProvider: {}
+    } as Web3
+
+    deployed = {} as any
+
+    uuidStub = sinon.stub(uuid, 'v4').returns('0e29e61f-256b-40b2-a628-0f8181a1b5ff')
+
+    contractStub = sinon.stub(Unidirectional, 'contract')
+    contractStub.withArgs(web3.currentProvider).returns({
+      deployed: sinon.stub().resolves(deployed)
+    })
+
     paymentsDao = {} as PaymentsDatabase
     tokensDao = {} as TokensDatabase
     channelsDao = {} as ChannelsDatabase
-    channelContract = {} as ChannelContract
     paymentManager = {} as PaymentManager
+
+    channelContract = new ChannelContract(web3)
     channelManager = new ChannelManagerImpl('0xcafe', web3, channelsDao, paymentsDao, tokensDao, channelContract, paymentManager, {
       settlementPeriod: DEFAULT_SETTLEMENT_PERIOD + 1
     } as MachinomyOptions)
+  })
+
+  afterEach(() => {
+    contractStub.restore()
+    uuidStub.restore()
   })
 
   describe('openChannel', () => {
@@ -115,6 +141,8 @@ describe('ChannelManagerImpl', () => {
     beforeEach(() => {
       channelContract.startSettle = sinon.stub().resolves(startSettleResult)
       channelContract.finishSettle = sinon.stub().resolves(finishSettleResult)
+      deployed.channels = sinon.stub().resolves(['0', '0',
+        new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), new BigNumber.BigNumber(0)])
     })
 
     it('throws an error when no channels are found', () => {
@@ -210,7 +238,37 @@ describe('ChannelManagerImpl', () => {
         channelManager.closeChannel('0xcafe').then(() => order.push(1)),
         channelManager.closeChannel('0xcafe').then(() => order.push(2)),
         channelManager.closeChannel('0xcafe').then(() => order.push(3))
-      ]).then(() => expect(order).toEqual([1,2,3]))
+      ]).then(() => expect(order).toEqual([1, 2, 3]))
+    })
+  })
+
+  describe('deposit', () => {
+    let id = '0xdead'
+
+    it('should throw an error if no channel is found', () => {
+      channelsDao.firstById = sinon.stub().withArgs(id).resolves(null)
+      return expectsRejection(channelManager.deposit(id, new BigNumber.BigNumber(6)))
+    })
+
+    it('should not update the database if depositing into the channel contract fails', () => {
+      channelsDao.firstById = sinon.stub().withArgs(id).resolves({} as PaymentChannel)
+      channelsDao.deposit = sinon.stub()
+      channelContract.deposit = sinon.stub().rejects('oh no')
+
+      return expectsRejection(channelManager.deposit(id, new BigNumber.BigNumber(1))).then(() => {
+        expect((channelsDao.deposit as sinon.SinonStub).notCalled).toBe(true)
+      })
+    })
+
+    it('should return a transaction receipt on success', () => {
+      const value = new BigNumber.BigNumber(10)
+      channelsDao.firstById = sinon.stub().withArgs(id).resolves({} as PaymentChannel)
+      channelsDao.deposit = sinon.stub().withArgs('0xcafe', id, new BigNumber.BigNumber(10)).resolves()
+      channelContract.deposit = sinon.stub().resolves({ tx: '123abc' } as TransactionResult)
+
+      return channelManager.deposit(id, value).then((res: TransactionResult) => {
+        expect(res.tx).toEqual('123abc')
+      })
     })
   })
 
@@ -222,6 +280,8 @@ describe('ChannelManagerImpl', () => {
     beforeEach(() => {
       channel = new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(10), new BigNumber.BigNumber(2), 0, undefined)
       channelsDao.firstById = sinon.stub().withArgs(id).resolves(channel)
+      deployed.channels = sinon.stub().resolves(['0', '0',
+        new BigNumber.BigNumber(8), new BigNumber.BigNumber(0), new BigNumber.BigNumber(0)])
     })
 
     it('should throw an error if no channel is found', () => {
@@ -254,6 +314,9 @@ describe('ChannelManagerImpl', () => {
       })
 
       channelsDao.saveOrUpdate = sinon.stub().resolves()
+
+      deployed.channels = sinon.stub().resolves(['0', '0',
+        new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), new BigNumber.BigNumber(0)])
 
       return channelManager.nextPayment(id, new BigNumber.BigNumber(8), '').then((payment: Payment) => {
         expect((channelsDao.saveOrUpdate as sinon.SinonStub).called).toBe(true)
@@ -289,6 +352,8 @@ describe('ChannelManagerImpl', () => {
       } as Payment
 
       channel = new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(10), new BigNumber.BigNumber(2), 0, undefined)
+      deployed.channels = sinon.stub().resolves(['0', '0',
+        new BigNumber.BigNumber(8), new BigNumber.BigNumber(0), new BigNumber.BigNumber(0)])
     })
 
     it('should save the payment to the database and return the token when valid', () => {

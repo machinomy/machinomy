@@ -49,6 +49,7 @@ export class MongoPaymentsDatabase extends AbstractPaymentsDatabase<EngineMongo>
     const serialized: any = PaymentSerde.instance.serialize(payment)
     serialized.kind = this.kind
     serialized.token = token
+    serialized.createdAt = Date.now()
     // log.info(`Saving payment for channel ${payment.channelId} and token ${token}`)
 
     return this.engine.exec((client: any) => pify((cb: Function) => client.collection('payment').insert(serialized, cb)))
@@ -82,6 +83,7 @@ export class NedbPaymentsDatabase extends AbstractPaymentsDatabase<EngineNedb> {
     const serialized: any = PaymentSerde.instance.serialize(payment)
     serialized.kind = this.kind
     serialized.token = token
+    serialized.createdAt = Date.now()
     // log.info(`Saving payment for channel ${payment.channelId} and token ${token}`)
 
     return this.engine.exec((client: any) => pify((cb: Function) => client.insert(serialized, cb)))
@@ -116,7 +118,7 @@ export class PostgresPaymentsDatabase extends AbstractPaymentsDatabase<EnginePos
 
     return this.engine.exec((client: any) => client.query(
       'INSERT INTO payment("channelId", kind, token, sender, receiver, price, value, ' +
-      '"channelValue", v, r, s, meta, "contractAddress") VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)',
+      '"channelValue", v, r, s, meta, "contractAddress", "createdAt") VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)',
       [
         serialized.channelId,
         serialized.kind,
@@ -130,7 +132,8 @@ export class PostgresPaymentsDatabase extends AbstractPaymentsDatabase<EnginePos
         serialized.r,
         serialized.s,
         serialized.meta,
-        serialized.contractAddress
+        serialized.contractAddress,
+        Date.now()
       ]
     ))
   }
@@ -138,7 +141,7 @@ export class PostgresPaymentsDatabase extends AbstractPaymentsDatabase<EnginePos
   firstMaximum (channelId: ChannelId | string): Promise<Payment | any> {
     return this.engine.exec((client: any) => client.query(
       'SELECT "channelId", kind, token, sender, receiver, price, value, ' +
-      '"channelValue", v, r, s, meta, "contractAddress" FROM payment WHERE "channelId" = $1 ' +
+      '"channelValue", v, r, s, meta, "contractAddress", "createdAt" FROM payment WHERE "channelId" = $1 ' +
       'ORDER BY value DESC',
       [
         channelId.toString()
@@ -149,7 +152,7 @@ export class PostgresPaymentsDatabase extends AbstractPaymentsDatabase<EnginePos
   findByToken (token: string): Promise<Payment | any> {
     return this.engine.exec((client: any) => client.query(
       'SELECT "channelId", kind, token, sender, receiver, price, value, ' +
-      '"channelValue", v, r, s, meta, "contractAddress" FROM payment WHERE token = $1',
+      '"channelValue", v, r, s, meta, "contractAddress", "createdAt" FROM payment WHERE token = $1',
       [
         token
       ]
