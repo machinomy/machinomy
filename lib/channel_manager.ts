@@ -11,8 +11,8 @@ import TokensDatabase from './storages/tokens_database'
 import log from './util/log'
 import ChannelContract from './channel_contract'
 import PaymentManager from './payment_manager'
-import Web3 = require('web3')
 import { MachinomyOptions } from '../MachinomyOptions'
+import Web3 = require('web3')
 
 const LOG = log('ChannelManager')
 
@@ -195,27 +195,26 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
       })
   }
 
-  private internalCloseChannel (channelId: ChannelId | string) {
-    return this.channelById(channelId).then((channel: PaymentChannel | null) => {
-      if (!channel) {
-        throw new Error(`Channel with id ${channelId.toString()} not found.`)
-      }
+  private async internalCloseChannel (channelId: ChannelId | string) {
+    let channel = await this.channelById(channelId) || await this.handleUnknownChannel(channelId)
 
-      this.emit('willCloseChannel', channel)
+    if (!channel) {
+      throw new Error(`Channel ${channelId} not found.`)
+    }
 
-      let res: Promise<TransactionResult>
+    this.emit('willCloseChannel', channel)
 
-      if (channel.sender === this.account) {
-        res = this.settle(channel)
-      } else {
-        res = this.claim(channel)
-      }
+    let res: Promise<TransactionResult>
 
-      return res.then((txn: TransactionResult) => {
-        this.emit('didCloseChannel', channel)
-        return txn
-      })
-    })
+    if (channel.sender === this.account) {
+      res = this.settle(channel)
+    } else {
+      res = this.claim(channel)
+    }
+
+    const txn = await res
+    this.emit('didCloseChannel', channel)
+    return txn
   }
 
   private settle (channel: PaymentChannel): Promise<TransactionResult> {
@@ -251,5 +250,19 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     const res = await this.channelContract.open(sender, receiver, price, settlementPeriod)
     const channelId = res.logs[0].args.channelId
     return new PaymentChannel(sender, receiver, channelId, price, new BigNumber.BigNumber(0), 0, undefined)
+  }
+
+  private async handleUnknownChannel (channelId: ChannelId | string): Promise<PaymentChannel | null> {
+    channelId = channelId.toString()
+    // tslint:disable-next-line:no-unused-variable
+    const [sender, receiver, value, settlingPeriod, settlingUntil] = await this.channelContract.channelById(channelId)
+
+    if (sender !== this.account && receiver !== this.account) {
+      return null
+    }
+
+    const chan = new PaymentChannel(sender, receiver, channelId, value, new BigNumber.BigNumber(0), settlingUntil.eq(0) ? 0 : 1, undefined)
+    await this.channelsDao.save(chan)
+    return chan
   }
 }

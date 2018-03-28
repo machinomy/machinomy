@@ -235,10 +235,44 @@ describe('ChannelManagerImpl', () => {
       const order: number[] = []
 
       return Promise.all([
-        channelManager.closeChannel('0xcafe').then(() => order.push(1)),
-        channelManager.closeChannel('0xcafe').then(() => order.push(2)),
-        channelManager.closeChannel('0xcafe').then(() => order.push(3))
+        channelManager.closeChannel(id).then(() => order.push(1)),
+        channelManager.closeChannel(id).then(() => order.push(2)),
+        channelManager.closeChannel(id).then(() => order.push(3))
       ]).then(() => expect(order).toEqual([1, 2, 3]))
+    })
+
+    describe('not in DB but on-chain channels', () => {
+      let savedChannel: PaymentChannel
+
+      function setup (settlingUntil: number) {
+        savedChannel = new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 0, undefined)
+        channelsDao.firstById = sinon.stub().withArgs(id).resolves(null)
+        channelContract.channelById = sinon.stub().withArgs(id).resolves([savedChannel.sender, savedChannel.receiver, savedChannel.value, DEFAULT_SETTLEMENT_PERIOD, new BigNumber.BigNumber(settlingUntil)])
+        channelContract.claim = sinon.stub().resolves(claimResult)
+        channelsDao.save = sinon.stub().resolves()
+        channelContract.getState = sinon.stub().resolves(0)
+        channelsDao.updateState = sinon.stub().withArgs(id, 1).resolves()
+      }
+
+      beforeEach(() => {
+        setup(0)
+        return channelManager.closeChannel(id)
+      })
+
+      it('should close channels that exist on-chain but not in the database', () => {
+        expect((channelContract.channelById as sinon.SinonStub).calledWith(id))
+      })
+
+      it('should save the channel in the database', () => {
+        expect((channelsDao.save as sinon.SinonStub).lastCall.args[0]).toEqual(savedChannel)
+      })
+
+      it('should set the state correctly based on the settlingUntil parameter', async () => {
+        setup(1)
+        await channelManager.closeChannel(id)
+        expect((channelsDao.save as sinon.SinonStub).lastCall.args[0])
+          .toEqual(new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 1, undefined))
+      })
     })
   })
 
