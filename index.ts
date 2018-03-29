@@ -85,14 +85,17 @@ export default class Machinomy {
   /** Ethereum account address that sends the money. */
   private account: string
   /** Web3 instance that manages {@link Machinomy.account}'s private key */
+  // tslint:disable-next-line:no-unused-variable
   private web3: Web3
 
   private engine: Engine
 
+  // tslint:disable-next-line:no-unused-variable
   private channelContract: ChannelContract
 
   private serviceContainer: Container
 
+  // tslint:disable-next-line:no-unused-variable
   private channelsDao: ChannelsDatabase
 
   private channelManager: ChannelManager
@@ -101,6 +104,7 @@ export default class Machinomy {
 
   private client: Client
 
+  // tslint:disable-next-line:no-unused-variable
   private transport: Transport
 
   /**

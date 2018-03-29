@@ -366,6 +366,7 @@ describe('ChannelManagerImpl', () => {
   })
 
   describe('acceptPayment', () => {
+    // tslint:disable-next-line:no-unused-variable
     let channel: PaymentChannel
 
     let payment: Payment
