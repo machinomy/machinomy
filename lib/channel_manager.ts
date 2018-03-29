@@ -154,6 +154,9 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
 
   requireOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber): Promise<PaymentChannel> {
     return this.mutex.synchronize(async () => {
+      if (!minDepositAmount && this.machinomyOptions && this.machinomyOptions.minimumChannelAmount) {
+        minDepositAmount = new BigNumber.BigNumber(this.machinomyOptions.minimumChannelAmount)
+      }
       let channel = await this.channelsDao.findUsable(sender, receiver, amount)
       return channel || this.internalOpenChannel(sender, receiver, amount, minDepositAmount)
     })
@@ -171,8 +174,15 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     return this.channelsDao.allSettling()
   }
 
-  channelById (channelId: ChannelId | string): Promise<PaymentChannel | null> {
-    return this.channelsDao.firstById(channelId)
+  async channelById (channelId: ChannelId | string): Promise<PaymentChannel | null> {
+    let channel = await this.channelsDao.firstById(channelId)
+    if (channel) {
+      let channelC = await this.channelContract.channelById(channelId.toString())
+      channel.value = channelC[2]
+      return channel
+    } else {
+      return null
+    }
   }
 
   verifyToken (token: string): Promise<boolean> {
