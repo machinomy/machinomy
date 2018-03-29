@@ -279,6 +279,11 @@ describe('ChannelManagerImpl', () => {
   describe('deposit', () => {
     let id = '0xdead'
 
+    beforeEach(() => {
+      deployed.channels = sinon.stub().resolves(['0', '0',
+        new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), new BigNumber.BigNumber(0)])
+    })
+
     it('should throw an error if no channel is found', () => {
       channelsDao.firstById = sinon.stub().withArgs(id).resolves(null)
       return expectsRejection(channelManager.deposit(id, new BigNumber.BigNumber(6)))
