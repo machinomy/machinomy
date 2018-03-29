@@ -89,6 +89,6 @@
     "tmp": "0.0.33",
     "tslint": "^5.5.0",
     "tslint-config-standard": "^7.0.0",
-    "typescript": "2.5.3"
+    "typescript": "2.8.1"
   }
 }

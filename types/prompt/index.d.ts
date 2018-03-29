@@ -6,5 +6,6 @@ declare module 'prompt' {
     get <A> (names: string[], callback: (err: any, result: A) => void): void
   }
 
-  export = new Prompt()
+  const prompt: Prompt
+  export = prompt
 }
