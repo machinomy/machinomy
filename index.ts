@@ -6,7 +6,6 @@ import Payment, { PaymentSerde } from './lib/payment'
 import { TransactionResult } from 'truffle-contract'
 import { Container } from './lib/container'
 import ChannelManager from './lib/channel_manager'
-import ChannelsDatabase from './lib/storages/channels_database'
 import Client, {
   AcceptPaymentRequestSerde,
   AcceptPaymentResponse,
@@ -16,7 +15,6 @@ import Client, {
 import { PaymentRequired } from './lib/transport'
 import PaymentsDatabase from './lib/storages/payments_database'
 import defaultRegistry from './lib/services'
-import ChannelContract from './lib/channel_contract'
 import { MachinomyOptions } from './MachinomyOptions'
 
 /**
@@ -84,24 +82,16 @@ export interface NextPaymentResult {
 export default class Machinomy {
   /** Ethereum account address that sends the money. */
   private account: string
-  /** Web3 instance that manages {@link Machinomy.account}'s private key */
-  private web3: Web3
 
   private engine: Engine
 
-  private channelContract: ChannelContract
-
   private serviceContainer: Container
-
-  private channelsDao: ChannelsDatabase
 
   private channelManager: ChannelManager
 
   private paymentsDao: PaymentsDatabase
 
   private client: Client
-
-  private transport: Transport
 
   /**
    * Create an instance of Machinomy.
@@ -126,15 +116,11 @@ export default class Machinomy {
     serviceRegistry.bind('namespace', () => 'shared')
 
     this.serviceContainer = new Container(serviceRegistry)
-    this.channelContract = this.serviceContainer.resolve('ChannelContract')
-    this.channelsDao = this.serviceContainer.resolve('ChannelsDatabase')
     this.channelManager = this.serviceContainer.resolve('ChannelManager')
     this.paymentsDao = this.serviceContainer.resolve('PaymentsDatabase')
     this.client = this.serviceContainer.resolve('Client')
-    this.transport = this.serviceContainer.resolve('Transport')
 
     this.account = account
-    this.web3 = web3
     this.engine = this.serviceContainer.resolve('Engine')
   }
 

@@ -106,7 +106,7 @@ describe('storage', () => {
         return channels.save(new PaymentChannel('sender', 'receiver', id, new BigNumber.BigNumber(69), new BigNumber.BigNumber(8), 0, undefined))
           .then(() => channels.updateState(id, 2))
           .then(() => channels.firstById(id))
-          .then((chan: PaymentChannel) => expect(chan.state).toBe(2))
+          .then((chan: PaymentChannel | null) => expect(chan!.state).toBe(2))
       })
     })
 
@@ -303,7 +303,7 @@ describe('storage', () => {
 
         return Promise.all(instances.map((chan: PaymentChannel) => channels.save(chan)))
           .then(() => channels).then((channels) => channels.findUsable('sender', 'receiver', new BigNumber.BigNumber(2)))
-          .then((channel: PaymentChannel) => expect(channel.channelId.toString()).toEqual(correct))
+          .then((channel: PaymentChannel | null) => expect(channel!.channelId.toString()).toEqual(correct))
       })
     })
   })

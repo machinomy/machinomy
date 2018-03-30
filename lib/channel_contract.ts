@@ -110,7 +110,7 @@ export default class ChannelContract {
   private async contract (): Promise<Unidirectional.Contract> {
     if (!this._contract) {
       this._contract = process.env.CONTRACT_ADDRESS ?
-        await Unidirectional.contract(this.web3.currentProvider).at(process.env.CONTRACT_ADDRESS as string) :
+        await Unidirectional.contract(this.web3.currentProvider).at(process.env.CONTRACT_ADDRESS) :
         await Unidirectional.contract(this.web3.currentProvider).deployed()
     }
 

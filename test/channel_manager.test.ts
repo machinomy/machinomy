@@ -366,8 +366,6 @@ describe('ChannelManagerImpl', () => {
   })
 
   describe('acceptPayment', () => {
-    let channel: PaymentChannel
-
     let payment: Payment
 
     beforeEach(() => {
@@ -390,7 +388,6 @@ describe('ChannelManagerImpl', () => {
         token: ''
       } as Payment
 
-      channel = new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(10), new BigNumber.BigNumber(2), 0, undefined)
       deployed.channels = sinon.stub().resolves(['0', '0',
         new BigNumber.BigNumber(8), new BigNumber.BigNumber(0), new BigNumber.BigNumber(0)])
     })
