@@ -181,7 +181,7 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
       channel.value = channelC[2]
       return channel
     } else {
-      return null
+      return this.handleUnknownChannel(channelId)
     }
   }
 
