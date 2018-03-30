@@ -54,7 +54,6 @@
     "fetch-ponyfill": "^5.0.1",
     "homedir": "https://github.com/ukstv/node-homedir",
     "nedb": "^1.8.0",
-    "pg-native": "^2.2.0",
     "prompt": "^1.0.0",
     "request": "^2.76.0",
     "request-promise-native": "^1.0.5",
