@@ -109,6 +109,8 @@ export default class Machinomy {
    * @param options - Options object
    */
   constructor (account: string, web3: Web3, options: MachinomyOptions) {
+    options.closeOnInvalidPayment = typeof options.closeOnInvalidPayment === 'boolean' ? options.closeOnInvalidPayment : true
+
     const serviceRegistry = defaultRegistry()
 
     serviceRegistry.bind('Web3', () => web3)

@@ -51,6 +51,8 @@ describe('ChannelManagerImpl', () => {
 
   let uuidStub: sinon.SinonStub
 
+  let machOpts: MachinomyOptions
+
   beforeEach(() => {
     web3 = {
       currentProvider: {}
@@ -70,10 +72,13 @@ describe('ChannelManagerImpl', () => {
     channelsDao = {} as ChannelsDatabase
     paymentManager = {} as PaymentManager
 
+    machOpts = {
+      settlementPeriod: DEFAULT_SETTLEMENT_PERIOD + 1,
+      closeOnInvalidPayment: true
+    } as MachinomyOptions
+
     channelContract = new ChannelContract(web3)
-    channelManager = new ChannelManagerImpl('0xcafe', web3, channelsDao, paymentsDao, tokensDao, channelContract, paymentManager, {
-      settlementPeriod: DEFAULT_SETTLEMENT_PERIOD + 1
-    } as MachinomyOptions)
+    channelManager = new ChannelManagerImpl('0xcafe', web3, channelsDao, paymentsDao, tokensDao, channelContract, paymentManager, machOpts)
   })
 
   afterEach(() => {
@@ -404,7 +409,7 @@ describe('ChannelManagerImpl', () => {
       })
     })
 
-    it('should close the channel if the payment is invalid and a channel exists', () => {
+    function testNextPayment () {
       const signature = Signature.fromParts({
         v: 27,
         r: '0x02',
@@ -430,8 +435,20 @@ describe('ChannelManagerImpl', () => {
       channelsDao.firstById = sinon.stub().withArgs(newChan.channelId).resolves(newChan)
 
       return expectsRejection(channelManager.acceptPayment(payment))
-        .then(() => expect((channelContract.claim as sinon.SinonStub)
-          .calledWith(fakeChan.receiver, newChan.channelId, new BigNumber.BigNumber(0.5), signature)).toBe(true))
+        .then(() => ({ signature, newChan }))
+    }
+
+    it('should close the channel if the payment is invalid and a channel exists', () => {
+      return testNextPayment()
+        .then((res: { signature: Signature, newChan: any }) => expect((channelContract.claim as sinon.SinonStub)
+          .calledWith(fakeChan.receiver, res.newChan.channelId, new BigNumber.BigNumber(0.5), res.signature)).toBe(true))
+    })
+
+    it('should not close the channel if options.closeOnInvalidPayment is false', () => {
+      machOpts.closeOnInvalidPayment = false
+
+      return testNextPayment()
+        .then(() => expect((channelContract.claim as sinon.SinonStub).notCalled).toBe(true))
     })
   })
 
