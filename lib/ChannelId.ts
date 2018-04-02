@@ -1,6 +1,4 @@
 import * as uuid from 'uuid'
-import { PaymentChannelJSON, PaymentChannel } from './payment_channel'
-export { PaymentChannelJSON, PaymentChannel }
 
 export default class ChannelId {
   id: Buffer
