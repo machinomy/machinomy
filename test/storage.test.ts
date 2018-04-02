@@ -1,6 +1,5 @@
 import * as sinon from 'sinon'
 import * as support from './support'
-import * as channel from '../lib/channel'
 import ChannelId from '../lib/ChannelId'
 import Payment from '../lib/payment'
 import * as BigNumber from 'bignumber.js'

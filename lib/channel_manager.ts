@@ -22,7 +22,7 @@ const DAY_IN_SECONDS = 86400
 export const DEFAULT_SETTLEMENT_PERIOD = 2 * DAY_IN_SECONDS
 
 export interface ChannelManager extends EventEmitter {
-  openChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber): Promise<PaymentChannel>
+  openChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber, channelId?: ChannelId | string): Promise<PaymentChannel>
 
   closeChannel (channelId: string | ChannelId): Promise<TransactionResult>
 
@@ -78,8 +78,8 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     this.machinomyOptions = machinomyOptions
   }
 
-  openChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber): Promise<PaymentChannel> {
-    return this.mutex.synchronize(() => this.internalOpenChannel(sender, receiver, amount, minDepositAmount))
+  openChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber, channelId?: ChannelId | string): Promise<PaymentChannel> {
+    return this.mutex.synchronize(() => this.internalOpenChannel(sender, receiver, amount, minDepositAmount, channelId))
   }
 
   closeChannel (channelId: string | ChannelId): Promise<TransactionResult> {
@@ -189,7 +189,7 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     return this.tokensDao.isPresent(token)
   }
 
-  private internalOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount: BigNumber.BigNumber = new BigNumber.BigNumber(0)): Promise<PaymentChannel> {
+  private internalOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount: BigNumber.BigNumber = new BigNumber.BigNumber(0), channelId?: ChannelId | string): Promise<PaymentChannel> {
     let depositAmount = amount.times(10)
 
     if (minDepositAmount.greaterThan(0) && minDepositAmount.greaterThan(depositAmount)) {
@@ -197,7 +197,7 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     }
 
     this.emit('willOpenChannel', sender, receiver, depositAmount)
-    return this.buildChannel(sender, receiver, depositAmount, this.machinomyOptions.settlementPeriod || DEFAULT_SETTLEMENT_PERIOD)
+    return this.buildChannel(sender, receiver, depositAmount, this.machinomyOptions.settlementPeriod || DEFAULT_SETTLEMENT_PERIOD, channelId)
       .then((paymentChannel: PaymentChannel) => this.channelsDao.save(paymentChannel).then(() => paymentChannel))
       .then((paymentChannel: PaymentChannel) => {
         this.emit('didOpenChannel', paymentChannel)
@@ -256,10 +256,10 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     return result
   }
 
-  private async buildChannel (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number): Promise<PaymentChannel> {
-    const res = await this.channelContract.open(sender, receiver, price, settlementPeriod)
-    const channelId = res.logs[0].args.channelId
-    return new PaymentChannel(sender, receiver, channelId, price, new BigNumber.BigNumber(0), 0, undefined)
+  private async buildChannel (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number, channelId?: ChannelId | string): Promise<PaymentChannel> {
+    const res = await this.channelContract.open(sender, receiver, price, settlementPeriod, channelId)
+    const _channelId = res.logs[0].args.channelId
+    return new PaymentChannel(sender, receiver, _channelId, price, new BigNumber.BigNumber(0), 0, undefined)
   }
 
   private async handleUnknownChannel (channelId: ChannelId | string): Promise<PaymentChannel | null> {

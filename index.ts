@@ -16,6 +16,7 @@ import { PaymentRequired } from './lib/transport'
 import PaymentsDatabase from './lib/storages/payments_database'
 import defaultRegistry from './lib/services'
 import { MachinomyOptions } from './MachinomyOptions'
+import ChannelId from "./lib/ChannelId";
 
 /**
  * Options for machinomy buy.
@@ -186,9 +187,9 @@ export default class Machinomy {
     return this.channelManager.deposit(channelId, _value)
   }
 
-  async open (receiver: string, value: BigNumber.BigNumber | number): Promise<PaymentChannel> {
+  async open (receiver: string, value: BigNumber.BigNumber | number, channelId?: ChannelId | string): Promise<PaymentChannel> {
     const _value = new BigNumber.BigNumber(value)
-    return this.channelManager.openChannel(this.account, receiver, new BigNumber.BigNumber(0), _value)
+    return this.channelManager.openChannel(this.account, receiver, new BigNumber.BigNumber(0), _value, channelId)
   }
 
   /**

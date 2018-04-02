@@ -1,4 +1,4 @@
-import { PaymentChannel, PaymentChannelJSON } from '../channel'
+import { PaymentChannel, PaymentChannelJSON } from '../payment_channel'
 import ChannelId from '../ChannelId'
 import Engine, { EngineMongo, EngineNedb, EnginePostgres } from '../engines/engine'
 import * as BigNumber from 'bignumber.js'
