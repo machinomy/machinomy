@@ -19,7 +19,3 @@ export function randomInteger (): number {
 export function randomBigNumber (): BigNumber.BigNumber {
   return new BigNumber.BigNumber(Math.floor(Math.random() * 10000))
 }
-
-export function randomChannelId (): ChannelId {
-  return channel.id(Buffer.from(randomInteger().toString()))
-}

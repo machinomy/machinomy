@@ -1,5 +1,5 @@
 import Engine, { EngineMongo, EngineNedb, EnginePostgres } from '../engines/engine'
-import { ChannelId } from '../channel'
+import ChannelId from '../ChannelId'
 import { namespaced } from '../util/namespaced'
 import pify from '../util/pify'
 

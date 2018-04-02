@@ -1,6 +1,7 @@
 import * as sinon from 'sinon'
 import * as support from './support'
 import * as channel from '../lib/channel'
+import ChannelId from '../lib/ChannelId'
 import Payment from '../lib/payment'
 import * as BigNumber from 'bignumber.js'
 import Engine, { EngineMongo, EngineNedb, EnginePostgres } from '../lib/engines/engine'
@@ -100,7 +101,7 @@ describe('storage', () => {
   describe('ChannelsDatabase', () => {
     describe('#updateState', () => {
       it('updates the state value', () => {
-        const id = support.randomChannelId().toString()
+        const id = ChannelId.random().toString()
 
         sinon.stub((channels as AbstractChannelsDatabase<Engine>).contract, 'getState').resolves(2)
         return channels.save(new PaymentChannel('sender', 'receiver', id, new BigNumber.BigNumber(69), new BigNumber.BigNumber(8), 0, undefined))
@@ -112,7 +113,7 @@ describe('storage', () => {
 
     describe('#spend', () => {
       it('update spent amount', () => {
-        const channelId = channel.id('0xdeadbeaf')
+        const channelId = ChannelId.build('0xdeadbeaf')
         const hexChannelId = channelId.toString()
         const paymentChannel = new PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), undefined, undefined)
         const spent = new BigNumber.BigNumber(33)
@@ -130,7 +131,7 @@ describe('storage', () => {
 
     describe('#save and #firstById', () => {
       it('match', () => {
-        const channelId = channel.id('0xdeadbeaf')
+        const channelId = ChannelId.build('0xdeadbeaf')
         const hexChannelId = channelId.toString()
         const paymentChannel = new PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 0, undefined)
 
@@ -144,7 +145,7 @@ describe('storage', () => {
 
     describe('#firstById', () => {
       it('return null if not found', () => {
-        const channelId = support.randomChannelId()
+        const channelId = ChannelId.random()
         return channels.firstById(channelId).then((found: any) => {
           expect(found).toBeNull()
         })
@@ -159,7 +160,7 @@ describe('storage', () => {
         gs.resolves(0)
         cb.resolves([null, null, '10'])
 
-        const channelId = support.randomChannelId()
+        const channelId = ChannelId.random()
         const hexChannelId = channelId.toString()
         const paymentChannel = new PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 0, undefined)
         return channels.firstById(channelId).then((found: any) => {
@@ -174,7 +175,7 @@ describe('storage', () => {
       })
 
       it('update spent value on existing PaymentChannel', () => {
-        const channelId = support.randomChannelId()
+        const channelId = ChannelId.random()
         const hexChannelId = channelId.toString()
         const spent = new BigNumber.BigNumber(5)
         const paymentChannel = new PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), undefined, undefined)
@@ -195,7 +196,7 @@ describe('storage', () => {
 
         cb.resolves([null, null, '15'])
 
-        const channelId = support.randomChannelId()
+        const channelId = ChannelId.random()
         const hexChannelId = channelId.toString()
         const newValue = new BigNumber.BigNumber(15)
         const paymentChannel = new PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), undefined, undefined)
@@ -216,7 +217,7 @@ describe('storage', () => {
 
   describe('#all', () => {
     it('return all the channels', () => {
-      const channelId = support.randomChannelId()
+      const channelId = ChannelId.random()
       const hexChannelId = channelId.toString()
       const paymentChannel = new PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), undefined, undefined)
       return channels.save(paymentChannel).then(() => {
@@ -231,8 +232,8 @@ describe('storage', () => {
 
   describe('#allSettling', () => {
     it('returns all settling channels', () => {
-      const channelId1 = support.randomChannelId()
-      const channelId2 = support.randomChannelId()
+      const channelId1 = ChannelId.random()
+      const channelId2 = ChannelId.random()
       const hexChannelId1 = channelId1.toString()
       const hexChannelId2 = channelId2.toString()
       const paymentChannel1 = new PaymentChannel('sender', 'receiver', hexChannelId1, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 0, undefined)
@@ -255,9 +256,9 @@ describe('storage', () => {
 
   describe('#allOpen', () => {
     it('returns all open channels', () => {
-      const channelId1 = support.randomChannelId()
-      const channelId2 = support.randomChannelId()
-      const channelId3 = support.randomChannelId()
+      const channelId1 = ChannelId.random()
+      const channelId2 = ChannelId.random()
+      const channelId3 = ChannelId.random()
       const hexChannelId1 = channelId1.toString()
       const hexChannelId2 = channelId2.toString()
       const hexChannelId3 = channelId3.toString()
@@ -279,20 +280,20 @@ describe('storage', () => {
 
     describe('#findUsable', () => {
       it('returns the first channel for the specified sender and receiver whose value is less than the sum of the channel value and amount', () => {
-        const correct = support.randomChannelId().toString()
+        const correct = ChannelId.random().toString()
 
-        const remotelyModifiedId = support.randomChannelId().toString()
+        const remotelyModifiedId = ChannelId.random().toString()
         const getState = fakeContract.getState as sinon.SinonStub
         getState.withArgs(remotelyModifiedId).resolves(2)
 
         const instances = [
-          new PaymentChannel('sender', 'receiver', support.randomChannelId().toString(), new BigNumber.BigNumber(9), new BigNumber.BigNumber(8), 0, undefined),
+          new PaymentChannel('sender', 'receiver', ChannelId.random().toString(), new BigNumber.BigNumber(9), new BigNumber.BigNumber(8), 0, undefined),
           new PaymentChannel('sender', 'receiver', correct, new BigNumber.BigNumber(13), new BigNumber.BigNumber(0), 0, undefined),
           new PaymentChannel('sender', 'receiver', remotelyModifiedId, new BigNumber.BigNumber(13), new BigNumber.BigNumber(0), 0, undefined),
-          new PaymentChannel('sender', 'receiver', support.randomChannelId().toString(), new BigNumber.BigNumber(13), new BigNumber.BigNumber(0), 2, undefined),
-          new PaymentChannel('sender', 'receiver', support.randomChannelId().toString(), new BigNumber.BigNumber(130), new BigNumber.BigNumber(0), 1, undefined),
-          new PaymentChannel('othersender', 'receiver', support.randomChannelId().toString(), new BigNumber.BigNumber(11), new BigNumber.BigNumber(0), 0, undefined),
-          new PaymentChannel('othersender', 'receiver', support.randomChannelId().toString(), new BigNumber.BigNumber(11), new BigNumber.BigNumber(0), 2, undefined)
+          new PaymentChannel('sender', 'receiver', ChannelId.random().toString(), new BigNumber.BigNumber(13), new BigNumber.BigNumber(0), 2, undefined),
+          new PaymentChannel('sender', 'receiver', ChannelId.random().toString(), new BigNumber.BigNumber(130), new BigNumber.BigNumber(0), 1, undefined),
+          new PaymentChannel('othersender', 'receiver', ChannelId.random().toString(), new BigNumber.BigNumber(11), new BigNumber.BigNumber(0), 0, undefined),
+          new PaymentChannel('othersender', 'receiver', ChannelId.random().toString(), new BigNumber.BigNumber(11), new BigNumber.BigNumber(0), 2, undefined)
         ]
 
         const cb = (channels as AbstractChannelsDatabase<Engine>).contract.channelById as sinon.SinonStub
@@ -319,7 +320,7 @@ describe('storage', () => {
 
       it('check if existing token is present', () => {
         const randomToken = support.randomInteger().toString()
-        const channelId = support.randomChannelId()
+        const channelId = ChannelId.random()
 
         return channels.save(new PaymentChannel('sender', 'receiver', channelId.toString(), new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), undefined, undefined))
           .then(() => {
@@ -336,7 +337,7 @@ describe('storage', () => {
       describe('#save and #firstMaximum', () => {
         it('match the data', () => {
           const randomToken = support.randomInteger().toString()
-          const channelId = support.randomChannelId()
+          const channelId = ChannelId.random()
           const payment = new Payment({
             channelId: channelId.toString(),
             sender: 'sender',

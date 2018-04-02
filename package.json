@@ -41,7 +41,7 @@
     "@types/body-parser": "^1.16.4",
     "@types/commander": "^2.9.1",
     "@types/debug": "^0.0.30",
-    "@types/expect": "^1.20.2",
+    "@types/expect": "^1.20.3",
     "@types/express": "^4.0.36",
     "@types/nedb": "^1.8.3",
     "@types/request": "^2.0.13",

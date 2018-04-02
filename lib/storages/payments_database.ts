@@ -1,4 +1,4 @@
-import { ChannelId } from '../channel'
+import ChannelId from '../ChannelId'
 import Payment, { PaymentJSON, PaymentSerde } from '../payment'
 import pify from '../util/pify'
 import { namespaced } from '../util/namespaced'

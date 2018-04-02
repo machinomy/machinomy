@@ -1,7 +1,7 @@
 import * as BigNumber from 'bignumber.js'
 import { PaymentChannel } from './payment_channel'
 import ChannelsDatabase from './storages/channels_database'
-import { ChannelId } from './channel'
+import ChannelId from './ChannelId'
 import { EventEmitter } from 'events'
 import Mutex from './util/mutex'
 import { TransactionResult } from 'truffle-contract'
@@ -12,7 +12,7 @@ import log from './util/log'
 import ChannelContract from './channel_contract'
 import PaymentManager from './payment_manager'
 import { MachinomyOptions } from '../MachinomyOptions'
-import Web3 = require('web3')
+import * as Web3 from 'web3'
 
 const LOG = log('ChannelManager')
 
