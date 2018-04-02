@@ -1,4 +1,4 @@
-import uuid = require('uuid')
+import * as uuid from 'uuid'
 import * as Web3 from 'web3'
 import * as BigNumber from 'bignumber.js'
 import { TransactionResult } from 'truffle-contract'
