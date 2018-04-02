@@ -16,7 +16,7 @@ import { PaymentRequired } from './lib/transport'
 import PaymentsDatabase from './lib/storages/payments_database'
 import defaultRegistry from './lib/services'
 import { MachinomyOptions } from './MachinomyOptions'
-import ChannelId from "./lib/ChannelId";
+import ChannelId from './lib/ChannelId'
 
 /**
  * Options for machinomy buy.
