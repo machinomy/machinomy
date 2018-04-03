@@ -30,6 +30,8 @@ export interface ChannelManager extends EventEmitter {
 
   nextPayment (channelId: string | ChannelId, amount: BigNumber.BigNumber, meta: string): Promise<Payment>
 
+  spendChannel (payment: Payment): Promise<Payment>
+
   acceptPayment (payment: Payment): Promise<string>
 
   requireOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber): Promise<PaymentChannel>
@@ -114,11 +116,14 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
         throw new Error(`Total spend ${toSpend.toString()} is larger than channel value ${channel.value.toString()}`)
       }
 
-      const payment = await this.paymentManager.buildPaymentForChannel(channel, amount, toSpend, meta)
-      const chan = PaymentChannel.fromPayment(payment)
-      await this.channelsDao.saveOrUpdate(chan)
-      return payment
+      return this.paymentManager.buildPaymentForChannel(channel, amount, toSpend, meta)
     })
+  }
+
+  async spendChannel (payment: Payment): Promise<Payment> {
+    const chan = PaymentChannel.fromPayment(payment)
+    await this.channelsDao.saveOrUpdate(chan)
+    return payment
   }
 
   acceptPayment (payment: Payment): Promise<string> {

@@ -150,11 +150,13 @@ export default class Machinomy {
 
     const payment = await this.nextPayment(options)
     const res: AcceptPaymentResponse = await this.client.doPayment(payment, options.gateway)
+    await this.channelManager.spendChannel(payment)
     return { token: res.token, channelId: payment.channelId }
   }
 
   async payment (options: BuyOptions): Promise<NextPaymentResult> {
     const payment = await this.nextPayment(options)
+    await this.channelManager.spendChannel(payment)
     return { payment: PaymentSerde.instance.serialize(payment) }
   }
 
