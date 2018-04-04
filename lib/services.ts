@@ -50,7 +50,7 @@ export default function defaultRegistry (): Registry {
     switch (splits[0]) {
       case 'nedb':
         return new EngineNedb(splits[1], false)
-      case 'mongo':
+      case 'mongodb':
         return new EngineMongo(options.databaseUrl)
       case 'postgresql':
         return new EnginePostgres(options.databaseUrl)
