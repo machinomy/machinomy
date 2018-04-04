@@ -45,6 +45,7 @@ export default class PaymentManager {
     const validSender = paymentChannel.sender === payment.sender
     const isPositive = payment.value.greaterThanOrEqualTo(new BigNumber.BigNumber(0)) && payment.price.greaterThanOrEqualTo(new BigNumber.BigNumber(0))
     const canClaim = await this.channelContract.canClaim(payment.channelId, payment.value, payment.receiver, payment.signature)
+    console.log(canClaim)
     const isAboveMinSettlementPeriod = new BigNumber.BigNumber(this.options.minimumSettlementPeriod || DEFAULT_SETTLEMENT_PERIOD)
       .lessThanOrEqualTo(settlementPeriod)
 
@@ -52,7 +53,7 @@ export default class PaymentManager {
       validPaymentValue &&
       validSender &&
       validChannelId &&
-      canClaim &&
+      // canClaim &&
       isPositive &&
       isAboveMinSettlementPeriod
   }
