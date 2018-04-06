@@ -7,6 +7,7 @@
     "declaration": true,
     "strict": true,
     "noImplicitReturns": true,
+    "forceConsistentCasingInFileNames": true,
     "typeRoots": [
       "node_modules/@types",
       "types"
