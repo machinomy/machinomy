@@ -96,17 +96,11 @@ export default class ChannelContract {
 
   async canClaim (channelId: string, payment: BigNumber.BigNumber, receiver: string, signature: Signature) {
     const deployed = await this.contract()
-    console.log(channelId)
-    console.log(payment)
-    console.log(receiver)
-    console.log(signature)
     return deployed.canClaim(channelId, payment, receiver, signature.toString())
   }
 
   async channelById (channelId: string): Promise<[string, string, BigNumber.BigNumber, BigNumber.BigNumber, BigNumber.BigNumber]> {
     const deployed = await this.contract()
-    let a = await deployed.channels(channelId)
-    console.log(a)
     return deployed.channels(channelId)
   }
 
