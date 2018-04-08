@@ -26,6 +26,10 @@
     truffle-contract "^3.0.0"
     web3 "^0.20.1"
 
+"@machinomy/types-safe-buffer@^0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@machinomy/types-safe-buffer/-/types-safe-buffer-0.0.1.tgz#bf80d94a2cc90b9d8438749aa3542dbf7a1f72b0"
+
 "@machinomy/types-truffle-contract@^0.0.3":
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/@machinomy/types-truffle-contract/-/types-truffle-contract-0.0.3.tgz#76442f485647382ce8d676af04ebcff35afee68f"
@@ -967,13 +971,6 @@ buffer@^4.3.0:
     base64-js "^1.0.2"
     ieee754 "^1.1.4"
     isarray "^1.0.0"
-
-buffer@^5.0.6:
-  version "5.0.8"
-  resolved "https://registry.yarnpkg.com/buffer/-/buffer-5.0.8.tgz#84daa52e7cf2fa8ce4195bc5cf0f7809e0930b24"
-  dependencies:
-    base64-js "^1.0.2"
-    ieee754 "^1.1.4"
 
 buffer@^5.0.7:
   version "5.1.0"
@@ -4088,12 +4085,12 @@ types-bn@^0.0.1:
   dependencies:
     bn.js "4.11.7"
 
-types-ethereumjs-util@^0.0.6:
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/types-ethereumjs-util/-/types-ethereumjs-util-0.0.6.tgz#41f4c9f6416748572b9fcb9ddcd83f0f749600d8"
+types-ethereumjs-util@^0.0.8:
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/types-ethereumjs-util/-/types-ethereumjs-util-0.0.8.tgz#4530c4fe069da3ea93748baa3e18ea70133e4560"
   dependencies:
+    "@machinomy/types-safe-buffer" "^0.0.1"
     bn.js "^4.11.7"
-    buffer "^5.0.6"
     rlp "^2.0.0"
     types-bn "https://github.com/machinomy/types-bn.git"
 
