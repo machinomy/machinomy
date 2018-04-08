@@ -1,6 +1,6 @@
 {
   "name": "machinomy",
-  "version": "1.7.4",
+  "version": "1.7.5",
   "description": "Micropayments powered by Ethereum",
   "author": "Sergey Ukustov <sergey.ukustov@machinomy.com>",
   "license": "Apache-2.0",
@@ -36,7 +36,7 @@
   ],
   "dependencies": {
     "@machinomy/contracts": "^4.0.5",
-    "@machinomy/types-truffle-contract": "https://github.com/machinomy/types-truffle-contract",
+    "@machinomy/types-web3": "^0.0.4",
     "@types/bignumber.js": "^4.0.2",
     "@types/body-parser": "^1.16.4",
     "@types/commander": "^2.9.1",
@@ -62,7 +62,6 @@
     "types-rlp": "^0.0.1",
     "uuid": "^3.2.1",
     "web3": "^0.20.1",
-    "web3-typescript-typings": "^0.9.7",
     "whatwg-fetch": "^2.0.3"
   },
   "optionalDependencies": {
@@ -70,6 +69,7 @@
     "pg": "^7.4.1"
   },
   "devDependencies": {
+    "@machinomy/types-truffle-contract": "^0.0.3",
     "@types/mocha": "^2.2.43",
     "@types/nock": "^8.2.1",
     "@types/node": "^9.4.0",
