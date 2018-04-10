@@ -342,7 +342,7 @@ describe('storage', () => {
             sender: 'sender',
             receiver: 'receiver',
             price: new BigNumber.BigNumber(10),
-            value: new BigNumber.BigNumber(12),
+            value: new BigNumber.BigNumber(10),
             channelValue: new BigNumber.BigNumber(10),
             meta: 'metaexample',
             signature: Signature.fromParts({
