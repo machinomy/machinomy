@@ -85,11 +85,11 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
   }
 
   closeChannel (channelId: string | ChannelId): Promise<TransactionResult> {
-    return this.mutex.synchronize(() => this.internalCloseChannel(channelId))
+    return this.mutex.synchronizeOn(channelId.toString(), () => this.internalCloseChannel(channelId))
   }
 
   deposit (channelId: string, value: BigNumber.BigNumber): Promise<TransactionResult> {
-    return this.mutex.synchronize(async () => {
+    return this.mutex.synchronizeOn(channelId, async () => {
       const channel = await this.channelById(channelId)
 
       if (!channel) {
@@ -103,7 +103,7 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
   }
 
   nextPayment (channelId: string | ChannelId, amount: BigNumber.BigNumber, meta: string): Promise<Payment> {
-    return this.mutex.synchronize(async () => {
+    return this.mutex.synchronizeOn(channelId.toString(), async () => {
       const channel = await this.channelById(channelId)
 
       if (!channel) {
@@ -129,7 +129,7 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
   acceptPayment (payment: Payment): Promise<string> {
     LOG(`Queueing payment of ${payment.price.toString()} Wei to channel with ID ${payment.channelId}.`)
 
-    return this.mutex.synchronize(async () => {
+    return this.mutex.synchronizeOn(payment.channelId, async () => {
       const channel = await this.findChannel(payment)
 
       LOG(`Adding ${payment.price.toString()} Wei to channel with ID ${channel.channelId.toString()}.`)
