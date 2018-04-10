@@ -8,5 +8,6 @@ export interface MachinomyOptions {
   databaseUrl: string
   minimumChannelAmount?: number | BigNumber.BigNumber
   minimumSettlementPeriod?: number
-  settlementPeriod?: number
+  settlementPeriod?: number,
+  closeOnInvalidPayment?: boolean
 }

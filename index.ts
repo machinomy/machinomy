@@ -109,6 +109,8 @@ export default class Machinomy {
    * @param options - Options object
    */
   constructor (account: string, web3: Web3, options: MachinomyOptions) {
+    options.closeOnInvalidPayment = typeof options.closeOnInvalidPayment === 'boolean' ? options.closeOnInvalidPayment : true
+
     const serviceRegistry = defaultRegistry()
 
     serviceRegistry.bind('Web3', () => web3)
@@ -148,11 +150,13 @@ export default class Machinomy {
 
     const payment = await this.nextPayment(options)
     const res: AcceptPaymentResponse = await this.client.doPayment(payment, options.gateway)
+    await this.channelManager.spendChannel(payment)
     return { token: res.token, channelId: payment.channelId }
   }
 
   async payment (options: BuyOptions): Promise<NextPaymentResult> {
     const payment = await this.nextPayment(options)
+    await this.channelManager.spendChannel(payment)
     return { payment: PaymentSerde.instance.serialize(payment) }
   }
 

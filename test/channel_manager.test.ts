@@ -51,6 +51,8 @@ describe('ChannelManagerImpl', () => {
 
   let uuidStub: sinon.SinonStub
 
+  let machOpts: MachinomyOptions
+
   beforeEach(() => {
     web3 = {
       currentProvider: {}
@@ -70,10 +72,13 @@ describe('ChannelManagerImpl', () => {
     channelsDao = {} as ChannelsDatabase
     paymentManager = {} as PaymentManager
 
+    machOpts = {
+      settlementPeriod: DEFAULT_SETTLEMENT_PERIOD + 1,
+      closeOnInvalidPayment: true
+    } as MachinomyOptions
+
     channelContract = new ChannelContract(web3)
-    channelManager = new ChannelManagerImpl('0xcafe', web3, channelsDao, paymentsDao, tokensDao, channelContract, paymentManager, {
-      settlementPeriod: DEFAULT_SETTLEMENT_PERIOD + 1
-    } as MachinomyOptions)
+    channelManager = new ChannelManagerImpl('0xcafe', web3, channelsDao, paymentsDao, tokensDao, channelContract, paymentManager, machOpts)
   })
 
   afterEach(() => {
@@ -352,15 +357,47 @@ describe('ChannelManagerImpl', () => {
         })
       })
 
-      channelsDao.saveOrUpdate = sinon.stub().resolves()
-
       deployed.channels = sinon.stub().resolves(['0', '0',
         new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), new BigNumber.BigNumber(0)])
 
       return channelManager.nextPayment(id, new BigNumber.BigNumber(8), '').then((payment: Payment) => {
-        expect((channelsDao.saveOrUpdate as sinon.SinonStub).called).toBe(true)
         expect(payment.value.eq(new BigNumber.BigNumber(10))).toBe(true)
         expect(payment.price.eq(new BigNumber.BigNumber(8))).toBe(true)
+      })
+    })
+  })
+
+  describe('spendChannel', () => {
+    it('should save the channel in the database', () => {
+      const payment = new Payment({
+        channelId: '0xdead',
+        sender: 'send',
+        receiver: 'recv',
+        price: new BigNumber.BigNumber(10),
+        value: new BigNumber.BigNumber(10),
+        channelValue: new BigNumber.BigNumber(100),
+        signature: Signature.fromParts({
+          v: 27,
+          r: '0x01',
+          s: '0x02'
+        }),
+        meta: '',
+        contractAddress: undefined,
+        token: undefined
+      })
+
+      channelsDao.saveOrUpdate = sinon.stub().resolves()
+
+      return channelManager.spendChannel(payment).then(() => {
+        expect((channelsDao.saveOrUpdate as sinon.SinonStub).calledWith({
+          sender: 'send',
+          receiver: 'recv',
+          channelId: '0xdead',
+          value: new BigNumber.BigNumber(10),
+          spent: new BigNumber.BigNumber(10),
+          state: undefined,
+          contractAddress: undefined
+        }))
       })
     })
   })
@@ -406,7 +443,7 @@ describe('ChannelManagerImpl', () => {
       })
     })
 
-    it('should close the channel if the payment is invalid and a channel exists', () => {
+    function testNextPayment () {
       const signature = Signature.fromParts({
         v: 27,
         r: '0x02',
@@ -432,8 +469,20 @@ describe('ChannelManagerImpl', () => {
       channelsDao.firstById = sinon.stub().withArgs(newChan.channelId).resolves(newChan)
 
       return expectsRejection(channelManager.acceptPayment(payment))
-        .then(() => expect((channelContract.claim as sinon.SinonStub)
-          .calledWith(fakeChan.receiver, newChan.channelId, new BigNumber.BigNumber(0.5), signature)).toBe(true))
+        .then(() => ({ signature, newChan }))
+    }
+
+    it('should close the channel if the payment is invalid and a channel exists', () => {
+      return testNextPayment()
+        .then((res: { signature: Signature, newChan: any }) => expect((channelContract.claim as sinon.SinonStub)
+          .calledWith(fakeChan.receiver, res.newChan.channelId, new BigNumber.BigNumber(0.5), res.signature)).toBe(true))
+    })
+
+    it('should not close the channel if options.closeOnInvalidPayment is false', () => {
+      machOpts.closeOnInvalidPayment = false
+
+      return testNextPayment()
+        .then(() => expect((channelContract.claim as sinon.SinonStub).notCalled).toBe(true))
     })
   })
 

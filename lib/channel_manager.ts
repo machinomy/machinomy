@@ -30,6 +30,8 @@ export interface ChannelManager extends EventEmitter {
 
   nextPayment (channelId: string | ChannelId, amount: BigNumber.BigNumber, meta: string): Promise<Payment>
 
+  spendChannel (payment: Payment): Promise<Payment>
+
   acceptPayment (payment: Payment): Promise<string>
 
   requireOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber): Promise<PaymentChannel>
@@ -114,11 +116,14 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
         throw new Error(`Total spend ${toSpend.toString()} is larger than channel value ${channel.value.toString()}`)
       }
 
-      const payment = await this.paymentManager.buildPaymentForChannel(channel, amount, toSpend, meta)
-      const chan = PaymentChannel.fromPayment(payment)
-      await this.channelsDao.saveOrUpdate(chan)
-      return payment
+      return this.paymentManager.buildPaymentForChannel(channel, amount, toSpend, meta)
     })
+  }
+
+  async spendChannel (payment: Payment): Promise<Payment> {
+    const chan = PaymentChannel.fromPayment(payment)
+    await this.channelsDao.saveOrUpdate(chan)
+    return payment
   }
 
   acceptPayment (payment: Payment): Promise<string> {
@@ -131,7 +136,16 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
 
       const valid = await this.paymentManager.isValid(payment, channel)
 
-      if (!valid) {
+      if (valid) {
+        channel.spent = payment.value
+        const token = this.web3.sha3(JSON.stringify(payment)).toString()
+        await this.channelsDao.saveOrUpdate(channel)
+        await this.tokensDao.save(token, payment.channelId)
+        await this.paymentsDao.save(token, payment)
+        return token
+      }
+
+      if (this.machinomyOptions.closeOnInvalidPayment) {
         LOG(`Received invalid payment from ${payment.sender}!`)
         const existingChannel = await this.channelsDao.findBySenderReceiverChannelId(payment.sender, payment.receiver, payment.channelId)
 
@@ -140,16 +154,9 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
           LOG('Closing channel due to malfeasance.')
           await this.internalCloseChannel(channel.channelId)
         }
-
-        throw new Error('Invalid payment.')
       }
 
-      channel.spent = payment.value
-      const token = this.web3.sha3(JSON.stringify(payment)).toString()
-      await this.channelsDao.saveOrUpdate(channel)
-      await this.tokensDao.save(token, payment.channelId)
-      await this.paymentsDao.save(token, payment)
-      return token
+      throw new Error('Invalid payment.')
     })
   }
 
