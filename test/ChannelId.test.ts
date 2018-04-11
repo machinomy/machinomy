@@ -1,5 +1,6 @@
 import ChannelId from '../lib/ChannelId'
 import * as expect from 'expect'
+import { Buffer } from 'safe-buffer'
 
 const HEX_ADDRESS = 'eb61859a9d74f95bda8a6f9d3efcfe6478e49151'
 

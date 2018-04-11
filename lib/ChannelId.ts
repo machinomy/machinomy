@@ -1,4 +1,5 @@
 import * as uuid from 'uuid'
+import { Buffer } from 'safe-buffer'
 
 export default class ChannelId {
   id: Buffer
