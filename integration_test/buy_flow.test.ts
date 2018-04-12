@@ -4,7 +4,7 @@ import * as express from 'express'
 import * as bodyParser from 'body-parser'
 import Machinomy, { BuyResult } from '../index'
 import { PaymentChannel } from '../lib/payment_channel'
-import { AcceptTokenResponse } from '../lib/client'
+import { AcceptTokenResponse } from '../lib/accept_token_response'
 const expect = require('expect')
 
 const web3 = new Web3(new Web3.providers.HttpProvider(process.env.MACHINOMY_GETH_ADDR as string))

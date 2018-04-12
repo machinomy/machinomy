@@ -1,122 +1,20 @@
 import { EventEmitter } from 'events'
 import { PaymentRequired, STATUS_CODES, Transport } from './transport'
-import Payment, { PaymentSerde } from './payment'
+import Payment from './payment'
 import ChannelManager from './channel_manager'
-import Serde from './serde'
 import * as request from 'request'
 import log from './util/log'
 import fetcher from './util/fetch'
+import { AcceptPaymentRequest, AcceptPaymentRequestSerde } from './accept_payment_request'
+import { AcceptPaymentResponse, AcceptPaymentResponseSerde } from './accept_payment_response'
+import { AcceptTokenRequest, AcceptTokenRequestSerde } from './accept_token_request'
+import { AcceptTokenResponse, AcceptTokenResponseSerde } from './accept_token_response'
 
 const LOG = log('Client')
 
-export class AcceptPaymentRequest {
-  payment: Payment
-
-  constructor (payment: Payment) {
-    this.payment = payment
-  }
-}
-
-export class AcceptPaymentRequestSerde implements Serde<AcceptPaymentRequest> {
-  static instance: AcceptPaymentRequestSerde = new AcceptPaymentRequestSerde()
-
-  serialize (obj: AcceptPaymentRequest): object {
-    return {
-      payment: PaymentSerde.instance.serialize(obj.payment)
-    }
-  }
-
-  deserialize (data: any): AcceptPaymentRequest {
-    if (!data.payment) {
-      throw new Error('Cannot deserialize payment request. Payment is missing.')
-    }
-
-    const payment = PaymentSerde.instance.deserialize(data.payment)
-    return new AcceptPaymentRequest(payment)
-  }
-}
-
-export class AcceptPaymentResponse {
-  token: string
-
-  constructor (token: string) {
-    this.token = token
-  }
-}
-
-export class AcceptPaymentResponseSerde implements Serde<AcceptPaymentResponse> {
-  static instance: AcceptPaymentResponseSerde = new AcceptPaymentResponseSerde()
-
-  serialize (obj: AcceptPaymentResponse): object {
-    return {
-      token: obj.token
-    }
-  }
-
-  deserialize (data: any): AcceptPaymentResponse {
-    if (!data.token) {
-      throw new Error('Cannot deserialize payment response. Token is missing.')
-    }
-
-    return new AcceptPaymentResponse(data.token)
-  }
-}
-
-export class AcceptTokenRequest {
-  token: string
-
-  constructor (token: string) {
-    this.token = token
-  }
-}
-
-export class AcceptTokenRequestSerde implements Serde<AcceptTokenRequest> {
-  static instance: AcceptTokenRequestSerde = new AcceptTokenRequestSerde()
-
-  serialize (obj: AcceptTokenRequest): object {
-    return {
-      token: obj.token
-    }
-  }
-
-  deserialize (data: any): AcceptTokenRequest {
-    if (!data.token) {
-      throw new Error('Cannot deserialize token request. Token is missing.')
-    }
-
-    return new AcceptTokenRequest(data.token)
-  }
-}
-
-export class AcceptTokenResponse {
-  status: boolean
-
-  constructor (status: boolean) {
-    this.status = status
-  }
-}
-
-export class AcceptTokenResponseSerde implements Serde<AcceptTokenResponse> {
-  static instance: AcceptTokenResponseSerde = new AcceptTokenResponseSerde()
-
-  serialize (obj: AcceptTokenResponse): object {
-    return {
-      status: obj.status
-    }
-  }
-
-  deserialize (data: any): AcceptTokenResponse {
-    if (data.status === undefined) {
-      throw new Error('Cannot deserialize token response. Status is missing.')
-    }
-
-    return new AcceptTokenResponse(data.status)
-  }
-}
-
 export default interface Client extends EventEmitter {
   doPreflight (uri: string): Promise<PaymentRequired>
-  doPayment (payment: Payment, gateway: string): Promise<AcceptPaymentResponse>
+  doPayment (payment: Payment, gateway: string, purchaseMeta?: any): Promise<AcceptPaymentResponse>
   acceptPayment (req: AcceptPaymentRequest): Promise<AcceptPaymentResponse>
   doVerify (token: string, gateway: string): Promise<AcceptTokenResponse>
   acceptVerify (req: AcceptTokenRequest): Promise<AcceptTokenResponse>
@@ -158,12 +56,12 @@ export class ClientImpl extends EventEmitter implements Client {
     })
   }
 
-  async doPayment (payment: Payment, gateway: string): Promise<AcceptPaymentResponse> {
+  async doPayment (payment: Payment, gateway: string, purchaseMeta?: any): Promise<AcceptPaymentResponse> {
     this.emit('willSendPayment')
 
     LOG(`Attempting to send payment to ${gateway}. Sender: ${payment.sender} / Receiver: ${payment.receiver} / Amount: ${payment.price.toString()}`)
 
-    const request = new AcceptPaymentRequest(payment)
+    const request = new AcceptPaymentRequest(payment, purchaseMeta)
 
     const res = await fetcher.fetch(gateway, {
       method: 'POST',

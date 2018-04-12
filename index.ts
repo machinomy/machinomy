@@ -6,17 +6,16 @@ import Payment, { PaymentSerde } from './lib/payment'
 import { TransactionResult } from 'truffle-contract'
 import { Container } from './lib/container'
 import ChannelManager from './lib/channel_manager'
-import Client, {
-  AcceptPaymentRequestSerde,
-  AcceptPaymentResponse,
-  AcceptTokenRequest,
-  AcceptTokenResponse
-} from './lib/client'
+import Client from './lib/client'
 import { PaymentRequired } from './lib/transport'
 import PaymentsDatabase from './lib/storages/payments_database'
 import defaultRegistry from './lib/services'
 import { MachinomyOptions } from './MachinomyOptions'
 import ChannelId from './lib/ChannelId'
+import { AcceptPaymentRequestSerde } from './lib/accept_payment_request'
+import { AcceptPaymentResponse } from './lib/accept_payment_response'
+import { AcceptTokenRequest } from './lib/accept_token_request'
+import { AcceptTokenResponse } from './lib/accept_token_response'
 
 /**
  * Options for machinomy buy.
@@ -32,6 +31,7 @@ export interface BuyOptions {
   gateway?: string,
   meta?: string,
   contractAddress?: string
+  purchaseMeta?: object
 }
 
 /**
@@ -149,7 +149,7 @@ export default class Machinomy {
     }
 
     const payment = await this.nextPayment(options)
-    const res: AcceptPaymentResponse = await this.client.doPayment(payment, options.gateway)
+    const res: AcceptPaymentResponse = await this.client.doPayment(payment, options.gateway, options.purchaseMeta)
     await this.channelManager.spendChannel(payment)
     return { token: res.token, channelId: payment.channelId }
   }

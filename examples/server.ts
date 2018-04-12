@@ -27,7 +27,7 @@ import * as express from 'express'
 import Web3 = require('web3')
 import Machinomy from '../index'
 import * as bodyParser from 'body-parser'
-import { AcceptTokenRequestSerde } from '../lib/client'
+import { AcceptTokenRequestSerde } from '../lib/accept_token_request'
 import { PaymentChannelSerde } from '../lib/payment_channel'
 let fetch = require('whatwg-fetch').fetch
 
