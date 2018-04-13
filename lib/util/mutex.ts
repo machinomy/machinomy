@@ -1,30 +1,41 @@
 export type Task<T> = () => Promise<T>
 
 export default class Mutex {
-  private queue: Array<Task<any>> = []
+  private static DEFAULT_QUEUE = '__MUTEX_DEFAULT_QUEUE'
 
-  private busy: boolean = false
+  private queues: { [k: string]: Array<Task<any>> } = {}
+
+  private busyQueues: { [k: string]: true } = {}
 
   synchronize<T> (task: Task<T>): Promise<T> {
-    return new Promise((resolve, reject) => {
-      this.queue.push(() => task().then(resolve).catch(reject))
+    return this.synchronizeOn(Mutex.DEFAULT_QUEUE, task)
+  }
 
-      if (!this.busy) {
-        this.dequeue()
+  synchronizeOn<T> (key: string, task: Task<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      if (!this.queues[key]) {
+        this.queues[key] = []
+      }
+
+      this.queues[key].push(() => task().then(resolve).catch(reject))
+
+      if (!this.busyQueues[key]) {
+        this.dequeue(key)
       }
     })
   }
 
-  private dequeue () {
-    const next = this.queue.shift()
+  private dequeue (queueName: string) {
+    const next = this.queues[queueName].shift()
 
     if (!next) {
-      this.busy = false
+      delete this.busyQueues[queueName]
+      delete this.queues[queueName]
       return
     }
 
-    this.busy = true
-    next().then(() => this.dequeue())
-      .catch(() => this.dequeue())
+    this.busyQueues[queueName] = true
+    next().then(() => this.dequeue(queueName))
+      .catch(() => this.dequeue(queueName))
   }
 }
