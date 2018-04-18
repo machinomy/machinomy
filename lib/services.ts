@@ -1,18 +1,27 @@
 import * as Web3 from 'web3'
 import ChannelsDatabase, {
-  MongoChannelsDatabase, NedbChannelsDatabase,
-  PostgresChannelsDatabase
+  MongoChannelsDatabase,
+  NedbChannelsDatabase,
+  PostgresChannelsDatabase,
+  SQLiteChannelsDatabase
 } from './storages/channels_database'
-import PaymentsDatabase, { MongoPaymentsDatabase, PostgresPaymentsDatabase, NedbPaymentsDatabase } from './storages/payments_database'
+import PaymentsDatabase, {
+  MongoPaymentsDatabase,
+  PostgresPaymentsDatabase,
+  NedbPaymentsDatabase,
+  SQLitePaymentsDatabase
+} from './storages/payments_database'
 import { ChannelManager, ChannelManagerImpl } from './channel_manager'
 import TokensDatabase, {
-  MongoTokensDatabase, NedbTokensDatabase,
-  PostgresTokensDatabase
+  MongoTokensDatabase,
+  NedbTokensDatabase,
+  PostgresTokensDatabase,
+  SQLiteTokensDatabase
 } from './storages/tokens_database'
 import { ClientImpl } from './client'
 import { Transport } from './transport'
 import { MachinomyOptions } from '../MachinomyOptions'
-import Engine, { EngineMongo, EngineNedb, EnginePostgres } from './engines/engine'
+import Engine, { EngineMongo, EngineNedb, EnginePostgres, EngineSQLite } from './engines/engine'
 import { Registry } from './container'
 import ChainManager from './chain_manager'
 import ChannelContract from './channel_contract'
@@ -54,6 +63,8 @@ export default function defaultRegistry (): Registry {
         return new EngineMongo(options.databaseUrl)
       case 'postgresql':
         return new EnginePostgres(options.databaseUrl)
+      case 'sqlite':
+        return new EngineSQLite(splits[1])
     }
 
     throw new Error(`Invalid engine: ${splits[0]}.`)
@@ -72,6 +83,10 @@ export default function defaultRegistry (): Registry {
       return new NedbChannelsDatabase(engine, channelContract, namespace)
     }
 
+    if (engine instanceof EngineSQLite) {
+      return new SQLiteChannelsDatabase(engine, channelContract, namespace)
+    }
+
     throw new Error('Invalid engine.')
   }, ['Engine', 'ChannelContract', 'namespace'])
 
@@ -88,6 +103,10 @@ export default function defaultRegistry (): Registry {
       return new NedbPaymentsDatabase(engine, namespace)
     }
 
+    if (engine instanceof EngineSQLite) {
+      return new SQLitePaymentsDatabase(engine, namespace)
+    }
+
     throw new Error('Invalid engine.')
   }, ['Engine', 'namespace'])
 
@@ -102,6 +121,10 @@ export default function defaultRegistry (): Registry {
 
     if (engine instanceof EngineNedb) {
       return new NedbTokensDatabase(engine, namespace)
+    }
+
+    if (engine instanceof EngineSQLite) {
+      return new SQLiteTokensDatabase(engine, namespace)
     }
 
     throw new Error('Invalid engine.')

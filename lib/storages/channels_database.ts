@@ -1,11 +1,12 @@
 import { PaymentChannel, PaymentChannelJSON } from '../payment_channel'
 import ChannelId from '../ChannelId'
-import Engine, { EngineMongo, EngineNedb, EnginePostgres } from '../engines/engine'
+import Engine, { EngineMongo, EngineNedb, EnginePostgres, EngineSQLite } from '../engines/engine'
 import * as BigNumber from 'bignumber.js'
 import { namespaced } from '../util/namespaced'
 import pify from '../util/pify'
 import log from '../util/log'
 import ChannelContract from '../channel_contract'
+import { Database as SQLiteDatabase } from 'sqlite3'
 
 export default interface ChannelsDatabase {
   save (paymentChannel: PaymentChannel): Promise<void>
@@ -530,5 +531,126 @@ export class PostgresChannelsDatabase extends AbstractChannelsDatabase<EnginePos
         channelId.toString()
       ]
     ))
+  }
+}
+
+export class SQLiteChannelsDatabase extends AbstractChannelsDatabase<EngineSQLite> implements ChannelsDatabase {
+  save (paymentChannel: PaymentChannel): Promise<void> {
+    return this.engine.exec((client: SQLiteDatabase) => pify((cb: Function) => {
+      client.run(
+        'INSERT INTO channel("channelId", kind, sender, receiver, value, spent, state, "contractAddress") ' +
+        'VALUES ($channelId, $kind, $sender, $receiver, $value, $spent, $state, $contractAddress)',
+        {
+          channelId: paymentChannel.channelId,
+          kind: this.kind,
+          sender: paymentChannel.sender,
+          receiver: paymentChannel.receiver,
+          value: paymentChannel.value.toString(),
+          spent: paymentChannel.spent.toString(),
+          state: paymentChannel.state,
+          contractAddress: paymentChannel.contractAddress
+        }, cb)
+    }))
+  }
+
+  firstById (channelId: ChannelId | string): Promise<PaymentChannel | null> {
+    return this.engine.exec((client: SQLiteDatabase) => pify((cb: Function) => {
+      client.get(
+        'SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
+        'WHERE "channelId" = $channelId LIMIT 1',
+        {
+          channelId: channelId.toString()
+        }, cb)
+    })).then((res: any) => this.inflatePaymentChannel(res))
+  }
+
+  spend (channelId: ChannelId | string, spent: BigNumber.BigNumber): Promise<void> {
+    return this.engine.exec((client: SQLiteDatabase) => pify((cb: Function) => {
+      client.run(
+        'UPDATE channel SET spent = $spent WHERE "channelId" = $channelId',
+        {
+          channelId: channelId.toString(),
+          spent: spent.toString()
+        }, cb)
+    }))
+  }
+
+  deposit (channelId: ChannelId | string, value: BigNumber.BigNumber): Promise<void> {
+    return this.engine.exec((client: SQLiteDatabase) => pify((cb: Function) => {
+      return this.firstById(channelId).then((channel: PaymentChannel | null) => {
+        if (!channel) {
+          throw new Error('Channel not found.')
+        }
+
+        const newValue = channel.value.add(value)
+
+        return client.run(
+          'UPDATE channel SET value = $value WHERE "channelId" = $channelId',
+          {
+            channelId: channelId.toString(),
+            value: newValue.toString()
+          }, cb)
+      })
+    }))
+  }
+
+  all (): Promise<Array<PaymentChannel>> {
+    return this.engine.exec((client: SQLiteDatabase) => pify((cb: Function) => {
+      return client.all('SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel', cb)
+    })).then((rows: any) => this.inflatePaymentChannels(rows))
+  }
+
+  allOpen (): Promise<PaymentChannel[]> {
+    return this.engine.exec((client: SQLiteDatabase) => pify((cb: Function) => {
+      return client.all('SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
+        'WHERE state = 0', cb)
+    })).then((rows: any) => this.inflatePaymentChannels(rows))
+      .then((channels: PaymentChannel[]) => this.filterByState(0, channels))
+  }
+
+  findUsable (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel | null> {
+    return this.engine.exec((client: SQLiteDatabase) => pify((cb: Function) => {
+      return client.get('SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
+        'WHERE sender = $sender AND receiver = $receiver AND value >= spent + $amount AND state = 0',
+        {
+          sender: sender,
+          receiver: receiver,
+          amount: amount.toString()
+        }, cb)
+    })).then((row: any) => this.inflatePaymentChannel(row))
+      .then((channel: PaymentChannel | null) => this.filterByState(0, [channel!])[0] || null)
+  }
+
+  findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>> {
+    return this.engine.exec((client: SQLiteDatabase) => pify((cb: Function) => {
+      return client.all('SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
+        'WHERE sender = $sender AND receiver = $receiver',
+        {
+          sender: sender,
+          receiver: receiver
+        }, cb)
+    })).then((rows: any) => this.inflatePaymentChannels(rows))
+  }
+
+  findBySenderReceiverChannelId (sender: string, receiver: string, channelId: ChannelId | string): Promise<PaymentChannel | null> {
+    return this.engine.exec((client: SQLiteDatabase) => pify((cb: Function) => {
+      return client.get('SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
+        'WHERE sender = $sender AND receiver = $receiver AND "channelId" = $channelId LIMIT 1',
+        {
+          sender: sender,
+          receiver: receiver,
+          channelId: channelId.toString()
+        }, cb)
+    })).then((row: any) => this.inflatePaymentChannel(row))
+  }
+
+  updateState (channelId: ChannelId | string, state: number): Promise<void> {
+    return this.engine.exec((client: SQLiteDatabase) => pify((cb: Function) => {
+      return client.run('UPDATE channel SET state = $state WHERE "channelId" = $channelId',
+        {
+          state: state,
+          channelId: channelId.toString()
+        }, cb)
+    }))
   }
 }

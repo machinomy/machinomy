@@ -1,3 +1,5 @@
+import * as fs from 'fs'
+
 let MongoClient: any
 
 try {
@@ -22,6 +24,15 @@ try {
   DS = require('nedb')
 } catch (e) {
   DS = {}
+}
+
+import { Database as SQLiteDatabase } from 'sqlite3'
+let sqlite: any
+
+try {
+  sqlite = require('sqlite3')
+} catch (e) {
+  sqlite = {}
 }
 
 import pify from '../util/pify'
@@ -202,5 +213,59 @@ export class EnginePostgres implements Engine {
     }
 
     return this.connect()
+  }
+}
+
+export class EngineSQLite implements Engine {
+  datastore: SQLiteDatabase
+
+  constructor (path: string, inMemoryOnly: boolean = false) {
+    if (path.startsWith('sqlite://')) {
+      path = path.replace('sqlite://', '')
+    }
+    if (db[path]) {
+      this.datastore = db[path]
+    } else {
+      if (inMemoryOnly) {
+        db[path] = new sqlite.Database(':memory:')
+      } else {
+        db[path] = new sqlite.Database(path)
+      }
+
+      this.datastore = db[path]
+    }
+  }
+
+  isConnected (): boolean {
+    return true
+  }
+
+  connect (): Promise<any> {
+    return Promise.resolve()
+  }
+
+  close (): Promise<any> {
+    return this.exec((client: SQLiteDatabase) => pify((cb: Function) => client.close()))
+  }
+
+  drop (): Promise<any> {
+    return this.exec((client: SQLiteDatabase) => {
+      return pify((cb: Function) => {
+        client.get('PRAGMA database_list', (err: Error | null, row: any) => {
+          if (err) {
+            console.error('Error while PRAGMA database_list')
+          } else {
+            if (row.file && row.file.length > 0) {
+              fs.unlinkSync(row.file)
+            }
+          }
+        })
+      })
+    })
+  }
+
+  exec (cb: Function): Promise<any> {
+    return Promise.resolve(this.datastore)
+      .then((ds) => cb(ds))
   }
 }

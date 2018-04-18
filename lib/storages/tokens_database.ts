@@ -1,7 +1,8 @@
-import Engine, { EngineMongo, EngineNedb, EnginePostgres } from '../engines/engine'
+import Engine, { EngineMongo, EngineNedb, EnginePostgres, EngineSQLite } from '../engines/engine'
 import ChannelId from '../ChannelId'
 import { namespaced } from '../util/namespaced'
 import pify from '../util/pify'
+import { Database as SQLiteDatabase } from 'sqlite3'
 
 export default interface TokensDatabase {
   save (token: string, channelId: ChannelId | string): Promise<void>
@@ -88,5 +89,29 @@ export class PostgresTokensDatabase extends AbstractTokensDatabase<EnginePostgre
         token
       ]
     )).then((res: any) => (res.rows[0].count > 0))
+  }
+}
+
+export class SQLiteTokensDatabase extends AbstractTokensDatabase<EngineSQLite> {
+  save (token: string, channelId: ChannelId | string): Promise<void> {
+    return this.engine.exec((client: SQLiteDatabase) => pify((cb: Function) => {
+      client.run(
+        'INSERT INTO token(token, "channelId", kind) VALUES ($token, $channelId, $kind)',
+        {
+          token: token,
+          channelId: channelId.toString(),
+          kind: this.kind
+        }, cb)
+    }))
+  }
+
+  isPresent (token: string): Promise<boolean> {
+    return this.engine.exec((client: SQLiteDatabase) => pify((cb: Function) => {
+      client.get(
+        'SELECT COUNT(*) as count FROM token WHERE token=$token',
+        {
+          token: token
+        }, cb)
+    })).then((row: any) => (row.count > 0))
   }
 }

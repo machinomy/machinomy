@@ -2,7 +2,8 @@ import ChannelId from '../ChannelId'
 import Payment, { PaymentJSON, PaymentSerde } from '../payment'
 import pify from '../util/pify'
 import { namespaced } from '../util/namespaced'
-import Engine, { EngineMongo, EngineNedb, EnginePostgres } from '../engines/engine'
+import Engine, { EngineMongo, EngineNedb, EnginePostgres, EngineSQLite } from '../engines/engine'
+import { Database as SQLiteDatabase } from 'sqlite3'
 /* tslint:enable */
 
 export default interface PaymentsDatabase {
@@ -157,5 +158,59 @@ export class PostgresPaymentsDatabase extends AbstractPaymentsDatabase<EnginePos
         token
       ]
     )).then((res: any) => this.inflatePayment(res.rows[0]))
+  }
+}
+
+export class SQLitePaymentsDatabase extends AbstractPaymentsDatabase<EngineSQLite> {
+  save (token: string, payment: Payment): Promise<void> {
+    const serialized: any = PaymentSerde.instance.serialize(payment)
+    serialized.kind = this.kind
+    serialized.token = token
+
+    return this.engine.exec((client: SQLiteDatabase) => pify((cb: Function) => {
+      client.run(
+        'INSERT INTO payment("channelId", kind, token, sender, receiver, price, value, ' +
+        '"channelValue", v, r, s, meta, "contractAddress", "createdAt") VALUES($channelId, $kind, $token, $sender, ' +
+        '$receiver, $price, $value, $channelValue, $v, $r, $s, $meta, $contractAddress, $createdAt)',
+        {
+          channelId: serialized.channelId,
+          kind: serialized.kind,
+          token: serialized.token,
+          sender: serialized.sender,
+          receiver: serialized.receiver,
+          price: serialized.price,
+          value: serialized.value,
+          channelValue: serialized.channelValue,
+          v: serialized.v,
+          r: serialized.r,
+          s: serialized.s,
+          meta: serialized.meta,
+          contractAddress: serialized.contractAddress,
+          createdAt: Date.now()
+        }, cb)
+    }))
+  }
+
+  firstMaximum (channelId: ChannelId | string): Promise<Payment | any> {
+    return this.engine.exec((client: SQLiteDatabase) => pify((cb: Function) => {
+      client.get(
+        'SELECT "channelId", kind, token, sender, receiver, price, value, ' +
+        '"channelValue", v, r, s, meta, "contractAddress", "createdAt" FROM payment WHERE "channelId" = $channelId ' +
+        'ORDER BY value DESC',
+        {
+          channelId: channelId.toString()
+        }, cb)
+    })).then((row: any) => this.inflatePayment(row))
+  }
+
+  findByToken (token: string): Promise<Payment | any> {
+    return this.engine.exec((client: SQLiteDatabase) => pify((cb: Function) => {
+      client.get(
+        'SELECT "channelId", kind, token, sender, receiver, price, value, ' +
+        '"channelValue", v, r, s, meta, "contractAddress", "createdAt" FROM payment WHERE token = $token',
+        {
+          token: token
+        }, cb)
+    })).then((row: any) => this.inflatePayment(row))
   }
 }

@@ -3,24 +3,27 @@ import * as support from './support'
 import ChannelId from '../lib/ChannelId'
 import Payment from '../lib/payment'
 import * as BigNumber from 'bignumber.js'
-import Engine, { EngineMongo, EngineNedb, EnginePostgres } from '../lib/engines/engine'
+import Engine, { EngineMongo, EngineNedb, EnginePostgres, EngineSQLite } from '../lib/engines/engine'
 import { PaymentChannel } from '../lib/payment_channel'
 import {
   AbstractChannelsDatabase,
   default as ChannelsDatabase,
   MongoChannelsDatabase,
   NedbChannelsDatabase,
-  PostgresChannelsDatabase
+  PostgresChannelsDatabase,
+  SQLiteChannelsDatabase
 } from '../lib/storages/channels_database'
 import PaymentsDatabase, {
   MongoPaymentsDatabase,
   NedbPaymentsDatabase,
-  PostgresPaymentsDatabase
+  PostgresPaymentsDatabase,
+  SQLitePaymentsDatabase
 } from '../lib/storages/payments_database'
 import TokensDatabase, {
   MongoTokensDatabase,
   NedbTokensDatabase,
-  PostgresTokensDatabase
+  PostgresTokensDatabase,
+  SQLiteTokensDatabase
 } from '../lib/storages/tokens_database'
 import ChannelContract from '../lib/channel_contract'
 import Signature from '../lib/signature'
@@ -38,6 +41,8 @@ function buildEngine (filename: string): Engine {
       return new EngineMongo('mongodb://localhost:27017/machinomy')
     case 'postgresql':
       return new EnginePostgres()
+    case 'sqlite':
+      return new EngineSQLite(filename, false)
     default:
       throw new Error(`Invalid engine ${engineName}.`)
   }
@@ -54,6 +59,10 @@ function buildDatabases (engine: Engine, channelContract: ChannelContract): [Cha
 
   if (engine instanceof EngineMongo) {
     return [new MongoChannelsDatabase(engine, channelContract, null), new MongoPaymentsDatabase(engine, null), new MongoTokensDatabase(engine, null)]
+  }
+
+  if (engine instanceof EngineSQLite) {
+    return [new SQLiteChannelsDatabase(engine, channelContract, null), new SQLitePaymentsDatabase(engine, null), new SQLiteTokensDatabase(engine, null)]
   }
 
   throw new Error('Invalid engine.')
