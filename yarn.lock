@@ -3257,6 +3257,10 @@ sqlite3@^3.1.4:
     nan "~2.7.0"
     node-pre-gyp "~0.6.38"
 
+squel@^5.12.1:
+  version "5.12.1"
+  resolved "https://registry.yarnpkg.com/squel/-/squel-5.12.1.tgz#ab8fd473b6e28464004918caecedecdb08f7e3ee"
+
 ssh2-streams@~0.1.15:
   version "0.1.20"
   resolved "https://registry.yarnpkg.com/ssh2-streams/-/ssh2-streams-0.1.20.tgz#51118d154555df5469ee1f67e0cf1e7e8a2c0e3a"

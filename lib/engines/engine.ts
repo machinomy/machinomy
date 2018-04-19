@@ -1,4 +1,9 @@
 import * as fs from 'fs'
+import * as squel from 'squel'
+
+interface IndexSignature {
+  [key: string]: string
+}
 
 let MongoClient: any
 
@@ -43,6 +48,7 @@ export default interface Engine {
   close (): Promise<any>
   drop (): Promise<any>
   exec (cb: Function): Promise<any>
+  findOne? (jsonQuery: any, collectionOrTable: string): Promise<any>
 }
 
 export class EngineMongo implements Engine {
@@ -267,5 +273,29 @@ export class EngineSQLite implements Engine {
   exec (cb: Function): Promise<any> {
     return Promise.resolve(this.datastore)
       .then((ds) => cb(ds))
+  }
+
+  findOne (jsonQuery: any, collectionOrTable: string): Promise<any> {
+    if (Object.keys(jsonQuery).length > 0) {
+      let preparedQuery = squel.select().from(collectionOrTable).limit(1)
+      for (let k of Object.keys(jsonQuery)) {
+        preparedQuery = preparedQuery.field(k).where(`"${k}" = $${k}`)
+      }
+      let bindMap: IndexSignature = {}
+      for (let [k, v] of Object.entries(jsonQuery)) {
+        bindMap['$' + k] = v as string
+      }
+      return this.exec((client: SQLiteDatabase) => pify((cb: Function) => {
+        return client.get(preparedQuery.toString(), bindMap, cb)
+      })).then((row: any) => {
+        return Promise.resolve(row)
+      }).catch((error: Error) => {
+        if (error) {
+          console.error('Error in machinomy/lib/engines/engine.ts::EngineSQLite::findOne() :')
+          console.error(error)
+        }
+      })
+    }
+    return Promise.resolve({})
   }
 }
