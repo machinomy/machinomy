@@ -95,23 +95,31 @@ export class PostgresTokensDatabase extends AbstractTokensDatabase<EnginePostgre
 export class SQLiteTokensDatabase extends AbstractTokensDatabase<EngineSQLite> {
   save (token: string, channelId: ChannelId | string): Promise<void> {
     return this.engine.exec((client: SQLiteDatabase) => pify((cb: Function) => {
-      client.run(
-        'INSERT INTO token(token, "channelId", kind) VALUES ($token, $channelId, $kind)',
-        {
-          token: token,
-          channelId: channelId.toString(),
-          kind: this.kind
-        }, cb)
-    }))
+      return client.run('CREATE TABLE IF NOT EXISTS token (token TEXT, "channelId" TEXT, kind TEXT)', cb)
+    })).then(() => {
+      return this.engine.exec((client: SQLiteDatabase) => pify((cb: Function) => {
+        client.run(
+          'INSERT INTO token(token, "channelId", kind) VALUES ($token, $channelId, $kind)',
+          {
+            $token: token,
+            $channelId: channelId.toString(),
+            $kind: this.kind
+          }, cb)
+      }))
+    })
   }
 
   isPresent (token: string): Promise<boolean> {
     return this.engine.exec((client: SQLiteDatabase) => pify((cb: Function) => {
-      client.get(
+      return client.run('CREATE TABLE IF NOT EXISTS token (token TEXT, "channelId" TEXT, kind TEXT)', cb)
+    })).then(() => {
+      return this.engine.exec((client: SQLiteDatabase) => pify((cb: Function) => {
+        client.get(
         'SELECT COUNT(*) as count FROM token WHERE token=$token',
-        {
-          token: token
-        }, cb)
-    })).then((row: any) => (row.count > 0))
+          {
+            $token: token
+          }, cb)
+      }))
+    }).then((row: any) => (row.count > 0))
   }
 }

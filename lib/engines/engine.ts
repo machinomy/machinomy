@@ -49,6 +49,7 @@ export default interface Engine {
   drop (): Promise<any>
   exec (cb: Function): Promise<any>
   findOne? (jsonQuery: any, collectionOrTable: string): Promise<any>
+  insert? (document: any, collectionOrTable: string): Promise<any>
 }
 
 export class EngineMongo implements Engine {
@@ -220,6 +221,31 @@ export class EnginePostgres implements Engine {
 
     return this.connect()
   }
+
+  findOne (jsonQuery: any, collectionOrTable: string): Promise<any> {
+    if (Object.keys(jsonQuery).length > 0) {
+      let preparedQuery = squel.select().from(collectionOrTable).limit(1)
+      let count: number = 0
+      for (let k of Object.keys(jsonQuery)) {
+        preparedQuery = preparedQuery.field(k).where(`"${k}" = $${count++}`)
+      }
+      let bindValues: string[] = []
+      for (let v of Object.values(jsonQuery)) {
+        bindValues.push(v as string)
+      }
+      return this.exec((client: any) => pify((cb: Function) => {
+        return client.query({ text: preparedQuery.toString(), values: bindValues }, cb)
+      })).then((row: any) => {
+        return Promise.resolve(row)
+      }).catch((error: Error) => {
+        if (error) {
+          console.error('Error in machinomy/lib/engines/engine.ts::EnginePostgres::findOne() :')
+          console.error(error)
+        }
+      })
+    }
+    return Promise.resolve({})
+  }
 }
 
 export class EngineSQLite implements Engine {
@@ -297,5 +323,25 @@ export class EngineSQLite implements Engine {
       })
     }
     return Promise.resolve({})
+  }
+
+  insert (document: any, collectionOrTable: string): Promise<any> {
+    if (Object.keys(document).length > 0) {
+      let preparedQuery = squel.insert().into(collectionOrTable)
+      for (let k of Object.keys(document)) {
+        preparedQuery = preparedQuery.set(k, document[k])
+      }
+      return this.exec((client: SQLiteDatabase) => pify((cb: Function) => {
+        return client.run(preparedQuery.toString(), cb)
+      })).then(() => {
+        return Promise.resolve(true)
+      }).catch((error: Error) => {
+        if (error) {
+          console.error('Error in machinomy/lib/engines/engine.ts::EngineSQLite::insert() :')
+          console.error(error)
+        }
+      })
+    }
+    return Promise.resolve(false)
   }
 }
