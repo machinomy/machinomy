@@ -11,7 +11,7 @@ import { TransactionResult } from 'truffle-contract'
 import Payment from '../lib/payment'
 import Web3 = require('web3')
 import expectsRejection from './util/expects_rejection'
-import PaymentManager from '../lib/payment_manager'
+import PaymentManager from '../lib/PaymentManager'
 import ChannelContract from '../lib/channel_contract'
 import Signature from '../lib/signature'
 import { MachinomyOptions } from '../MachinomyOptions'

@@ -10,7 +10,7 @@ import Payment from './payment'
 import TokensDatabase from './storages/tokens_database'
 import log from './util/log'
 import ChannelContract from './channel_contract'
-import PaymentManager from './payment_manager'
+import PaymentManager from './PaymentManager'
 import { MachinomyOptions } from '../MachinomyOptions'
 import * as Web3 from 'web3'
 

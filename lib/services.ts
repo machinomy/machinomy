@@ -1,4 +1,4 @@
-import Web3 = require('web3')
+import * as Web3 from 'web3'
 import ChannelsDatabase, {
   MongoChannelsDatabase, NedbChannelsDatabase,
   PostgresChannelsDatabase
@@ -16,7 +16,7 @@ import Engine, { EngineMongo, EngineNedb, EnginePostgres } from './engines/engin
 import { Registry } from './container'
 import ChainManager from './chain_manager'
 import ChannelContract from './channel_contract'
-import PaymentManager from './payment_manager'
+import PaymentManager from './PaymentManager'
 
 export default function defaultRegistry (): Registry {
   const serviceRegistry = new Registry()

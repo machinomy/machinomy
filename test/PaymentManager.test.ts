@@ -1,6 +1,6 @@
 import * as sinon from 'sinon'
 import * as BigNumber from 'bignumber.js'
-import PaymentManager from '../lib/payment_manager'
+import PaymentManager from '../lib/PaymentManager'
 import Signature from '../lib/signature'
 import { PaymentChannel } from '../lib/payment_channel'
 import Payment from '../lib/payment'
