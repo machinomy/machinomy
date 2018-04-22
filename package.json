@@ -20,7 +20,7 @@
     "test_mongo": "NODE_ENV=test ENGINE_NAME=mongo mocha",
     "test_postgres": "NODE_ENV=test ENGINE_NAME=postgresql mocha",
     "test": "yarn build-test && yarn run test_nedb && yarn run test_mongo && yarn run test_postgres",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && cp package.json dist/",
     "build-test": "tsc -p tsconfig.json --outDir .",
     "lint": "tslint -t stylish -p '.' -e './node_modules/**/*.ts'",
     "prepublish": "yarn lint && yarn build"
