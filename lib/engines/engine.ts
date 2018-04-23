@@ -325,7 +325,7 @@ export class EngineSQLite implements Engine {
     return Promise.resolve({})
   }
 
-  insert (document: any, collectionOrTable: string): Promise<any> {
+  insert (document: any, collectionOrTable: string): Promise<boolean> {
     if (Object.keys(document).length > 0) {
       let preparedQuery = squel.insert().into(collectionOrTable)
       for (let k of Object.keys(document)) {
@@ -340,6 +340,7 @@ export class EngineSQLite implements Engine {
           console.error('Error in machinomy/lib/engines/engine.ts::EngineSQLite::insert() :')
           console.error(error)
         }
+        return Promise.resolve(false)
       })
     }
     return Promise.resolve(false)
