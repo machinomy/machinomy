@@ -12,7 +12,8 @@
       "node_modules/@types",
       "types"
     ],
-    "outDir": "dist"
+    "outDir": "dist",
+    "skipLibCheck": true
   },
   "files": [
     "index.ts",

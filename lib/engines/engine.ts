@@ -246,6 +246,27 @@ export class EnginePostgres implements Engine {
     }
     return Promise.resolve({})
   }
+
+  insert (document: any, collectionOrTable: string): Promise<boolean> {
+    if (Object.keys(document).length > 0) {
+      let preparedQuery = squel.insert().into(collectionOrTable)
+      for (let k of Object.keys(document)) {
+        preparedQuery = preparedQuery.set(k, document[k])
+      }
+      return this.exec((client: any) => pify((cb: Function) => {
+        return client.query(preparedQuery.toString(), cb)
+      })).then(() => {
+        return Promise.resolve(true)
+      }).catch((error: Error) => {
+        if (error) {
+          console.error('Error in machinomy/lib/engines/engine.ts::EnginePostgres::insert() :')
+          console.error(error)
+        }
+        return Promise.resolve(false)
+      })
+    }
+    return Promise.resolve(false)
+  }
 }
 
 export class EngineSQLite implements Engine {
