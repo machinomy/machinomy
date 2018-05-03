@@ -23,7 +23,7 @@ export default class ChannelContract {
     LOG(`Creating channel. Value: ${price} / Settlement: ${settlementPeriod}`)
     let _channelId = channelId || ChannelId.random()
     const deployed = await this.contract()
-    return deployed.open(_channelId.toString(), receiver, settlementPeriod, {
+    return deployed.open(_channelId.toString(), receiver, new BigNumber.BigNumber(settlementPeriod), {
       from: sender,
       value: price,
       gas: CREATE_CHANNEL_GAS
