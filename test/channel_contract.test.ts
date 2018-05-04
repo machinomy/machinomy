@@ -48,8 +48,9 @@ describe('ChannelContract', () => {
   describe('#open', () => {
     it('opens a channel with the correct id, sender, receiver, settlement period, price, and gas params', () => {
       deployed.open = sinon.stub()
-      return contract.open('send', 'recv', new BigNumber.BigNumber(10), 1234, ID).then(() => {
-        expect(deployed.open.calledWith(ID, 'recv', 1234, {
+      let settlementPeriod = new BigNumber.BigNumber(1234)
+      return contract.open('send', 'recv', new BigNumber.BigNumber(10), settlementPeriod, ID).then(() => {
+        expect(deployed.open.calledWith(ID, 'recv', settlementPeriod, {
           from: 'send',
           value: new BigNumber.BigNumber(10),
           gas: 300000

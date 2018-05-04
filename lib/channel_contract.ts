@@ -19,7 +19,7 @@ export default class ChannelContract {
     this.web3 = web3
   }
 
-  async open (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number, channelId?: ChannelId | string): Promise<TransactionResult> {
+  async open (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number | BigNumber.BigNumber, channelId?: ChannelId | string): Promise<TransactionResult> {
     LOG(`Creating channel. Value: ${price} / Settlement: ${settlementPeriod}`)
     let _channelId = channelId || ChannelId.random()
     const deployed = await this.contract()
