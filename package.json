@@ -37,7 +37,7 @@
   ],
   "dependencies": {
     "@machinomy/contracts": "^4.0.5",
-    "@machinomy/types-safe-buffer": "^0.0.1",
+    "@machinomy/types-bn": "^0.0.3",
     "@machinomy/types-truffle-contract": "^0.0.3",
     "@machinomy/types-web3": "^0.0.4",
     "@types/bignumber.js": "^4.0.2",
@@ -58,10 +58,8 @@
     "nedb": "^1.8.0",
     "prompt": "^1.0.0",
     "request": "^2.76.0",
-    "safe-buffer": "^5.1.1",
+    "safe-buffer": "^5.1.2",
     "squel": "^5.12.1",
-    "types-bn": "^0.0.1",
-    "types-ethereumjs-util": "^0.0.8",
     "types-rlp": "^0.0.1",
     "uuid": "^3.2.1",
     "web3": "^0.20.1",
@@ -73,6 +71,7 @@
     "sqlite3": "4.0.0"
   },
   "devDependencies": {
+    "@machinomy/types-ethereumjs-util": "^0.0.12",
     "@types/mocha": "^2.2.43",
     "@types/nock": "^8.2.1",
     "@types/node": "^10.0.0",

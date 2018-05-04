@@ -26,9 +26,28 @@
     truffle-contract "^3.0.0"
     web3 "^0.20.1"
 
-"@machinomy/types-safe-buffer@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@machinomy/types-safe-buffer/-/types-safe-buffer-0.0.1.tgz#bf80d94a2cc90b9d8438749aa3542dbf7a1f72b0"
+"@machinomy/types-bn@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@machinomy/types-bn/-/types-bn-0.0.2.tgz#3520035dcab3c6a574c30e9bea9ba881cec8363a"
+  dependencies:
+    bn.js "4.11.7"
+    safe-buffer "^5.1.2"
+
+"@machinomy/types-bn@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@machinomy/types-bn/-/types-bn-0.0.3.tgz#4fc4302281f931fb7f1bdadd3fbdf172dd15aa10"
+  dependencies:
+    bn.js "4.11.7"
+    safe-buffer "^5.1.2"
+
+"@machinomy/types-ethereumjs-util@^0.0.12":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@machinomy/types-ethereumjs-util/-/types-ethereumjs-util-0.0.12.tgz#f058ace5f829229dba8aa7dbdff14d48bedb94e0"
+  dependencies:
+    "@machinomy/types-bn" "^0.0.2"
+    bn.js "^4.11.7"
+    rlp "^2.0.0"
+    safe-buffer "^5.1.2"
 
 "@machinomy/types-truffle-contract@^0.0.3":
   version "0.0.3"
@@ -3677,27 +3696,6 @@ type-is@~1.6.15:
   dependencies:
     media-typer "0.3.0"
     mime-types "~2.1.15"
-
-types-bn@^0.0.1:
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/types-bn/-/types-bn-0.0.1.tgz#4253c7c7251b14e1d77cdca6f58800e5e2b82c4b"
-  dependencies:
-    bn.js "4.11.7"
-
-"types-bn@https://github.com/machinomy/types-bn.git":
-  version "0.0.1"
-  resolved "https://github.com/machinomy/types-bn.git#08ede69e138640d332b0dae0dc2e2fffee5f7160"
-  dependencies:
-    bn.js "4.11.7"
-
-types-ethereumjs-util@^0.0.8:
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/types-ethereumjs-util/-/types-ethereumjs-util-0.0.8.tgz#4530c4fe069da3ea93748baa3e18ea70133e4560"
-  dependencies:
-    "@machinomy/types-safe-buffer" "^0.0.1"
-    bn.js "^4.11.7"
-    rlp "^2.0.0"
-    types-bn "https://github.com/machinomy/types-bn.git"
 
 types-rlp@^0.0.1:
   version "0.0.1"
