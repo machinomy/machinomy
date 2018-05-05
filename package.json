@@ -62,8 +62,7 @@
     "squel": "^5.12.1",
     "types-rlp": "^0.0.1",
     "uuid": "^3.2.1",
-    "web3": "^0.20.1",
-    "whatwg-fetch": "^2.0.3"
+    "web3": "^0.20.1"
   },
   "optionalDependencies": {
     "mongodb": "^2.2.31",

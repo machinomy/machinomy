@@ -1416,11 +1416,11 @@ fast-levenshtein@~2.0.4:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/fast-levenshtein/-/fast-levenshtein-2.0.6.tgz#3d8a5c66883a16a30ca8643e851f19baa7797917"
 
-fetch-ponyfill@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/fetch-ponyfill/-/fetch-ponyfill-5.0.1.tgz#2789ec179c1de357f60f9fd49e154a8b3fd8cd1b"
+fetch-ponyfill@^6.0.0:
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/fetch-ponyfill/-/fetch-ponyfill-6.0.2.tgz#bc2d92afd0140e39518beccd2fd0682ab4491cb6"
   dependencies:
-    node-fetch "~2.0.0"
+    node-fetch "~2.1.0"
 
 filename-regex@^2.0.0:
   version "2.0.1"
@@ -2424,9 +2424,9 @@ nock@^9.0.9:
     qs "^6.0.2"
     semver "^5.3.0"
 
-node-fetch@~2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.0.0.tgz#982bba43ecd4f2922a29cc186a6bbb0bb73fcba6"
+node-fetch@~2.1.0:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.1.2.tgz#ab884e8e7e57e38a944753cec706f788d1768bb5"
 
 node-fs@~0.1.5:
   version "0.1.7"
@@ -3913,10 +3913,6 @@ webpack@^3.0.0:
     watchpack "^1.4.0"
     webpack-sources "^1.0.1"
     yargs "^8.0.2"
-
-whatwg-fetch@^2.0.3:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/whatwg-fetch/-/whatwg-fetch-2.0.3.tgz#9c84ec2dcf68187ff00bc64e1274b442176e1c84"
 
 when@~2.0.1:
   version "2.0.1"

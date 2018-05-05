@@ -24,12 +24,12 @@
  */
 
 import * as express from 'express'
-import Web3 = require('web3')
+import * as Web3 from 'web3'
 import Machinomy from '../index'
 import * as bodyParser from 'body-parser'
 import { AcceptTokenRequestSerde } from '../lib/accept_token_request'
 import { PaymentChannelSerde } from '../lib/payment_channel'
-let fetch = require('whatwg-fetch').fetch
+import fetcher from '../lib/util/fetcher'
 
 /**
  * Account that receives payments.
@@ -109,7 +109,7 @@ app.get('/content', async (req: express.Request, res: express.Response, next: ex
   let content = req.get('authorization')
   if (content) {
     let token = content.split(' ')[1]
-    let response = await fetch(reqUrl + '/' + token)
+    let response = await fetcher.fetch(reqUrl + '/' + token)
     let json = await response.json()
     let status = json.status
     if (status === 'ok') {

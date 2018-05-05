@@ -1,8 +1,8 @@
 import * as Web3 from 'web3'
 import Machinomy from '../'
+import fetcher from '../lib/util/fetcher'
 
 async function main (): Promise<string> {
-  let fetch = require('whatwg-fetch').fetch
   /**
    * Account that send payments payments.
    */
@@ -19,16 +19,16 @@ async function main (): Promise<string> {
    */
   let machinomy = new Machinomy(sender, web3, { databaseUrl: 'nedb://./machinomy_client' })
 
-  let response = await fetch('http://localhost:3000/content')
-  let headers = response.headers.map
+  let response = await fetcher.fetch('http://localhost:3000/content')
+  let headers = response.headers
 
   /**
    * Request token to content access
    */
   let result = await machinomy.buy({
-    price: Number(headers['paywall-price']),
-    gateway: headers['paywall-gateway'],
-    receiver: headers['paywall-address'],
+    price: Number(headers.get('paywall-price')),
+    gateway: headers.get('paywall-gateway')!,
+    receiver: headers.get('paywall-address')!,
     meta: 'metaidexample'
   })
 
@@ -43,7 +43,7 @@ async function main (): Promise<string> {
     }
   })
 
-  return content._bodyText
+  return content.body!.getReader().read().then(v => v as string)
 }
 
 main().then(text => {
