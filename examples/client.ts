@@ -7,7 +7,6 @@ async function main (): Promise<string> {
   const PROVIDER_URL = String(process.env.PROVIDER_URL)
   const MNEMONIC = String(process.env.MNEMONIC)
 
-  console.log(MNEMONIC)
   const provider = new HDWalletProvider(MNEMONIC, PROVIDER_URL)
   const web3 = new Web3(provider)
 

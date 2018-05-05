@@ -83,7 +83,7 @@ hub.get('/claim/:channelid', async (req: express.Request, res: express.Response,
     res.status(200).send('Claimed')
   } catch (error) {
     res.status(404).send('No channel found')
-    console.log(error)
+    console.error(error)
   }
 })
 
