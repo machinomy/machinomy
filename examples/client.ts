@@ -45,7 +45,7 @@ async function main (): Promise<string> {
     }
   })
 
-  let body = content.body! as any // WTF Fetch returns shitty data type
+  let body = content.body // WTF Fetch returns shitty data type
   return body.read().toString()
 }
 
