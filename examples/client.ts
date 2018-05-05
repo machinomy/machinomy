@@ -1,8 +1,7 @@
+import * as Web3 from 'web3'
+import Machinomy from '../'
 
-import Web3 = require('web3')
-import Machinomy from '../index'
-
-let f = (async () => {
+async function main (): Promise<string> {
   let fetch = require('whatwg-fetch').fetch
   /**
    * Account that send payments payments.
@@ -44,9 +43,12 @@ let f = (async () => {
     }
   })
 
-  console.log(content._bodyText)
-})
+  return content._bodyText
+}
 
-f().then().catch((e) => {
-  console.log(e)
+main().then(text => {
+  console.log(text)
+}).catch(error => {
+  console.error(error)
+  process.exit(1)
 })
