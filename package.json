@@ -15,19 +15,18 @@
   },
   "scripts": {
     "migrate": "db-migrate up",
-    "integration_test": "yarn build-test && NODE_ENV=test mocha integration_test/**/*.test.js",
+    "integration_test": "yarn build && NODE_ENV=test mocha integration_test/**/*.test.js",
     "test_nedb": "NODE_ENV=test ENGINE_NAME=nedb mocha",
     "test_mongo": "NODE_ENV=test ENGINE_NAME=mongo mocha",
     "test_postgres": "NODE_ENV=test ENGINE_NAME=postgresql mocha",
     "test_sqlite": "NODE_ENV=test ENGINE_NAME=sqlite mocha",
-    "test": "yarn build-test && yarn run test_nedb && yarn run test_mongo && yarn run test_postgres",
-    "build": "tsc -p tsconfig.json && cp package.json dist/",
-    "build-test": "tsc -p tsconfig.json --outDir .",
-    "lint": "tslint -t stylish -p '.' -e './node_modules/**/*.ts'",
-    "prepublish": "yarn lint && yarn build"
+    "test": "yarn build && yarn run test_nedb && yarn run test_mongo && yarn run test_postgres",
+    "build": "yarn clean && tsc --project tsconfig.json",
+    "clean": "rm -rf dist/",
+    "lint": "tslint --format stylish --project . --exclude './node_modules/**/*.ts'",
+    "prepublish": "yarn lint && yarn build --outDir dist/ && cp package.json dist/"
   },
   "main": "./dist/index.js",
-  "typings": "./dist/index.d.ts",
   "bin": {
     "machinomy": "./dist/bin/machinomy.js"
   },
@@ -93,7 +92,7 @@
     "truffle-hdwallet-provider": "https://github.com/machinomy/truffle-hdwallet-provider",
     "tslint": "^5.5.0",
     "tslint-config-standard": "^7.0.0",
-    "typescript": "2.8.1"
+    "typescript": "^2.8.3"
   },
   "resolutions": {
     "nan": "^2.10.0"

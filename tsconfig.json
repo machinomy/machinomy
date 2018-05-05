@@ -8,11 +8,6 @@
     "strict": true,
     "noImplicitReturns": true,
     "forceConsistentCasingInFileNames": true,
-    "typeRoots": [
-      "node_modules/@types",
-      "types"
-    ],
-    "outDir": "dist",
     "skipLibCheck": true
   },
   "files": [
@@ -25,8 +20,6 @@
   ],
   "include": [
     "node_modules/**/index.d.ts",
-    "src/globals.d.ts",
-    "src/**/*.ts",
     "lib/*.ts",
     "types/*/index.d.ts",
     "test/*.ts",
