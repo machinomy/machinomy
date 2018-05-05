@@ -71,6 +71,7 @@
   },
   "devDependencies": {
     "@machinomy/types-ethereumjs-util": "^0.0.12",
+    "@machinomy/types-truffle-hdwallet-provider": "^0.0.2",
     "@types/mocha": "^2.2.43",
     "@types/nock": "^8.2.1",
     "@types/node": "^10.0.0",
@@ -89,6 +90,7 @@
     "nock": "^9.0.9",
     "sinon": "^4.1.5",
     "tmp": "0.0.33",
+    "truffle-hdwallet-provider": "https://github.com/machinomy/truffle-hdwallet-provider",
     "tslint": "^5.5.0",
     "tslint-config-standard": "^7.0.0",
     "typescript": "2.8.1"

@@ -30,22 +30,23 @@ import * as bodyParser from 'body-parser'
 import { AcceptTokenRequestSerde } from '../lib/accept_token_request'
 import { PaymentChannelSerde } from '../lib/payment_channel'
 import fetcher from '../lib/util/fetcher'
+import * as HDWalletProvider from 'truffle-hdwallet-provider'
+
+const PROVIDER_URL = String(process.env.PROVIDER_URL)
+const MNEMONIC = String(process.env.MNEMONIC)
+
+const provider = new HDWalletProvider(MNEMONIC, PROVIDER_URL)
+const web3 = new Web3(provider)
 
 /**
  * Account that receives payments.
  */
-let receiver = '0x3155694d7558eec974cfe35eaa3c2c7bcebb793f'
-
-/**
- * Geth must be run on local machine, or use another web3 provider.
- */
-let provider = new Web3.providers.HttpProvider(process.env.MACHINOMY_GETH_ADDR)
-let web3 = new Web3(provider)
+let receiver = provider.getAddress(0)
 
 /**
  * Create machinomy instance that provides API for accepting payments.
  */
-let machinomy = new Machinomy(receiver, web3, { databaseUrl: 'mongodb://localhost:27017/machinomy' })
+let machinomy = new Machinomy(receiver, web3, { databaseUrl: 'nedb://./server' })
 
 let hub = express()
 hub.use(bodyParser.json())
@@ -113,7 +114,7 @@ app.get('/content', async (req: express.Request, res: express.Response, next: ex
     let json = await response.json()
     let status = json.status
     if (status === 'ok') {
-      res.send('Thank you for your purchase')
+      res.send('Thank you for your purchase!')
     } else {
       res.status(402).set(paywallHeaders()).send('Content is not avaible')
     }
