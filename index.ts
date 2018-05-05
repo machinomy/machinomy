@@ -17,6 +17,8 @@ import { AcceptPaymentResponse } from './lib/accept_payment_response'
 import { AcceptTokenRequest } from './lib/accept_token_request'
 import { AcceptTokenResponse } from './lib/accept_token_response'
 
+export { Payment, PaymentChannel }
+
 /**
  * Options for machinomy buy.
  */
