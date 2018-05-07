@@ -202,11 +202,11 @@ export default class Machinomy {
    * Returns the list of opened channels.
    */
   channels (): Promise<PaymentChannel[]> {
-    return this.channelManager.openChannels()
+    return this.channelManager.channels()
   }
 
   openChannels (): Promise<PaymentChannel[]> {
-    return this.channels()
+    return this.channelManager.openChannels()
   }
 
   settlingChannels (): Promise<PaymentChannel[]> {
