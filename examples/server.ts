@@ -35,6 +35,10 @@ import * as HDWalletProvider from 'truffle-hdwallet-provider'
 const PROVIDER_URL = String(process.env.PROVIDER_URL)
 const MNEMONIC = String(process.env.MNEMONIC)
 
+const HOST = 'localhost'
+const APP_PORT = 3000
+const HUB_PORT = 3001
+
 const provider = new HDWalletProvider(MNEMONIC, PROVIDER_URL)
 const web3 = new Web3(provider)
 
@@ -55,28 +59,31 @@ hub.use(bodyParser.urlencoded({ extended: false }))
 /**
  * Recieve an off-chain payment issued by `machinomy buy` command.
  */
-hub.post('/machinomy', async (req: express.Request, res: express.Response, next: Function) => {
+hub.post('/accept', async (req, res) => {
   const body = await machinomy.acceptPayment(req.body)
   res.status(202).header('Paywall-Token', body.token).send(body)
 })
 
 /**
- * Verify the token that `/machinomy` generates.
+ * Verify the token that `/accept` generates.
  */
-hub.get('/verify/:token', (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  let token: string = req.params.token
-  machinomy.acceptToken(AcceptTokenRequestSerde.instance.deserialize({
-    token
-  })).then(() => res.status(200).send({ status: 'ok' }))
-    .catch(() => res.status(400).send({ status: 'token is invalid' }))
+hub.get('/verify/:token', async (req, res) => {
+  const token = req.params.token as string
+  const acceptTokenRequest = AcceptTokenRequestSerde.instance.deserialize({ token })
+  const isAccepted = (await machinomy.acceptToken(acceptTokenRequest)).status
+  if (isAccepted) {
+    res.status(200).send({ status: 'ok' })
+  } else {
+    res.status(400).send({ status: 'token is invalid' })
+  }
 })
 
-hub.get('/channels', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+hub.get('/channels', async (req, res) => {
   const channels = await machinomy.channels()
   res.status(200).send(channels.map(PaymentChannelSerde.instance.serialize))
 })
 
-hub.get('/claim/:channelid', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+hub.get('/claim/:channelid', async (req, res) => {
   try {
     let channelId = req.params.channelid
     await machinomy.close(channelId)
@@ -87,9 +94,8 @@ hub.get('/claim/:channelid', async (req: express.Request, res: express.Response,
   }
 })
 
-let port = 3001
-hub.listen(port, function () {
-  console.log('HUB is ready on port ' + port)
+hub.listen(HUB_PORT, () => {
+  console.log('HUB is ready on port ' + HUB_PORT)
 })
 
 let app = express()
@@ -98,15 +104,15 @@ let paywallHeaders = () => {
   headers['Paywall-Version'] = '0.0.3'
   headers['Paywall-Price'] = '1000'
   headers['Paywall-Address'] = receiver
-  headers['Paywall-Gateway'] = 'http://localhost:3001/machinomy'
+  headers['Paywall-Gateway'] = `http://${HOST}:${HUB_PORT}/accept`
   return headers
 }
 
 /**
  * Example of serving a paid content. You can buy it with `machinomy buy http://localhost:3000/content` command.
  */
-app.get('/content', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  let reqUrl = 'http://localhost:3001/verify'
+app.get('/content', async (req, res) => {
+  let reqUrl = `http://${HOST}:${HUB_PORT}/verify`
   let content = req.get('authorization')
   if (content) {
     let token = content.split(' ')[1]
@@ -116,14 +122,13 @@ app.get('/content', async (req: express.Request, res: express.Response, next: ex
     if (status === 'ok') {
       res.send('Thank you for your purchase!')
     } else {
-      res.status(402).set(paywallHeaders()).send('Content is not avaible')
+      res.status(402).set(paywallHeaders()).send('Content is not available')
     }
   } else {
-    res.status(402).set(paywallHeaders()).send('Content is not avaible')
+    res.status(402).set(paywallHeaders()).send('Content is not available')
   }
 })
 
-let portApp = 3000
-app.listen(portApp, function () {
-  console.log('Content proveder is ready on ' + portApp)
+app.listen(APP_PORT, function () {
+  console.log('Content proveder is ready on ' + APP_PORT)
 })

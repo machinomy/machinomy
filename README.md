@@ -19,20 +19,13 @@ Support/Discussion: [Gitter](https://gitter.im/machinomy/machinomy).
 The website contains [Getting Started](https://machinomy.com/documentation/getting-started/) guide.
 It is more illustrative than instructions below.
 
-Machinomy provides a simple [JS API](https://machinomy.com/documentation/api/classes/_index_.machinomy.html).
-
 To run Machinomy against a local Ethereum test network, see the [Running with Ganache CLI](docs/ganache-cli.md) Guide.
 
 ## Installation
 
-    $ npm install -g machinomy
+    $ yarn global add machinomy
 
-Assumptions:
-* [geth](https://github.com/ethereum/go-ethereum) node runs on `http://localhost:8545`,
-* geth runs [Ropsten](https://blog.ethereum.org/2016/11/20/from-morden-to-ropsten/) network.
-
-The library supports currently Ropsten network only. It is early days, we would like to avoid
-losses by mistake on your side. Ether on Ropsten cost nothing. One could get some from [ZeroGox Faucet](https://zerogox.com/ethereum/wei_faucet) for free.
+The library supports mainnet, Ropsten, and [Rinkeby](https://www.rinkeby.io/) networks.
 
 ## Set up
 
