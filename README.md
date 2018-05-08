@@ -27,7 +27,10 @@ To run Machinomy against a local Ethereum test network, see the [Running with Ga
 
 The library supports mainnet, Ropsten, and [Rinkeby](https://www.rinkeby.io/) networks.
 
-## Set up
+## Usage
+
+It takes two to tango: a seller and a buyer. Seller is `examples/server.ts` script. Build it or run through node-ts.
+
 
 To only play with CLI a command below is enough:
 
