@@ -11,7 +11,6 @@ import PaymentsDatabase, {
   NedbPaymentsDatabase,
   SQLitePaymentsDatabase
 } from './storages/payments_database'
-import { ChannelManager, ChannelManagerImpl } from './channel_manager'
 import TokensDatabase, {
   MongoTokensDatabase,
   NedbTokensDatabase,
@@ -26,6 +25,8 @@ import { Registry } from './container'
 import ChainManager from './chain_manager'
 import ChannelContract from './channel_contract'
 import PaymentManager from './PaymentManager'
+import ChannelManager from './ChannelManager'
+import IChannelManager from './IChannelManager'
 
 export default function defaultRegistry (): Registry {
   const serviceRegistry = new Registry()
@@ -44,10 +45,10 @@ export default function defaultRegistry (): Registry {
       channelContract: ChannelContract,
       paymentManager: PaymentManager,
       machinomyOptions: MachinomyOptions
-    ) => new ChannelManagerImpl(account, web3, channelsDao, paymentsDao, tokensDao, channelContract, paymentManager, machinomyOptions),
+    ) => new ChannelManager(account, web3, channelsDao, paymentsDao, tokensDao, channelContract, paymentManager, machinomyOptions),
     ['account', 'Web3', 'ChannelsDatabase', 'PaymentsDatabase', 'TokensDatabase', 'ChannelContract', 'PaymentManager', 'MachinomyOptions'])
 
-  serviceRegistry.bind('Client', (transport: Transport, channelManager: ChannelManager) => {
+  serviceRegistry.bind('Client', (transport: Transport, channelManager: IChannelManager) => {
     return new ClientImpl(transport, channelManager)
   }, ['Transport', 'ChannelManager'])
 

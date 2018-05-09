@@ -1,55 +1,28 @@
+import PaymentManager from './PaymentManager'
+import ChannelsDatabase from './storages/channels_database'
+import TokensDatabase from './storages/tokens_database'
+import ChannelContract from './channel_contract'
+import { TransactionResult } from 'truffle-contract'
+import Mutex from './util/mutex'
+import Payment from './payment'
+import { MachinomyOptions } from '../MachinomyOptions'
+import IChannelManager from './IChannelManager'
 import * as BigNumber from 'bignumber.js'
 import { PaymentChannel } from './payment_channel'
-import ChannelsDatabase from './storages/channels_database'
 import ChannelId from './ChannelId'
-import { EventEmitter } from 'events'
-import Mutex from './util/mutex'
-import { TransactionResult } from 'truffle-contract'
 import PaymentsDatabase from './storages/payments_database'
-import Payment from './payment'
-import TokensDatabase from './storages/tokens_database'
-import log from './util/log'
-import ChannelContract from './channel_contract'
-import PaymentManager from './PaymentManager'
-import { MachinomyOptions } from '../MachinomyOptions'
+import { EventEmitter } from 'events'
 import * as Web3 from 'web3'
+import log from './util/log'
 
 const LOG = log('ChannelManager')
 
 const DAY_IN_SECONDS = 86400
 
-/** Default settlement period for a payment channel */
-export const DEFAULT_SETTLEMENT_PERIOD = 2 * DAY_IN_SECONDS
+export default class ChannelManager extends EventEmitter implements IChannelManager {
+  /** Default settlement period for a payment channel */
+  static DEFAULT_SETTLEMENT_PERIOD = 2 * DAY_IN_SECONDS
 
-export interface ChannelManager extends EventEmitter {
-  openChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber, channelId?: ChannelId | string): Promise<PaymentChannel>
-
-  closeChannel (channelId: string | ChannelId): Promise<TransactionResult>
-
-  deposit (channelId: string, value: BigNumber.BigNumber): Promise<TransactionResult>
-
-  nextPayment (channelId: string | ChannelId, amount: BigNumber.BigNumber, meta: string): Promise<Payment>
-
-  spendChannel (payment: Payment): Promise<Payment>
-
-  acceptPayment (payment: Payment): Promise<string>
-
-  requireOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber): Promise<PaymentChannel>
-
-  channels (): Promise<PaymentChannel[]>
-
-  openChannels (): Promise<PaymentChannel[]>
-
-  settlingChannels (): Promise<PaymentChannel[]>
-
-  channelById (channelId: ChannelId | string): Promise<PaymentChannel | null>
-
-  verifyToken (token: string): Promise<boolean>
-}
-
-export default ChannelManager
-
-export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
   private account: string
 
   private web3: Web3
@@ -205,7 +178,7 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     }
 
     this.emit('willOpenChannel', sender, receiver, depositAmount)
-    let settlementPeriod = this.machinomyOptions.settlementPeriod || DEFAULT_SETTLEMENT_PERIOD
+    let settlementPeriod = this.machinomyOptions.settlementPeriod || ChannelManager.DEFAULT_SETTLEMENT_PERIOD
     let paymentChannel = await this.buildChannel(sender, receiver, depositAmount, settlementPeriod, channelId)
     await this.channelsDao.save(paymentChannel)
     this.emit('didOpenChannel', paymentChannel)

@@ -5,7 +5,7 @@ import * as BigNumber from 'bignumber.js'
 import Payment, { PaymentSerde } from './lib/payment'
 import { TransactionResult } from 'truffle-contract'
 import { Container } from './lib/container'
-import ChannelManager from './lib/channel_manager'
+import IChannelManager from './lib/IChannelManager'
 import Client from './lib/client'
 import { PaymentRequired } from './lib/transport'
 import PaymentsDatabase from './lib/storages/payments_database'
@@ -90,7 +90,7 @@ export default class Machinomy {
 
   private serviceContainer: Container
 
-  private channelManager: ChannelManager
+  private channelManager: IChannelManager
 
   private paymentsDao: PaymentsDatabase
 
