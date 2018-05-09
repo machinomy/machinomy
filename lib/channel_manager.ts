@@ -197,7 +197,7 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     return this.tokensDao.isPresent(token)
   }
 
-  private internalOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount: BigNumber.BigNumber = new BigNumber.BigNumber(0), channelId?: ChannelId | string): Promise<PaymentChannel> {
+  private async internalOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount: BigNumber.BigNumber = new BigNumber.BigNumber(0), channelId?: ChannelId | string): Promise<PaymentChannel> {
     let depositAmount = amount.times(10)
 
     if (minDepositAmount.greaterThan(0) && minDepositAmount.greaterThan(depositAmount)) {
@@ -205,12 +205,11 @@ export class ChannelManagerImpl extends EventEmitter implements ChannelManager {
     }
 
     this.emit('willOpenChannel', sender, receiver, depositAmount)
-    return this.buildChannel(sender, receiver, depositAmount, this.machinomyOptions.settlementPeriod || DEFAULT_SETTLEMENT_PERIOD, channelId)
-      .then((paymentChannel: PaymentChannel) => this.channelsDao.save(paymentChannel).then(() => paymentChannel))
-      .then((paymentChannel: PaymentChannel) => {
-        this.emit('didOpenChannel', paymentChannel)
-        return paymentChannel
-      })
+    let settlementPeriod = this.machinomyOptions.settlementPeriod || DEFAULT_SETTLEMENT_PERIOD
+    let paymentChannel = await this.buildChannel(sender, receiver, depositAmount, settlementPeriod, channelId)
+    await this.channelsDao.save(paymentChannel)
+    this.emit('didOpenChannel', paymentChannel)
+    return paymentChannel
   }
 
   private async internalCloseChannel (channelId: ChannelId | string) {
