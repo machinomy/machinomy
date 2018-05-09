@@ -30,6 +30,11 @@ The library supports mainnet, Ropsten, and [Rinkeby](https://www.rinkeby.io/) ne
 ## Usage
 
 It takes two to tango: a seller and a buyer. Seller is `examples/server.ts` script. Build it or run through node-ts.
+```
+$ git clone https://github.com/machinomy/machinomy
+$ yarn install && yarn build
+$ node exa
+```
 
 
 To only play with CLI a command below is enough:
