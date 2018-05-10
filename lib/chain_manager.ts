@@ -1,6 +1,6 @@
 import Web3 = require('web3')
 import pify from './util/pify'
-import Signature from './signature'
+import Signature from './Signature'
 
 export default class ChainManager {
   private web3: Web3

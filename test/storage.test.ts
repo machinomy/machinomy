@@ -26,7 +26,7 @@ import TokensDatabase, {
   SQLiteTokensDatabase
 } from '../lib/storages/tokens_database'
 import ChannelContract from '../lib/channel_contract'
-import Signature from '../lib/signature'
+import Signature from '../lib/Signature'
 import expectsRejection from './util/expects_rejection'
 
 const expect = require('expect')

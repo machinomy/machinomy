@@ -12,7 +12,7 @@ import Web3 = require('web3')
 import expectsRejection from './util/expects_rejection'
 import PaymentManager from '../lib/PaymentManager'
 import ChannelContract from '../lib/channel_contract'
-import Signature from '../lib/signature'
+import Signature from '../lib/Signature'
 import { MachinomyOptions } from '../MachinomyOptions'
 import * as uuid from 'uuid'
 import { Unidirectional } from '@machinomy/contracts'

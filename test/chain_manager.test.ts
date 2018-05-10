@@ -1,7 +1,7 @@
 import Web3 = require('web3')
 import * as sinon from 'sinon'
 import ChainManager from '../lib/chain_manager'
-import Signature from '../lib/signature'
+import Signature from '../lib/Signature'
 
 const expect = require('expect')
 

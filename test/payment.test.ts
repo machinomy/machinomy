@@ -1,7 +1,7 @@
 import ChannelId from '../lib/ChannelId'
 import * as support from './support'
 import Payment from '../lib/payment'
-import Signature from '../lib/signature'
+import Signature from '../lib/Signature'
 import { PaymentChannel } from '../lib/payment_channel'
 import * as expect from 'expect'
 

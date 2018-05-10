@@ -2,7 +2,7 @@ import * as Web3 from 'web3'
 import * as BigNumber from 'bignumber.js'
 import { TransactionResult } from 'truffle-contract'
 import log from './util/log'
-import Signature from './signature'
+import Signature from './Signature'
 import { Unidirectional } from '@machinomy/contracts'
 import ChannelId from './ChannelId'
 
