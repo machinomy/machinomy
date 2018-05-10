@@ -1,4 +1,4 @@
-import Serde from './serde'
+import Serde from './Serde'
 
 export class AcceptTokenRequest {
   token: string

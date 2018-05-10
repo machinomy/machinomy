@@ -1,5 +1,5 @@
 import * as BigNumber from 'bignumber.js'
-import Serde from './serde'
+import Serde from './Serde'
 import Signature from './Signature'
 
 export interface PaymentJSON {

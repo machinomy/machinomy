@@ -1,6 +1,6 @@
 import Payment from './payment'
 import * as BigNumber from 'bignumber.js'
-import Serde from './serde'
+import Serde from './Serde'
 
 export interface PaymentChannelJSON {
   sender: string
