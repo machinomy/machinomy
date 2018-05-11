@@ -224,17 +224,17 @@ export class EnginePostgres implements Engine {
 
   findOne (jsonQuery: any, collectionOrTable: string): Promise<any> {
     if (Object.keys(jsonQuery).length > 0) {
-      let preparedQuery = squel.select().from(collectionOrTable).limit(1)
-      let count: number = 0
+      let query = squel.select().from(collectionOrTable).limit(1)
+      let count: number = 1
       for (let k of Object.keys(jsonQuery)) {
-        preparedQuery = preparedQuery.field(k).where(`"${k}" = $${count++}`)
+        query = query.field(k).where(`"${k}" = $${count++}`)
       }
       let bindValues: string[] = []
-      for (let v of Object.values(jsonQuery)) {
-        bindValues.push(v as string)
+      for (let i = 1; i < Object.values(jsonQuery).length; i++) {
+        bindValues[i] = Object.values(jsonQuery)[i - 1] as string
       }
       return this.exec((client: any) => pify((cb: Function) => {
-        return client.query({ text: preparedQuery.toString(), values: bindValues }, cb)
+        return client.query({ text: query.toString(), values: bindValues }, cb)
       })).then((row: any) => {
         return Promise.resolve(row)
       }).catch((error: Error) => {
