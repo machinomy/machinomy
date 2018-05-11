@@ -28,7 +28,9 @@ async function main (): Promise<string> {
    */
   let result = await machinomy.buy({
     price: Number(headers.get('paywall-price')),
+    // tslint:disable-next-line:no-unnecessary-type-assertion
     gateway: headers.get('paywall-gateway')!,
+    // tslint:disable-next-line:no-unnecessary-type-assertion
     receiver: headers.get('paywall-address')!,
     meta: 'metaidexample'
   })
@@ -44,6 +46,7 @@ async function main (): Promise<string> {
     }
   })
 
+  // tslint:disable-next-line:no-unnecessary-type-assertion
   let body = content.body! as any // WTF Fetch returns shitty data type
   return body.read().toString()
 }
