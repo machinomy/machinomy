@@ -1,6 +1,5 @@
 import * as configuration from '../lib/configuration'
 import Web3 = require('web3')
-import { PaymentRequired } from '../lib/transport'
 import Machinomy from '../index'
 
 async function pry (uri: string) {
