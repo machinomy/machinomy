@@ -1,19 +1,19 @@
+import IChannelsDatabase from './storage/IChannelsDatabase'
 import PaymentManager from './PaymentManager'
-import ChannelsDatabase from './storages/channels_database'
-import TokensDatabase from './storages/tokens_database'
-import ChannelContract from './channel_contract'
+import ChannelContract from './ChannelContract'
 import { TransactionResult } from 'truffle-contract'
 import Mutex from './util/mutex'
 import Payment from './payment'
-import { MachinomyOptions } from '../MachinomyOptions'
+import MachinomyOptions from './MachinomyOptions'
 import IChannelManager from './IChannelManager'
 import * as BigNumber from 'bignumber.js'
-import { PaymentChannel } from './payment_channel'
 import ChannelId from './ChannelId'
-import PaymentsDatabase from './storages/payments_database'
 import { EventEmitter } from 'events'
 import * as Web3 from 'web3'
+import IPaymentsDatabase from './storage/IPaymentsDatabase'
+import ITokensDatabase from './storage/ITokensDatabase'
 import log from './util/log'
+import { PaymentChannel } from './PaymentChannel'
 
 const LOG = log('ChannelManager')
 
@@ -27,11 +27,11 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
 
   private web3: Web3
 
-  private channelsDao: ChannelsDatabase
+  private channelsDao: IChannelsDatabase
 
-  private paymentsDao: PaymentsDatabase
+  private paymentsDao: IPaymentsDatabase
 
-  private tokensDao: TokensDatabase
+  private tokensDao: ITokensDatabase
 
   private channelContract: ChannelContract
 
@@ -41,7 +41,7 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
 
   private machinomyOptions: MachinomyOptions
 
-  constructor (account: string, web3: Web3, channelsDao: ChannelsDatabase, paymentsDao: PaymentsDatabase, tokensDao: TokensDatabase, channelContract: ChannelContract, paymentManager: PaymentManager, machinomyOptions: MachinomyOptions) {
+  constructor (account: string, web3: Web3, channelsDao: IChannelsDatabase, paymentsDao: IPaymentsDatabase, tokensDao: ITokensDatabase, channelContract: ChannelContract, paymentManager: PaymentManager, machinomyOptions: MachinomyOptions) {
     super()
     this.account = account
     this.web3 = web3

@@ -8,7 +8,7 @@ async function main (): Promise<string> {
   const MNEMONIC = String(process.env.MNEMONIC)
 
   const provider = new HDWalletProvider(MNEMONIC, PROVIDER_URL)
-  const web3 = new Web3(provider)
+  let web3 = new Web3(provider)
 
   /**
    * Account that send payments payments.

@@ -1,39 +1,37 @@
 import * as sinon from 'sinon'
 import * as support from './support'
 import ChannelId from '../lib/ChannelId'
-import Payment from '../lib/payment'
 import * as BigNumber from 'bignumber.js'
-import Engine, { EngineMongo, EngineNedb, EnginePostgres, EngineSQLite } from '../lib/engines/engine'
-import { PaymentChannel } from '../lib/payment_channel'
-import {
-  AbstractChannelsDatabase,
-  default as ChannelsDatabase,
-  MongoChannelsDatabase,
-  NedbChannelsDatabase,
-  PostgresChannelsDatabase,
-  SQLiteChannelsDatabase
-} from '../lib/storages/channels_database'
-import PaymentsDatabase, {
-  MongoPaymentsDatabase,
-  NedbPaymentsDatabase,
-  PostgresPaymentsDatabase,
-  SQLitePaymentsDatabase
-} from '../lib/storages/payments_database'
-import TokensDatabase, {
-  MongoTokensDatabase,
-  NedbTokensDatabase,
-  PostgresTokensDatabase,
-  SQLiteTokensDatabase
-} from '../lib/storages/tokens_database'
-import ChannelContract from '../lib/channel_contract'
-import Signature from '../lib/Signature'
+import { PaymentChannel } from '../lib/PaymentChannel'
+import ChannelContract from '../lib/ChannelContract'
 import expectsRejection from './util/expects_rejection'
+import IEngine from '../lib/storage/IEngine'
+import EngineMongo from '../lib/storage/mongo/EngineMongo'
+import EngineNedb from '../lib/storage/nedb/EngineNedb'
+import EnginePostgres from '../lib/storage/postgresql/EnginePostgres'
+import IChannelsDatabase from '../lib/storage/IChannelsDatabase'
+import AbstractChannelsDatabase from '../lib/storage/AbstractChannelsDatabase'
+import NedbChannelsDatabase from '../lib/storage/nedb/NedbChannelsDatabase'
+import MongoChannelsDatabase from '../lib/storage/mongo/MongoChannelsDatabase'
+import PostgresChannelsDatabase from '../lib/storage/postgresql/PostgresChannelsDatabase'
+import IPaymentsDatabase from '../lib/storage/IPaymentsDatabase'
+import NedbPaymentsDatabase from '../lib/storage/nedb/NedbPaymentsDatabase'
+import PostgresPaymentsDatabase from '../lib/storage/postgresql/PostgresPaymentsDatabase'
+import MongoPaymentsDatabase from '../lib/storage/mongo/MongoPaymentsDatabase'
+import PostgresTokensDatabase from '../lib/storage/postgresql/PostgresTokensDatabase'
+import MongoTokensDatabase from '../lib/storage/mongo/MongoTokensDatabase'
+import ITokensDatabase from '../lib/storage/ITokensDatabase'
+import NedbTokensDatabase from '../lib/storage/nedb/NedbTokensDatabase'
+import EngineSqlite from '../lib/storage/sqlite/EngineSqlite'
+import SqliteChannelsDatabase from '../lib/storage/sqlite/SqliteChannelsDatabase'
+import SqlitePaymentsDatabase from '../lib/storage/sqlite/SqlitePaymentsDatabase'
+import SqliteTokensDatabase from '../lib/storage/sqlite/SqliteTokensDatabase'
 
 const expect = require('expect')
 
 const engineName = process.env.ENGINE_NAME || 'nedb'
 
-function buildEngine (filename: string): Engine {
+function buildEngine (filename: string): IEngine {
   switch (engineName) {
     case 'nedb':
       return new EngineNedb(filename, false)
@@ -42,13 +40,13 @@ function buildEngine (filename: string): Engine {
     case 'postgresql':
       return new EnginePostgres()
     case 'sqlite':
-      return new EngineSQLite(filename, false)
+      return new EngineSqlite(filename)
     default:
       throw new Error(`Invalid engine ${engineName}.`)
   }
 }
 
-function buildDatabases (engine: Engine, channelContract: ChannelContract): [ChannelsDatabase, PaymentsDatabase, TokensDatabase] {
+function buildDatabases (engine: IEngine, channelContract: ChannelContract): [IChannelsDatabase, IPaymentsDatabase, ITokensDatabase] {
   if (engine instanceof EngineNedb) {
     return [new NedbChannelsDatabase(engine, channelContract, null), new NedbPaymentsDatabase(engine, null), new NedbTokensDatabase(engine, null)]
   }
@@ -61,21 +59,19 @@ function buildDatabases (engine: Engine, channelContract: ChannelContract): [Cha
     return [new MongoChannelsDatabase(engine, channelContract, null), new MongoPaymentsDatabase(engine, null), new MongoTokensDatabase(engine, null)]
   }
 
-  if (engine instanceof EngineSQLite) {
-    return [new SQLiteChannelsDatabase(engine, channelContract, null), new SQLitePaymentsDatabase(engine, null), new SQLiteTokensDatabase(engine, null)]
+  if (engine instanceof EngineSqlite) {
+    return [new SqliteChannelsDatabase(engine, channelContract, null), new SqlitePaymentsDatabase(engine, null), new SqliteTokensDatabase(engine, null)]
   }
 
   throw new Error('Invalid engine.')
 }
 
 describe('storage', () => {
-  let engine: Engine
+  let engine: IEngine
 
-  let channels: ChannelsDatabase
+  let channels: IChannelsDatabase
 
-  let payments: PaymentsDatabase
-
-  let tokens: TokensDatabase
+  let tokens: ITokensDatabase
 
   let fakeContract: ChannelContract
 
@@ -93,7 +89,6 @@ describe('storage', () => {
 
       const databases = buildDatabases(engine, fakeContract)
       channels = databases[0]
-      payments = databases[1]
       tokens = databases[2]
     })
   })
@@ -111,7 +106,7 @@ describe('storage', () => {
       it('updates the state value', () => {
         const id = ChannelId.random().toString()
 
-        sinon.stub((channels as AbstractChannelsDatabase<Engine>).contract, 'getState').resolves(2)
+        sinon.stub((channels as AbstractChannelsDatabase<IEngine>).contract, 'getState').resolves(2)
         return channels.save(new PaymentChannel('sender', 'receiver', id, new BigNumber.BigNumber(69), new BigNumber.BigNumber(8), 0, undefined))
           .then(() => channels.updateState(id, 2))
           .then(() => channels.firstById(id))
@@ -162,8 +157,8 @@ describe('storage', () => {
 
     describe('#saveOrUpdate', () => {
       it('save new PaymentChannel', () => {
-        const gs = (channels as AbstractChannelsDatabase<Engine>).contract.getState as sinon.SinonStub
-        const cb = (channels as AbstractChannelsDatabase<Engine>).contract.channelById as sinon.SinonStub
+        const gs = (channels as AbstractChannelsDatabase<IEngine>).contract.getState as sinon.SinonStub
+        const cb = (channels as AbstractChannelsDatabase<IEngine>).contract.channelById as sinon.SinonStub
 
         gs.resolves(0)
         cb.resolves([null, null, '10'])
@@ -200,7 +195,7 @@ describe('storage', () => {
 
     describe('#deposit', () => {
       it('updates the channel value to the sum of the old value and new', () => {
-        const cb = (channels as AbstractChannelsDatabase<Engine>).contract.channelById as sinon.SinonStub
+        const cb = (channels as AbstractChannelsDatabase<IEngine>).contract.channelById as sinon.SinonStub
 
         cb.resolves([null, null, '15'])
 
@@ -304,7 +299,7 @@ describe('storage', () => {
           new PaymentChannel('othersender', 'receiver', ChannelId.random().toString(), new BigNumber.BigNumber(11), new BigNumber.BigNumber(0), 2, undefined)
         ]
 
-        const cb = (channels as AbstractChannelsDatabase<Engine>).contract.channelById as sinon.SinonStub
+        const cb = (channels as AbstractChannelsDatabase<IEngine>).contract.channelById as sinon.SinonStub
 
         instances.forEach((chan: PaymentChannel) => {
           cb.withArgs(chan.channelId).resolves([null, null, chan.value.toString()])
@@ -338,45 +333,6 @@ describe('storage', () => {
               expect(isPresent).toBeTruthy()
             })
           })
-      })
-    })
-
-    describe('PaymentsDatabase', () => {
-      describe('#save and #firstMaximum', () => {
-        it('match the data', () => {
-          const randomToken = support.randomInteger().toString()
-          const channelId = ChannelId.random()
-          const payment = new Payment({
-            channelId: channelId.toString(),
-            sender: 'sender',
-            receiver: 'receiver',
-            price: new BigNumber.BigNumber(10),
-            value: new BigNumber.BigNumber(10),
-            channelValue: new BigNumber.BigNumber(10),
-            meta: 'metaexample',
-            signature: Signature.fromParts({
-              v: 27,
-              r: '0x2',
-              s: '0x3'
-            }),
-            token: undefined,
-            contractAddress: undefined
-          })
-
-          sinon.stub(Date, 'now').returns(12345)
-
-          return channels.save(new PaymentChannel('sender', 'receiver', channelId.toString(), new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), undefined, undefined))
-            .then(() => {
-              return payments.save(randomToken, payment).then(() => {
-                return payments.firstMaximum(channelId)
-              })
-            }).then((found: any) => {
-              expect(found.channelId).toBe(payment.channelId)
-              expect(found.token).toBe(randomToken)
-              expect(found.signature.isEqual(payment.signature)).toBe(true)
-              expect(found.createdAt).toBe(12345)
-            })
-        })
       })
     })
   })

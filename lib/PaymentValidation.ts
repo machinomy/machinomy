@@ -1,11 +1,11 @@
 import * as BigNumber from 'bignumber.js'
 
-import { PaymentChannel } from './payment_channel'
+import { PaymentChannel } from './PaymentChannel'
 import Payment from './payment'
 import log from './util/log'
-import ChannelContract from './channel_contract'
-import { MachinomyOptions } from '../MachinomyOptions'
+import ChannelContract from './ChannelContract'
 import ChannelManager from './ChannelManager'
+import MachinomyOptions from './MachinomyOptions'
 
 const LOG = log('PaymentValidation')
 

@@ -1,25 +1,22 @@
 import * as sinon from 'sinon'
-// line below is false positive
-// tslint:disable-next-line
 import * as BigNumber from 'bignumber.js'
-import ChannelsDatabase from '../lib/storages/channels_database'
-import { PaymentChannel } from '../lib/payment_channel'
-import PaymentsDatabase from '../lib/storages/payments_database'
-import TokensDatabase from '../lib/storages/tokens_database'
+import { PaymentChannel } from '../lib/PaymentChannel'
+import TokensDatabase from '../lib/storage/postgresql/PostgresTokensDatabase'
 import { TransactionResult } from 'truffle-contract'
 import Payment from '../lib/payment'
-import Web3 = require('web3')
+import * as Web3 from 'web3'
 import expectsRejection from './util/expects_rejection'
 import PaymentManager from '../lib/PaymentManager'
-import ChannelContract from '../lib/channel_contract'
-import Signature from '../lib/Signature'
-import { MachinomyOptions } from '../MachinomyOptions'
+import ChannelContract from '../lib/ChannelContract'
+import MachinomyOptions from '../lib/MachinomyOptions'
 import * as uuid from 'uuid'
 import { Unidirectional } from '@machinomy/contracts'
+import IChannelsDatabase from '../lib/storage/IChannelsDatabase'
+import IPaymentsDatabase from '../lib/storage/IPaymentsDatabase'
 import IChannelManager from '../lib/IChannelManager'
 import ChannelManager from '../lib/ChannelManager'
-
-const expect = require('expect')
+import * as expect from 'expect'
+import Signature from '../lib/Signature'
 
 describe('ChannelManagerImpl', () => {
   const fakeChan = new PaymentChannel('0xcafe', '0xbeef', '123', new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 0, undefined)
@@ -34,9 +31,9 @@ describe('ChannelManagerImpl', () => {
 
   let web3: Web3
 
-  let channelsDao: ChannelsDatabase
+  let channelsDao: IChannelsDatabase
 
-  let paymentsDao: PaymentsDatabase
+  let paymentsDao: IPaymentsDatabase
 
   let tokensDao: TokensDatabase
 
@@ -68,9 +65,9 @@ describe('ChannelManagerImpl', () => {
       deployed: sinon.stub().resolves(deployed)
     })
 
-    paymentsDao = {} as PaymentsDatabase
+    paymentsDao = {} as IPaymentsDatabase
     tokensDao = {} as TokensDatabase
-    channelsDao = {} as ChannelsDatabase
+    channelsDao = {} as IChannelsDatabase
     paymentManager = {} as PaymentManager
 
     machOpts = {

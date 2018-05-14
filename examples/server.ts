@@ -28,102 +28,111 @@ import * as Web3 from 'web3'
 import Machinomy from '../index'
 import * as bodyParser from 'body-parser'
 import { AcceptTokenRequestSerde } from '../lib/accept_token_request'
-import { PaymentChannelSerde } from '../lib/payment_channel'
+import { PaymentChannelSerde } from '../lib/PaymentChannel'
 import fetcher from '../lib/util/fetcher'
 import * as HDWalletProvider from 'truffle-hdwallet-provider'
 
-const PROVIDER_URL = String(process.env.PROVIDER_URL)
-const MNEMONIC = String(process.env.MNEMONIC)
+async function main () {
+  const PROVIDER_URL = String(process.env.PROVIDER_URL)
+  const MNEMONIC = String(process.env.MNEMONIC)
 
-const provider = new HDWalletProvider(MNEMONIC, PROVIDER_URL)
-const web3 = new Web3(provider)
+  const provider = new HDWalletProvider(MNEMONIC, PROVIDER_URL)
+  const web3 = new Web3(provider)
 
-/**
- * Account that receives payments.
- */
-let receiver = provider.getAddress(0)
+  /**
+   * Account that receives payments.
+   */
+  let receiver = provider.getAddress(0)
 
-/**
- * Create machinomy instance that provides API for accepting payments.
- */
-let machinomy = new Machinomy(receiver, web3, { databaseUrl: 'nedb://./server' })
+  /**
+   * Create machinomy instance that provides API for accepting payments.
+   */
+  let machinomy = new Machinomy(receiver, web3, { databaseUrl: 'nedb://./server' })
 
-let hub = express()
-hub.use(bodyParser.json())
-hub.use(bodyParser.urlencoded({ extended: false }))
+  let hub = express()
+  hub.use(bodyParser.json())
+  hub.use(bodyParser.urlencoded({ extended: false }))
 
-/**
- * Recieve an off-chain payment issued by `machinomy buy` command.
- */
-hub.post('/machinomy', async (req: express.Request, res: express.Response, next: Function) => {
-  const body = await machinomy.acceptPayment(req.body)
-  res.status(202).header('Paywall-Token', body.token).send(body)
-})
+  /**
+   * Recieve an off-chain payment issued by `machinomy buy` command.
+   */
+  hub.post('/machinomy', async (req: express.Request, res: express.Response, next: Function) => {
+    const body = await machinomy.acceptPayment(req.body)
+    res.status(202).header('Paywall-Token', body.token).send(body)
+  })
 
-/**
- * Verify the token that `/machinomy` generates.
- */
-hub.get('/verify/:token', (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  let token: string = req.params.token
-  machinomy.acceptToken(AcceptTokenRequestSerde.instance.deserialize({
-    token
-  })).then(() => res.status(200).send({ status: 'ok' }))
-    .catch(() => res.status(400).send({ status: 'token is invalid' }))
-})
+  /**
+   * Verify the token that `/machinomy` generates.
+   */
+  hub.get('/verify/:token', (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    let token: string = req.params.token
+    machinomy.acceptToken(AcceptTokenRequestSerde.instance.deserialize({
+      token
+    })).then(() => res.status(200).send({ status: 'ok' }))
+      .catch(() => res.status(400).send({ status: 'token is invalid' }))
+  })
 
-hub.get('/channels', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  const channels = await machinomy.channels()
-  res.status(200).send(channels.map(PaymentChannelSerde.instance.serialize))
-})
+  hub.get('/channels', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const channels = await machinomy.channels()
+    res.status(200).send(channels.map(PaymentChannelSerde.instance.serialize))
+  })
 
-hub.get('/claim/:channelid', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  try {
-    let channelId = req.params.channelid
-    await machinomy.close(channelId)
-    res.status(200).send('Claimed')
-  } catch (error) {
-    res.status(404).send('No channel found')
-    console.error(error)
+  hub.get('/claim/:channelid', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    try {
+      let channelId = req.params.channelid
+      await machinomy.close(channelId)
+      res.status(200).send('Claimed')
+    } catch (error) {
+      res.status(404).send('No channel found')
+      console.error(error)
+    }
+  })
+
+  let port = 3001
+  hub.listen(port, function () {
+    console.log('HUB is ready on port ' + port)
+  })
+
+  let app = express()
+  let paywallHeaders = () => {
+    let headers: { [index: string]: string } = {}
+    headers['Paywall-Version'] = '0.0.3'
+    headers['Paywall-Price'] = '1000'
+    headers['Paywall-Address'] = receiver
+    headers['Paywall-Gateway'] = 'http://localhost:3001/machinomy'
+    return headers
   }
-})
 
-let port = 3001
-hub.listen(port, function () {
-  console.log('HUB is ready on port ' + port)
-})
-
-let app = express()
-let paywallHeaders = () => {
-  let headers: { [index: string]: string } = {}
-  headers['Paywall-Version'] = '0.0.3'
-  headers['Paywall-Price'] = '1000'
-  headers['Paywall-Address'] = receiver
-  headers['Paywall-Gateway'] = 'http://localhost:3001/machinomy'
-  return headers
-}
-
-/**
- * Example of serving a paid content. You can buy it with `machinomy buy http://localhost:3000/content` command.
- */
-app.get('/content', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  let reqUrl = 'http://localhost:3001/verify'
-  let content = req.get('authorization')
-  if (content) {
-    let token = content.split(' ')[1]
-    let response = await fetcher.fetch(reqUrl + '/' + token)
-    let json = await response.json()
-    let status = json.status
-    if (status === 'ok') {
-      res.send('Thank you for your purchase!')
+  /**
+   * Example of serving a paid content. You can buy it with `machinomy buy http://localhost:3000/content` command.
+   */
+  app.get('/content', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    let reqUrl = 'http://localhost:3001/verify'
+    let content = req.get('authorization')
+    if (content) {
+      let token = content.split(' ')[1]
+      let response = await fetcher.fetch(reqUrl + '/' + token)
+      let json = await response.json()
+      let status = json.status
+      if (status === 'ok') {
+        res.send('Thank you for your purchase!')
+      } else {
+        res.status(402).set(paywallHeaders()).send('Content is not avaible')
+      }
     } else {
       res.status(402).set(paywallHeaders()).send('Content is not avaible')
     }
-  } else {
-    res.status(402).set(paywallHeaders()).send('Content is not avaible')
-  }
-})
+  })
 
-let portApp = 3000
-app.listen(portApp, function () {
-  console.log('Content proveder is ready on ' + portApp)
+  let portApp = 3000
+  app.listen(portApp, function () {
+    console.log('Content proveder is ready on ' + portApp)
+  })
+}
+
+main().then(() => {
+  // Do Nothing
+}).catch(error => {
+  console.error(error)
+  process.exit(1)
 })

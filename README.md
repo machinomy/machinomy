@@ -19,39 +19,11 @@ Support/Discussion: [Gitter](https://gitter.im/machinomy/machinomy).
 The website contains [Getting Started](https://machinomy.com/documentation/getting-started/) guide.
 It is more illustrative than instructions below.
 
-Machinomy provides a simple [JS API](https://machinomy.com/documentation/api/classes/_index_.machinomy.html).
-
 To run Machinomy against a local Ethereum test network, see the [Running with Ganache CLI](docs/ganache-cli.md) Guide.
 
 ## Installation
 
-    $ npm install -g machinomy
-
-Assumptions:
-* [geth](https://github.com/ethereum/go-ethereum) node runs on `http://localhost:8545`,
-* geth runs [Ropsten](https://blog.ethereum.org/2016/11/20/from-morden-to-ropsten/) network.
-
-The library supports currently Ropsten network only. It is early days, we would like to avoid
-losses by mistake on your side. Ether on Ropsten cost nothing. One could get some from [ZeroGox Faucet](https://zerogox.com/ethereum/wei_faucet) for free.
-
-## Set up
-
-To only play with CLI a command below is enough:
-
-    $ machinomy setup
-
-If you also intend to _sell_ services via HTTP, set up "receiver" side:
-
-    $ machinomy setup --namespace receiver
-    
-### Environment Variables
-
-Machinomy can be configured on the CLI using a few environment variables. Specifically:
-
-| Variables  | Use |
-| ------------- | ------------- |
-| `MACHINOMY_GETH_ADDR`  | Tells the CLI where `geth`'s RPC server is running. Defaults to `http://localhost:8545`. |
-| `MACHINOMY_SENDER_ENGINE`  | Tells the CLI which database engine to use. Default to `nedb`, but can also be `mongo` or `postgres`.  |
+    $ yarn add machinomy
 
 ## Usage
 

@@ -1,9 +1,9 @@
 import Payment from './payment'
 import * as BigNumber from 'bignumber.js'
-import { PaymentChannel } from './payment_channel'
 import ChannelId from './ChannelId'
 import { EventEmitter } from 'events'
 import { TransactionResult } from 'truffle-contract'
+import { PaymentChannel } from './PaymentChannel'
 
 export default interface IChannelManager extends EventEmitter {
   openChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber, channelId?: ChannelId | string): Promise<PaymentChannel>

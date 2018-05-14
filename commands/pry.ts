@@ -3,7 +3,7 @@ import Web3 = require('web3')
 import { PaymentRequired } from '../lib/transport'
 import Machinomy from '../index'
 
-const pry = (uri: string) => {
+async function pry (uri: string) {
   const settings = configuration.sender()
   const provider = configuration.currentProvider()
   const web3 = new Web3(provider)
@@ -14,14 +14,15 @@ const pry = (uri: string) => {
 
   const machinomy = new Machinomy(settings.account, web3, settings)
 
-  machinomy.pry(uri).then((res: PaymentRequired) => console.log(res))
-    .catch((e: any) => console.error(e))
-    .then(() => machinomy.shutdown())
-    .catch((e: any) => {
-      console.error('Failed to cleanly shut down:')
-      console.error(e)
-      process.exit(1)
-    })
+  try {
+    let res = await machinomy.pry(uri)
+    console.log(res)
+    await machinomy.shutdown()
+  } catch (error) {
+    console.error('Failed to cleanly pry:')
+    console.error(error)
+    process.exit(1)
+  }
 }
 
 export default pry
