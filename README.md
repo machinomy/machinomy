@@ -16,71 +16,45 @@ Support/Discussion: [Gitter](https://gitter.im/machinomy/machinomy).
 
 ## Documentation
 
-The website contains [Getting Started](https://machinomy.com/documentation/getting-started/) guide.
-It is more illustrative than instructions below.
-
-To run Machinomy against a local Ethereum test network, see the [Running with Ganache CLI](docs/ganache-cli.md) Guide.
-
 ## Installation
 
     $ yarn add machinomy
+
+The library supports mainnet, Ropsten, and [Rinkeby](https://www.rinkeby.io/) networks.
+
+## Tinkering
+
+It takes two to tango: a seller and a buyer. Seller is `examples/server.ts` script. Build it or run through node-ts.
+```
+$ git clone https://github.com/machinomy/machinomy
+$ yarn install && yarn build
+$ node examples/server.js
+```
+
+And then run client script:
+
+```
+$ node examples/client.js
+```
 
 ## Usage
 
 ### Buy
 
-    $ machinomy buy http://playground.machinomy.com/hello
+Using TypeScript
 
-Buys a service provided by a respective endpoint. You could buy the service from JavaScript as well:
+```typescript
+import Machinomy from 'machinomy'
+const uri = 'http://localhost:3000/content'
 
-```javascript
-'use strict'
-
-const machinomy = require('machinomy')
-const uri = 'http://playground.machinomy.com/hello'
-
-const settings = machinomy.configuration.sender()
-machinomy.buy(uri, settings.account, settings.password).then(contents => {
-  console.log(contents)
-}).catch(error => {
-  throw error
-})
+const machinomy = new Machinomy(SENDER_ACCOUNT, web3)
+const contents = await machinomy.buy({ receiver: RECEIVER_ACCOUNT, price: 100, gateway: 'http://localhost:3001/accept' })
+console.log(contents)
 ```
 
 ### Sell
 
-Machinomy allows you to sell a service over HTTP. The library provides [Express](http://expressjs.com) middleware
-to abstract details of payment handling from the business logic.
-
-A code like below runs on `http://playground.machinomy.com/hello`:
-
-```javascript
-"use strict";
-
-const express    = require("express"),
-      bodyParser = require("body-parser"),
-      machinomy  = require("machinomy");
-
-const BASE = "http://localhost:3000";
-
-const settings = machinomy.configuration.receiver();
-let paywall = new machinomy.Paywall(settings.account, BASE);
-
-let app = express();
-app.use(bodyParser.json());
-app.use(paywall.middleware());
-
-app.get("/hello", paywall.guard(1000, function (req, res) {
-    res.write("Have just received 1000 wei.\n");
-    res.end("Hello, meat world!");
-}));
-
-app.listen(8080, function(_) {
-    console.log(`Waiting at ${BASE}/hello ...`);
-});
-```
-
-You could test it with `machinomy buy` command described above.
+The process is more convoluted than buying. Better consult [examples/server.ts](examples/server.ts) file.
 
 ## Contributing
 

@@ -1,26 +1,21 @@
 /**
- * Start this file by
+ * To run the file, it requires two environment variables to be set.
+ * `PROVIDER_URL` is a JSON RPC endpoint. Infura works just fine. For Rinkeby test network,
+ * you could set it to `PROVIDER_URL="https://rinkeby.infura.io/"`. Another variable is `MNEMONIC`.
+ * It is a [12-word seed phrase](https://github.com/pirapira/ethereum-word-list/blob/master/README.md#mnemonic-phrase).
+ * For example, `MNEMONIC="brain surround have swap horror body response double fire dumb bring hazard"`
  *
- * node server.js
+ * Start this file then:
  *
- * The script runs 3 core endpoints.
- * http://localhost:3000/content provides an example of the paid content.
- * http://localhost:3001/machinomy accepts payment.
- * http://localhost:3001/verify/:token verifies token that /machinomy generates.
+ * yarn build
+ * PROVIDER_URL="https://rinkeby.infura.io/" MNEMONIC="brain surround have swap horror body response double fire dumb bring hazard" node server.js
  *
- * The main use case is to buy content:
+ * The script runs 3 core endpoints:
+ * `http://localhost:3000/content` provides an example of the paid content.
+ * `http://localhost:3001/accept` accepts payment.
+ * `http://localhost:3001/verify/:token` verifies token that `/accept` generates.
  *
- * $ machinomy buy http://localhost:3000/content
- *
- * The command shows the bought content on console.
- *
- * Then you can see channels:
- *
- * $ machinomy channels
- *
- * And if you wants to close channel, call `/claim` endpoint via curl:
- *
- * $ curl -X POST http://localhost:3001/claim/:channeId
+ * The client side for buying the content is provided in `client.ts` file.
  */
 
 import * as express from 'express'
@@ -28,111 +23,107 @@ import * as Web3 from 'web3'
 import Machinomy from '../index'
 import * as bodyParser from 'body-parser'
 import { AcceptTokenRequestSerde } from '../lib/accept_token_request'
-import { PaymentChannelSerde } from '../lib/PaymentChannel'
+import { PaymentChannelSerde } from '../lib/payment_channel'
 import fetcher from '../lib/util/fetcher'
 import * as HDWalletProvider from 'truffle-hdwallet-provider'
 
-async function main () {
-  const PROVIDER_URL = String(process.env.PROVIDER_URL)
-  const MNEMONIC = String(process.env.MNEMONIC)
+const PROVIDER_URL = String(process.env.PROVIDER_URL)
+const MNEMONIC = String(process.env.MNEMONIC)
 
-  const provider = new HDWalletProvider(MNEMONIC, PROVIDER_URL)
-  const web3 = new Web3(provider)
+const HOST = 'localhost'
+const APP_PORT = 3000
+const HUB_PORT = 3001
 
-  /**
-   * Account that receives payments.
-   */
-  let receiver = provider.getAddress(0)
+const provider = new HDWalletProvider(MNEMONIC, PROVIDER_URL)
+const web3 = new Web3(provider)
 
-  /**
-   * Create machinomy instance that provides API for accepting payments.
-   */
-  let machinomy = new Machinomy(receiver, web3, { databaseUrl: 'nedb://./server' })
+/**
+ * Account that receives payments.
+ */
+let receiver = provider.getAddress(0)
 
-  let hub = express()
-  hub.use(bodyParser.json())
-  hub.use(bodyParser.urlencoded({ extended: false }))
+/**
+ * Create machinomy instance that provides API for accepting payments.
+ */
+let machinomy = new Machinomy(receiver, web3, { databaseUrl: 'nedb://./server' })
 
-  /**
-   * Recieve an off-chain payment issued by `machinomy buy` command.
-   */
-  hub.post('/machinomy', async (req: express.Request, res: express.Response, next: Function) => {
-    const body = await machinomy.acceptPayment(req.body)
-    res.status(202).header('Paywall-Token', body.token).send(body)
-  })
+let hub = express()
+hub.use(bodyParser.json())
+hub.use(bodyParser.urlencoded({ extended: false }))
 
-  /**
-   * Verify the token that `/machinomy` generates.
-   */
-  hub.get('/verify/:token', (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    let token: string = req.params.token
-    machinomy.acceptToken(AcceptTokenRequestSerde.instance.deserialize({
-      token
-    })).then(() => res.status(200).send({ status: 'ok' }))
-      .catch(() => res.status(400).send({ status: 'token is invalid' }))
-  })
+/**
+ * Recieve an off-chain payment issued by `machinomy buy` command.
+ */
+hub.post('/accept', async (req, res) => {
+  const body = await machinomy.acceptPayment(req.body)
+  res.status(202).header('Paywall-Token', body.token).send(body)
+})
 
-  hub.get('/channels', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const channels = await machinomy.channels()
-    res.status(200).send(channels.map(PaymentChannelSerde.instance.serialize))
-  })
-
-  hub.get('/claim/:channelid', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    try {
-      let channelId = req.params.channelid
-      await machinomy.close(channelId)
-      res.status(200).send('Claimed')
-    } catch (error) {
-      res.status(404).send('No channel found')
-      console.error(error)
-    }
-  })
-
-  let port = 3001
-  hub.listen(port, function () {
-    console.log('HUB is ready on port ' + port)
-  })
-
-  let app = express()
-  let paywallHeaders = () => {
-    let headers: { [index: string]: string } = {}
-    headers['Paywall-Version'] = '0.0.3'
-    headers['Paywall-Price'] = '1000'
-    headers['Paywall-Address'] = receiver
-    headers['Paywall-Gateway'] = 'http://localhost:3001/machinomy'
-    return headers
+/**
+ * Verify the token that `/accept` generates.
+ */
+hub.get('/verify/:token', async (req, res) => {
+  const token = req.params.token as string
+  const acceptTokenRequest = AcceptTokenRequestSerde.instance.deserialize({ token })
+  const isAccepted = (await machinomy.acceptToken(acceptTokenRequest)).status
+  if (isAccepted) {
+    res.status(200).send({ status: 'ok' })
+  } else {
+    res.status(400).send({ status: 'token is invalid' })
   }
+})
 
-  /**
-   * Example of serving a paid content. You can buy it with `machinomy buy http://localhost:3000/content` command.
-   */
-  app.get('/content', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    let reqUrl = 'http://localhost:3001/verify'
-    let content = req.get('authorization')
-    if (content) {
-      let token = content.split(' ')[1]
-      let response = await fetcher.fetch(reqUrl + '/' + token)
-      let json = await response.json()
-      let status = json.status
-      if (status === 'ok') {
-        res.send('Thank you for your purchase!')
-      } else {
-        res.status(402).set(paywallHeaders()).send('Content is not avaible')
-      }
-    } else {
-      res.status(402).set(paywallHeaders()).send('Content is not avaible')
-    }
-  })
+hub.get('/channels', async (req, res) => {
+  const channels = await machinomy.channels()
+  res.status(200).send(channels.map(PaymentChannelSerde.instance.serialize))
+})
 
-  let portApp = 3000
-  app.listen(portApp, function () {
-    console.log('Content proveder is ready on ' + portApp)
-  })
+hub.get('/claim/:channelid', async (req, res) => {
+  try {
+    let channelId = req.params.channelid
+    await machinomy.close(channelId)
+    res.status(200).send('Claimed')
+  } catch (error) {
+    res.status(404).send('No channel found')
+    console.error(error)
+  }
+})
+
+hub.listen(HUB_PORT, () => {
+  console.log('HUB is ready on port ' + HUB_PORT)
+})
+
+let app = express()
+let paywallHeaders = () => {
+  let headers: { [index: string]: string } = {}
+  headers['Paywall-Version'] = '0.0.3'
+  headers['Paywall-Price'] = '1000'
+  headers['Paywall-Address'] = receiver
+  headers['Paywall-Gateway'] = `http://${HOST}:${HUB_PORT}/accept`
+  return headers
 }
 
-main().then(() => {
-  // Do Nothing
-}).catch(error => {
-  console.error(error)
-  process.exit(1)
+/**
+ * Example of serving a paid content. You can buy it with `machinomy buy http://localhost:3000/content` command.
+ */
+app.get('/content', async (req, res) => {
+  let reqUrl = `http://${HOST}:${HUB_PORT}/verify`
+  let content = req.get('authorization')
+  if (content) {
+    let token = content.split(' ')[1]
+    let response = await fetcher.fetch(reqUrl + '/' + token)
+    let json = await response.json()
+    let status = json.status
+    if (status === 'ok') {
+      res.send('Thank you for your purchase!')
+    } else {
+      res.status(402).set(paywallHeaders()).send('Content is not available')
+    }
+  } else {
+    res.status(402).set(paywallHeaders()).send('Content is not available')
+  }
+})
+
+app.listen(APP_PORT, function () {
+  console.log('Content proveder is ready on ' + APP_PORT)
 })
