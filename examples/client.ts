@@ -1,3 +1,20 @@
+/**
+ * To run the file, it requires two environment variables to be set.
+ * `PROVIDER_URL` is a JSON RPC endpoint. Infura works just fine. For Rinkeby test network,
+ * you could set it to `PROVIDER_URL="https://rinkeby.infura.io/"`. Another variable is `MNEMONIC`.
+ * It is a [12-word seed phrase](https://github.com/pirapira/ethereum-word-list/blob/master/README.md#mnemonic-phrase).
+ * For example, `MNEMONIC="brain surround have swap horror body response double fire dumb bring hazard"`
+ *
+ * Start this file then:
+ *
+ * yarn build
+ * PROVIDER_URL="https://rinkeby.infura.io/" MNEMONIC="brain surround have swap horror body response double fire dumb bring hazard" node client.js
+ *
+ * It will open a channel towards the server side, and send a single payment.
+ *
+ * The server side for selling the content is provided in `server.ts` file.
+ */
+
 import * as Web3 from 'web3'
 import * as HDWalletProvider from 'truffle-hdwallet-provider'
 import Machinomy from '../'

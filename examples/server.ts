@@ -1,26 +1,21 @@
 /**
- * Start this file by
+ * To run the file, it requires two environment variables to be set.
+ * `PROVIDER_URL` is a JSON RPC endpoint. Infura works just fine. For Rinkeby test network,
+ * you could set it to `PROVIDER_URL="https://rinkeby.infura.io/"`. Another variable is `MNEMONIC`.
+ * It is a [12-word seed phrase](https://github.com/pirapira/ethereum-word-list/blob/master/README.md#mnemonic-phrase).
+ * For example, `MNEMONIC="brain surround have swap horror body response double fire dumb bring hazard"`
  *
- * node server.js
+ * Start this file then:
  *
- * The script runs 3 core endpoints.
- * http://localhost:3000/content provides an example of the paid content.
- * http://localhost:3001/machinomy accepts payment.
- * http://localhost:3001/verify/:token verifies token that /machinomy generates.
+ * yarn build
+ * PROVIDER_URL="https://rinkeby.infura.io/" MNEMONIC="brain surround have swap horror body response double fire dumb bring hazard" node server.js
  *
- * The main use case is to buy content:
+ * The script runs 3 core endpoints:
+ * `http://localhost:3000/content` provides an example of the paid content.
+ * `http://localhost:3001/accept` accepts payment.
+ * `http://localhost:3001/verify/:token` verifies token that `/accept` generates.
  *
- * $ machinomy buy http://localhost:3000/content
- *
- * The command shows the bought content on console.
- *
- * Then you can see channels:
- *
- * $ machinomy channels
- *
- * And if you wants to close channel, call `/claim` endpoint via curl:
- *
- * $ curl -X POST http://localhost:3001/claim/:channeId
+ * The client side for buying the content is provided in `client.ts` file.
  */
 
 import * as express from 'express'
