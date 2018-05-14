@@ -23,7 +23,7 @@ import * as Web3 from 'web3'
 import Machinomy from '../index'
 import * as bodyParser from 'body-parser'
 import { AcceptTokenRequestSerde } from '../lib/accept_token_request'
-import { PaymentChannelSerde } from '../lib/payment_channel'
+import { PaymentChannelSerde } from '../lib/PaymentChannel'
 import fetcher from '../lib/util/fetcher'
 import * as HDWalletProvider from 'truffle-hdwallet-provider'
 
