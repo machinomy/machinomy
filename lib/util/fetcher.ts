@@ -1,2 +1,17 @@
-// tslint:disable-next-line:strict-type-predicates
-export default (typeof fetch !== 'undefined') ? { fetch: fetch } : { fetch: require('fetch-ponyfill') }
+import * as ponyFill from 'fetch-ponyfill'
+
+export interface Fetcher {
+  fetch: typeof fetch
+}
+
+let fetcher: Fetcher
+
+if (typeof fetch === 'undefined') {
+  fetcher = ponyFill()
+} else {
+  fetcher = {
+    fetch
+  }
+}
+
+export default fetcher
