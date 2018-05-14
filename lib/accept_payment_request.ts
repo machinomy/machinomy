@@ -1,4 +1,4 @@
-import Serde from './serde'
+import Serde from './Serde'
 import { default as Payment, PaymentSerde } from './payment'
 import { HasTypeField } from './has_type_field'
 

@@ -25,7 +25,7 @@ async function main (): Promise<string> {
   const MNEMONIC = String(process.env.MNEMONIC)
 
   const provider = new HDWalletProvider(MNEMONIC, PROVIDER_URL)
-  const web3 = new Web3(provider)
+  let web3 = new Web3(provider)
 
   /**
    * Account that send payments payments.
@@ -45,7 +45,9 @@ async function main (): Promise<string> {
    */
   let result = await machinomy.buy({
     price: Number(headers.get('paywall-price')),
+    // tslint:disable-next-line:no-unnecessary-type-assertion
     gateway: headers.get('paywall-gateway')!,
+    // tslint:disable-next-line:no-unnecessary-type-assertion
     receiver: headers.get('paywall-address')!,
     meta: 'metaidexample'
   })
@@ -61,6 +63,7 @@ async function main (): Promise<string> {
     }
   })
 
+  // tslint:disable-next-line:no-unnecessary-type-assertion
   let body = content.body! as any // WTF Fetch returns shitty data type
   return body.read().toString()
 }

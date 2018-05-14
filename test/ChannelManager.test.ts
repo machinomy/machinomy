@@ -1,24 +1,22 @@
 import * as sinon from 'sinon'
-// line below is false positive
-// tslint:disable-next-line
 import * as BigNumber from 'bignumber.js'
-import ChannelManager, { ChannelManagerImpl, DEFAULT_SETTLEMENT_PERIOD } from '../lib/channel_manager'
-import ChannelsDatabase from '../lib/storages/channels_database'
-import { PaymentChannel } from '../lib/payment_channel'
-import PaymentsDatabase from '../lib/storages/payments_database'
-import TokensDatabase from '../lib/storages/tokens_database'
+import { PaymentChannel } from '../lib/PaymentChannel'
+import TokensDatabase from '../lib/storage/postgresql/PostgresTokensDatabase'
 import { TransactionResult } from 'truffle-contract'
 import Payment from '../lib/payment'
-import Web3 = require('web3')
+import * as Web3 from 'web3'
 import expectsRejection from './util/expects_rejection'
 import PaymentManager from '../lib/PaymentManager'
-import ChannelContract from '../lib/channel_contract'
-import Signature from '../lib/signature'
-import { MachinomyOptions } from '../MachinomyOptions'
+import ChannelContract from '../lib/ChannelContract'
+import MachinomyOptions from '../lib/MachinomyOptions'
 import * as uuid from 'uuid'
 import { Unidirectional } from '@machinomy/contracts'
-
-const expect = require('expect')
+import IChannelsDatabase from '../lib/storage/IChannelsDatabase'
+import IPaymentsDatabase from '../lib/storage/IPaymentsDatabase'
+import IChannelManager from '../lib/IChannelManager'
+import ChannelManager from '../lib/ChannelManager'
+import * as expect from 'expect'
+import Signature from '../lib/Signature'
 
 describe('ChannelManagerImpl', () => {
   const fakeChan = new PaymentChannel('0xcafe', '0xbeef', '123', new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 0, undefined)
@@ -33,15 +31,15 @@ describe('ChannelManagerImpl', () => {
 
   let web3: Web3
 
-  let channelsDao: ChannelsDatabase
+  let channelsDao: IChannelsDatabase
 
-  let paymentsDao: PaymentsDatabase
+  let paymentsDao: IPaymentsDatabase
 
   let tokensDao: TokensDatabase
 
   let channelContract: ChannelContract
 
-  let channelManager: ChannelManager
+  let channelManager: IChannelManager
 
   let paymentManager: PaymentManager
 
@@ -67,18 +65,18 @@ describe('ChannelManagerImpl', () => {
       deployed: sinon.stub().resolves(deployed)
     })
 
-    paymentsDao = {} as PaymentsDatabase
+    paymentsDao = {} as IPaymentsDatabase
     tokensDao = {} as TokensDatabase
-    channelsDao = {} as ChannelsDatabase
+    channelsDao = {} as IChannelsDatabase
     paymentManager = {} as PaymentManager
 
     machOpts = {
-      settlementPeriod: DEFAULT_SETTLEMENT_PERIOD + 1,
+      settlementPeriod: ChannelManager.DEFAULT_SETTLEMENT_PERIOD + 1,
       closeOnInvalidPayment: true
     } as MachinomyOptions
 
     channelContract = new ChannelContract(web3)
-    channelManager = new ChannelManagerImpl('0xcafe', web3, channelsDao, paymentsDao, tokensDao, channelContract, paymentManager, machOpts)
+    channelManager = new ChannelManager('0xcafe', web3, channelsDao, paymentsDao, tokensDao, channelContract, paymentManager, machOpts)
   })
 
   afterEach(() => {
@@ -96,7 +94,7 @@ describe('ChannelManagerImpl', () => {
       return channelManager.openChannel('0xcafe', '0xbeef', new BigNumber.BigNumber(10))
         .then(() => {
           expect((channelContract.open as sinon.SinonStub)
-            .calledWith('0xcafe', '0xbeef', new BigNumber.BigNumber(100), DEFAULT_SETTLEMENT_PERIOD + 1))
+            .calledWith('0xcafe', '0xbeef', new BigNumber.BigNumber(100), ChannelManager.DEFAULT_SETTLEMENT_PERIOD + 1))
             .toBe(true)
         })
     })
@@ -252,7 +250,7 @@ describe('ChannelManagerImpl', () => {
       function setup (settlingUntil: number) {
         savedChannel = new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 0, undefined)
         channelsDao.firstById = sinon.stub().withArgs(id).resolves(null)
-        channelContract.channelById = sinon.stub().withArgs(id).resolves([savedChannel.sender, savedChannel.receiver, savedChannel.value, DEFAULT_SETTLEMENT_PERIOD, new BigNumber.BigNumber(settlingUntil)])
+        channelContract.channelById = sinon.stub().withArgs(id).resolves([savedChannel.sender, savedChannel.receiver, savedChannel.value, ChannelManager.DEFAULT_SETTLEMENT_PERIOD, new BigNumber.BigNumber(settlingUntil)])
         channelContract.claim = sinon.stub().resolves(claimResult)
         channelsDao.save = sinon.stub().resolves()
         channelContract.getState = sinon.stub().resolves(0)

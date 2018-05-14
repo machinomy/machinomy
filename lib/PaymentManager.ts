@@ -1,9 +1,9 @@
 import * as BigNumber from 'bignumber.js'
-import ChainManager from './chain_manager'
-import { PaymentChannel } from './payment_channel'
+import ChainManager from './ChainManager'
+import { PaymentChannel } from './PaymentChannel'
 import Payment from './payment'
-import ChannelContract from './channel_contract'
-import { MachinomyOptions } from '../MachinomyOptions'
+import ChannelContract from './ChannelContract'
+import MachinomyOptions from './MachinomyOptions'
 import PaymentValidation from './PaymentValidation'
 
 export default class PaymentManager {

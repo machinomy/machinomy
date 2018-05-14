@@ -3,7 +3,7 @@ import * as BigNumber from 'bignumber.js'
 import * as express from 'express'
 import * as bodyParser from 'body-parser'
 import Machinomy, { BuyResult } from '../index'
-import { PaymentChannel } from '../lib/payment_channel'
+import { PaymentChannel } from '../lib/PaymentChannel'
 import { AcceptTokenResponse } from '../lib/accept_token_response'
 const expect = require('expect')
 
@@ -30,7 +30,7 @@ describe('Buy flow', () => {
 
   let firstChannelId: string
 
-  before((done) => {
+  before(async (done) => {
     hubPort = randomPort()
 
     hubInstance = new Machinomy(receiver, web3, {

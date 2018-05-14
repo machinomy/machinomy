@@ -1,5 +1,4 @@
 import * as sinon from 'sinon'
-import ChannelManager from '../lib/channel_manager'
 import * as BigNumber from 'bignumber.js'
 import { PaymentRequired, Transport } from '../lib/transport'
 import { ClientImpl } from '../lib/client'
@@ -9,19 +8,20 @@ import fetcher from '../lib/util/fetcher'
 import { AcceptPaymentRequestSerde } from '../lib/accept_payment_request'
 import { AcceptPaymentResponse } from '../lib/accept_payment_response'
 import { AcceptTokenResponse } from '../lib/accept_token_response'
+import IChannelManager from '../lib/IChannelManager'
 
 const expect = require('expect')
 
 describe('ClientImpl', () => {
   let transport: Transport
 
-  let channelManager: ChannelManager
+  let channelManager: IChannelManager
 
   let client: ClientImpl
 
   beforeEach(() => {
     transport = {} as Transport
-    channelManager = {} as ChannelManager
+    channelManager = {} as IChannelManager
     client = new ClientImpl(transport, channelManager)
   })
 

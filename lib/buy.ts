@@ -1,11 +1,11 @@
 import * as configuration from './configuration'
-import Web3 = require('web3')
+import * as Web3 from 'web3'
 import Machinomy, { BuyResult } from '../index'
 
 /**
  * Shortcut for Sender.buy.
  */
-export function buyContent (uri: string, account: string, password: string): Promise<BuyResult> {
+export async function buyContent (uri: string, account: string, password: string): Promise<BuyResult> {
   let settings = configuration.sender()
   let web3 = new Web3()
   web3.setProvider(configuration.currentProvider())
@@ -14,7 +14,7 @@ export function buyContent (uri: string, account: string, password: string): Pro
   }
 
   let client = new Machinomy(account, web3, settings)
-  return client.buyUrl(uri).then((pair: BuyResult) => {
-    return client.shutdown().then(() => pair)
-  })
+  let pair = await client.buyUrl(uri)
+  await client.shutdown()
+  return pair
 }

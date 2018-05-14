@@ -24,7 +24,7 @@ describe('Payment validation flow', () => {
   let serverListener: any
 
   describe('minimum settlement period', () => {
-    before((done) => {
+    before(async (done) => {
       hubPort = randomPort()
 
       hubInstance = new Machinomy(receiver, web3, {
@@ -67,7 +67,7 @@ describe('Payment validation flow', () => {
       }))
     })
 
-    it('should accept payments with a settlement period higher than the minimum', () => {
+    it('should accept payments with a settlement period higher than the minimum', async () => {
       clientInstance = new Machinomy(sender, web3, {
         settlementPeriod: 11,
         databaseUrl: `nedb:///tmp/machinomy-client-${Date.now()}`

@@ -1,9 +1,9 @@
 import * as configuration from '../lib/configuration'
 import Machinomy from '../index'
-import Web3 = require('web3')
-import { PaymentChannelSerde } from '../lib/payment_channel'
+import * as Web3 from 'web3'
+import { PaymentChannelSerde } from '../lib/PaymentChannel'
 
-function channels (): void {
+async function channels (): Promise<void> {
   const settings = configuration.sender()
   const provider = configuration.currentProvider()
   const web3 = new Web3(provider)

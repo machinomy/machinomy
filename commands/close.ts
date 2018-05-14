@@ -1,12 +1,12 @@
 import * as configuration from '../lib/configuration'
 import CommandPrompt from './CommandPrompt'
 import Machinomy from '../index'
-import Web3 = require('web3')
+import * as Web3 from 'web3'
 
 let provider = configuration.currentProvider()
 let web3 = new Web3(provider)
 
-function close (channelId: string, options: CommandPrompt): void {
+async function close (channelId: string, options: CommandPrompt): Promise<void> {
   let namespace = options.namespace || 'sender'
   let settings = configuration.sender()
   if (namespace === 'receiver') {
@@ -25,18 +25,16 @@ function close (channelId: string, options: CommandPrompt): void {
   if (settings.account) {
     let account = settings.account
 
-    let machinomy = new Machinomy(account, web3, { databaseUrl: settings.databaseUrl })
-    machinomy.close(channelId).then(() => {
+    try {
+      let machinomy = new Machinomy(account, web3, { databaseUrl: settings.databaseUrl })
+      await machinomy.close(channelId)
       console.log('closed')
-    }).catch((e: Error) => {
-      console.log(e)
-    }).then(() => {
-      return machinomy.shutdown()
-    }).catch((e) => {
-      console.error('Failed to cleanly shut down:')
-      console.error(e)
+      await machinomy.shutdown()
+    } catch (error) {
+      console.error('Failed to clearly close the channel:')
+      console.error(error)
       process.exit(1)
-    })
+    }
   }
 }
 

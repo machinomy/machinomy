@@ -8,7 +8,8 @@
     "strict": true,
     "noImplicitReturns": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "experimentalDecorators": true
   },
   "files": [
     "index.ts",

@@ -1,11 +1,11 @@
 import * as BigNumber from 'bignumber.js'
 
-import { PaymentChannel } from './payment_channel'
+import { PaymentChannel } from './PaymentChannel'
 import Payment from './payment'
 import log from './util/log'
-import ChannelContract from './channel_contract'
-import { DEFAULT_SETTLEMENT_PERIOD } from './channel_manager'
-import { MachinomyOptions } from '../MachinomyOptions'
+import ChannelContract from './ChannelContract'
+import ChannelManager from './ChannelManager'
+import MachinomyOptions from './MachinomyOptions'
 
 const LOG = log('PaymentValidation')
 
@@ -96,7 +96,7 @@ export default class PaymentValidation {
 
   private async isAboveMinSettlementPeriod (): Promise<boolean> {
     const settlementPeriod = await this.channelContract.getSettlementPeriod(this.payment.channelId)
-    const minSettlementPeriod = new BigNumber.BigNumber(this.options.minimumSettlementPeriod || DEFAULT_SETTLEMENT_PERIOD)
+    const minSettlementPeriod = new BigNumber.BigNumber(this.options.minimumSettlementPeriod || ChannelManager.DEFAULT_SETTLEMENT_PERIOD)
     const isAboveMinSettlementPeriod = minSettlementPeriod.lessThanOrEqualTo(settlementPeriod)
     if (!isAboveMinSettlementPeriod) {
       error(`Settlement period is too short. settlement period: ${settlementPeriod}, minimum: ${minSettlementPeriod}. payment: %o`, this.payment)

@@ -1,6 +1,6 @@
 import * as BigNumber from 'bignumber.js'
-import Serde from './serde'
-import Signature from './signature'
+import Serde from './Serde'
+import Signature from './Signature'
 
 export interface PaymentJSON {
   channelId: string

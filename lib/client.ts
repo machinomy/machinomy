@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events'
 import { PaymentRequired, STATUS_CODES, Transport } from './transport'
 import Payment from './payment'
-import ChannelManager from './channel_manager'
+import IChannelManager from './IChannelManager'
 import * as request from 'request'
 import log from './util/log'
 import fetcher from './util/fetcher'
@@ -32,9 +32,9 @@ export class ClientImpl extends EventEmitter implements Client {
 
   private transport: Transport
 
-  private channelManager: ChannelManager
+  private channelManager: IChannelManager
 
-  constructor (transport: Transport, channelManager: ChannelManager) {
+  constructor (transport: Transport, channelManager: IChannelManager) {
     super()
     this.transport = transport
     this.channelManager = channelManager

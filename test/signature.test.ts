@@ -1,4 +1,4 @@
-import Signature from '../lib/signature'
+import Signature from '../lib/Signature'
 
 const expect = require('expect')
 
