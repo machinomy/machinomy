@@ -11,7 +11,7 @@ if (typeof fetch === 'undefined') {
   fetcher = ponyFill()
 } else {
   fetcher = {
-    fetch
+    fetch: fetch.bind(undefined)
   }
 }
 
