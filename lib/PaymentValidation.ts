@@ -27,22 +27,13 @@ export default class PaymentValidation {
   }
 
   async isValid (): Promise<boolean> {
-    return this.isValidIncrement() &&
-      this.isValidChannelValue() &&
+    return this.isValidChannelValue() &&
       this.isValidChannelId() &&
       this.isValidPaymentValue() &&
       this.isValidSender() &&
       this.isPositive() &&
       this.canClaim() &&
       this.isAboveMinSettlementPeriod()
-  }
-
-  private async isValidIncrement (): Promise<boolean> {
-    const isValidIncrement = this.paymentChannel.spent.plus(this.payment.price).equals(this.payment.value)
-    if (!isValidIncrement) {
-      error(`Price increment is too large. Payment channel already spent: ${this.paymentChannel.spent}, payment: %o`, this.payment)
-    }
-    return isValidIncrement
   }
 
   private async isValidChannelValue (): Promise<boolean> {
