@@ -16,38 +16,38 @@
  */
 
 import * as Web3 from 'web3'
-import * as HDWalletProvider from 'truffle-hdwallet-provider'
+import HDWalletProvider from '@machinomy/hdwallet-provider'
 import Machinomy from '../'
+import * as BigNumber from 'bignumber.js'
 import fetcher from '../lib/util/fetcher'
 
 async function main (): Promise<string> {
   const PROVIDER_URL = String(process.env.PROVIDER_URL)
-  const MNEMONIC = String(process.env.MNEMONIC)
+  const MNEMONIC = String(process.env.MNEMONIC).trim()
 
+  const TARGET = 'http://localhost:8080/hello'
   const provider = new HDWalletProvider(MNEMONIC, PROVIDER_URL)
   let web3 = new Web3(provider)
 
   /**
    * Account that send payments payments.
    */
-  let sender = provider.getAddress(0)
+  let sender = await provider.getAddress(0)
 
   /**
    * Create machinomy instance that provides API for accepting payments.
    */
   let machinomy = new Machinomy(sender, web3, { databaseUrl: 'nedb://./client' })
 
-  let response = await fetcher.fetch('http://localhost:3000/content')
+  let response = await fetcher.fetch(TARGET)
   let headers = response.headers
 
   /**
    * Request token to content access
    */
   let result = await machinomy.buy({
-    price: Number(headers.get('paywall-price')),
-    // tslint:disable-next-line:no-unnecessary-type-assertion
+    price: new BigNumber.BigNumber(String(headers.get('paywall-price'))),
     gateway: headers.get('paywall-gateway')!,
-    // tslint:disable-next-line:no-unnecessary-type-assertion
     receiver: headers.get('paywall-address')!,
     meta: 'metaidexample'
   })
@@ -57,7 +57,7 @@ async function main (): Promise<string> {
   /**
    * Request paid content
    */
-  let content = await fetcher.fetch('http://localhost:3000/content', {
+  let content = await fetcher.fetch(TARGET, {
     headers: {
       authorization: `paywall ${token}`
     }
@@ -68,8 +68,9 @@ async function main (): Promise<string> {
   return body.read().toString()
 }
 
-main().then(text => {
-  console.log(text)
+main().then(content => {
+  console.log('Bought content: ')
+  console.log(content)
   process.exit(0)
 }).catch(error => {
   console.error(error)
