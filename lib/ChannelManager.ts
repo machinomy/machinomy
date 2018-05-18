@@ -99,7 +99,7 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
     return payment
   }
 
-  acceptPayment (payment: Payment): Promise<string> {
+  async acceptPayment (payment: Payment): Promise<string> {
     LOG(`Queueing payment of ${payment.price.toString()} Wei to channel with ID ${payment.channelId}.`)
 
     return this.mutex.synchronizeOn(payment.channelId, async () => {

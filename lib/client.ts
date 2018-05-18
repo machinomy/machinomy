@@ -79,16 +79,13 @@ export class ClientImpl extends EventEmitter implements Client {
     return deres
   }
 
-  acceptPayment (req: AcceptPaymentRequest): Promise<AcceptPaymentResponse> {
+  async acceptPayment (req: AcceptPaymentRequest): Promise<AcceptPaymentResponse> {
     const payment = req.payment
 
     LOG(`Received payment request. Sender: ${payment.sender} / Receiver: ${payment.receiver}`)
-
-    return this.channelManager.acceptPayment(payment)
-      .then((token: string) => {
-        LOG(`Accepted payment request. Sender: ${payment.sender} / Receiver: ${payment.receiver}`)
-        return new AcceptPaymentResponse(token)
-      })
+    let token = await this.channelManager.acceptPayment(payment)
+    LOG(`Accepted payment request. Sender: ${payment.sender} / Receiver: ${payment.receiver}`)
+    return new AcceptPaymentResponse(token)
   }
 
   async doVerify (token: string, gateway: string): Promise<AcceptTokenResponse> {

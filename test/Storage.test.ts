@@ -14,9 +14,31 @@ import EnginePostgres from '../lib/storage/postgresql/EnginePostgres'
 import PostgresChannelsDatabase from '../lib/storage/postgresql/PostgresChannelsDatabase'
 import PostgresTokensDatabase from '../lib/storage/postgresql/PostgresTokensDatabase'
 import PostgresPaymentsDatabase from '../lib/storage/postgresql/PostgresPaymentsDatabase'
+import { Unidirectional } from '@machinomy/contracts'
+import * as sinon from 'sinon'
 
 describe('Storage', () => {
-  let channelContract = new ChannelContract(new Web3())
+  let web3: Web3
+  let deployed: any
+  let contractStub: sinon.SinonStub
+  let channelContract: ChannelContract
+
+  beforeEach(() => {
+    web3 = {
+      currentProvider: {}
+    } as Web3
+
+    deployed = {} as any
+    contractStub = sinon.stub(Unidirectional, 'contract')
+    contractStub.withArgs(web3.currentProvider).returns({
+      deployed: sinon.stub().resolves(Promise.resolve(deployed))
+    })
+    channelContract = new ChannelContract(web3)
+  })
+
+  afterEach(() => {
+    contractStub.restore()
+  })
 
   context('for Nedb', async () => {
     let url = 'nedb://'

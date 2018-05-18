@@ -11,18 +11,19 @@ const LOG = log('ChannelContract')
 const CREATE_CHANNEL_GAS = 300000
 
 export default class ChannelContract {
-  _contract?: Unidirectional.Contract
+  contract: Promise<Unidirectional.Contract>
 
   private web3: Web3
 
   constructor (web3: Web3) {
     this.web3 = web3
+    this.contract = Unidirectional.contract(this.web3.currentProvider).deployed()
   }
 
   async open (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number | BigNumber.BigNumber, channelId?: ChannelId | string): Promise<TransactionResult> {
     LOG(`Creating channel. Value: ${price} / Settlement: ${settlementPeriod}`)
     let _channelId = channelId || ChannelId.random()
-    const deployed = await this.contract()
+    const deployed = await this.contract
     return deployed.open(_channelId.toString(), receiver, new BigNumber.BigNumber(settlementPeriod), {
       from: sender,
       value: price,
@@ -33,13 +34,13 @@ export default class ChannelContract {
   async claim (receiver: string, channelId: string, value: BigNumber.BigNumber, signature: Signature): Promise<TransactionResult> {
     LOG(`Claiming channel with id ${channelId} on behalf of receiver ${receiver}`)
     LOG(`Values: ${value} / Signature: ${signature.toString()}`)
-    const deployed = await this.contract()
+    const deployed = await this.contract
     return deployed.claim(channelId, value, signature.toString(), { from: receiver })
   }
 
   async deposit (sender: string, channelId: string, value: BigNumber.BigNumber): Promise<TransactionResult> {
     LOG(`Depositing ${value} into channel ${channelId}`)
-    const deployed = await this.contract()
+    const deployed = await this.contract
     return deployed.deposit(channelId, {
       from: sender,
       value: value,
@@ -49,7 +50,7 @@ export default class ChannelContract {
 
   async getState (channelId: string): Promise<number> {
     LOG(`Fetching state for channel ${channelId}`)
-    const deployed = await this.contract()
+    const deployed = await this.contract
     const isOpen = await deployed.isOpen(channelId)
     const isSettling = await deployed.isSettling(channelId)
 
@@ -66,7 +67,7 @@ export default class ChannelContract {
 
   async getSettlementPeriod (channelId: string): Promise<BigNumber.BigNumber> {
     LOG(`Fetching settlement period for channel ${channelId}`)
-    const deployed = await this.contract()
+    const deployed = await this.contract
     const exists = await deployed.isPresent(channelId)
 
     if (!exists) {
@@ -79,38 +80,28 @@ export default class ChannelContract {
 
   async startSettle (account: string, channelId: string): Promise<TransactionResult> {
     LOG(`Starting settle for account ${account} and channel id ${channelId}.`)
-    const deployed = await this.contract()
+    const deployed = await this.contract
     return deployed.startSettling(channelId, { from: account })
   }
 
   async finishSettle (account: string, channelId: string): Promise<TransactionResult> {
     LOG(`Finishing settle for account ${account} and channel ID ${channelId}.`)
-    const deployed = await this.contract()
+    const deployed = await this.contract
     return deployed.settle(channelId, { from: account, gas: 400000 })
   }
 
   async paymentDigest (channelId: string, value: BigNumber.BigNumber): Promise<string> {
-    const deployed = await this.contract()
+    const deployed = await this.contract
     return deployed.paymentDigest(channelId, value)
   }
 
   async canClaim (channelId: string, payment: BigNumber.BigNumber, receiver: string, signature: Signature) {
-    const deployed = await this.contract()
+    const deployed = await this.contract
     return deployed.canClaim(channelId, payment, receiver, signature.toString())
   }
 
   async channelById (channelId: string): Promise<[string, string, BigNumber.BigNumber, BigNumber.BigNumber, BigNumber.BigNumber]> {
-    const deployed = await this.contract()
+    const deployed = await this.contract
     return deployed.channels(channelId)
-  }
-
-  private async contract (): Promise<Unidirectional.Contract> {
-    if (!this._contract) {
-      this._contract = process.env.CONTRACT_ADDRESS ?
-        await Unidirectional.contract(this.web3.currentProvider).at(process.env.CONTRACT_ADDRESS) :
-        await Unidirectional.contract(this.web3.currentProvider).deployed()
-    }
-
-    return this._contract
   }
 }
