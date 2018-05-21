@@ -25,7 +25,7 @@ async function main (): Promise<string> {
   const PROVIDER_URL = String(process.env.PROVIDER_URL)
   const MNEMONIC = String(process.env.MNEMONIC).trim()
 
-  const TARGET = 'http://localhost:8080/hello'
+  const TARGET = 'https://playground.machinomy.com/hello'
   const provider = new HDWalletProvider(MNEMONIC, PROVIDER_URL)
   let web3 = new Web3(provider)
 
@@ -33,6 +33,7 @@ async function main (): Promise<string> {
    * Account that send payments payments.
    */
   let sender = await provider.getAddress(0)
+  console.log('sender address', sender)
 
   /**
    * Create machinomy instance that provides API for accepting payments.
