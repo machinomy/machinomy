@@ -11,3 +11,4 @@ documentation
 .DS_Store
 !/migrations/**/*
 dist
+lerna-debug.log

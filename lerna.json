@@ -1,0 +1,18 @@
+{
+  "lerna": "2.11.0",
+  "packages": [
+    "packages/*"
+  ],
+  "version": "independent",
+  "npmClient": "yarn",
+  "npmClientArgs": ["--production", "--no-optional"],
+  "useWorkspaces": true,
+  "publishConfig": {
+    "access": "public"
+  },
+  "commands": {
+    "publish": {
+      "ignore": ["test/**/*", "*.md", "scripts", "*.ts", "lib", "tslint.json", "tsconfig.json"]
+    }
+  }
+}
