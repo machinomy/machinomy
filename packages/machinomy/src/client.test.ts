@@ -1,14 +1,14 @@
 import * as sinon from 'sinon'
 import * as BigNumber from 'bignumber.js'
-import { PaymentRequired, Transport } from '../lib/transport'
-import { ClientImpl } from '../lib/client'
+import { PaymentRequired, Transport } from './transport'
+import { ClientImpl } from './client'
 import expectsRejection from './util/expects_rejection'
-import { PaymentSerde } from '../lib/payment'
-import fetcher from '../lib/util/fetcher'
-import { AcceptPaymentRequestSerde } from '../lib/accept_payment_request'
-import { AcceptPaymentResponse } from '../lib/accept_payment_response'
-import { AcceptTokenResponse } from '../lib/accept_token_response'
-import IChannelManager from '../lib/IChannelManager'
+import { PaymentSerde } from './payment'
+import fetcher from './util/fetcher'
+import { AcceptPaymentRequestSerde } from './accept_payment_request'
+import { AcceptPaymentResponse } from './accept_payment_response'
+import { AcceptTokenResponse } from './accept_token_response'
+import IChannelManager from './IChannelManager'
 
 const expect = require('expect')
 

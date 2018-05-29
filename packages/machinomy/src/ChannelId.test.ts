@@ -1,4 +1,4 @@
-import ChannelId from '../lib/ChannelId'
+import ChannelId from './ChannelId'
 import * as expect from 'expect'
 import { Buffer } from 'safe-buffer'
 

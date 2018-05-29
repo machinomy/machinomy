@@ -1,8 +1,8 @@
-import ChannelId from '../lib/ChannelId'
+import ChannelId from './ChannelId'
 import * as support from './support'
-import Payment from '../lib/payment'
-import Signature from '../lib/Signature'
-import { PaymentChannel } from '../lib/PaymentChannel'
+import Payment from './payment'
+import Signature from './Signature'
+import { PaymentChannel } from './PaymentChannel'
 import * as expect from 'expect'
 
 describe('Payment', () => {

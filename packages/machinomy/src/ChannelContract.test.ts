@@ -3,8 +3,8 @@ import * as uuid from 'uuid'
 import * as BigNumber from 'bignumber.js'
 import * as sinon from 'sinon'
 import { Unidirectional } from '@machinomy/contracts'
-import ChannelContract from '../lib/ChannelContract'
-import Signature from '../lib/Signature'
+import ChannelContract from './ChannelContract'
+import Signature from './Signature'
 
 const expect = require('expect')
 

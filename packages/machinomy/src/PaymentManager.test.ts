@@ -1,9 +1,9 @@
 import * as sinon from 'sinon'
 import * as BigNumber from 'bignumber.js'
-import { PaymentChannel } from '../lib/PaymentChannel'
-import PaymentManager from '../lib/PaymentManager'
-import Signature from '../lib/Signature'
-import Payment from '../lib/payment'
+import { PaymentChannel } from './PaymentChannel'
+import PaymentManager from './PaymentManager'
+import Signature from './Signature'
+import Payment from './payment'
 
 const expect = require('expect')
 

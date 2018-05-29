@@ -1,10 +1,10 @@
 import nock = require('nock')
-import * as transport from '../lib/transport'
+import * as transport from './transport'
 import { randomInteger } from './support'
-import Payment from '../lib/payment'
+import Payment from './payment'
 import * as BigNumber from 'bignumber.js'
-import Signature from '../lib/Signature'
-import ChannelId from '../lib/ChannelId'
+import Signature from './Signature'
+import ChannelId from './ChannelId'
 let expect = require('expect')
 
 describe('transport', () => {

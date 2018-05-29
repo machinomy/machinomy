@@ -1,5 +1,5 @@
 import * as sinon from 'sinon'
-import EnginePostgres from '../lib/storage/postgresql/EnginePostgres'
+import EnginePostgres from './storage/postgresql/EnginePostgres'
 
 const expect = require('expect')
 

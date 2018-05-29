@@ -1,7 +1,7 @@
 import * as sinon from 'sinon'
 import * as expect from 'expect'
 import { MongoClient } from 'mongodb'
-import EngineMongo from '../lib/storage/mongo/EngineMongo'
+import EngineMongo from './storage/mongo/EngineMongo'
 
 describe('EngineMongo', () => {
   let engine: EngineMongo
