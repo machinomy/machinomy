@@ -21,6 +21,5 @@ script:
   - cd packages/machinomy && yarn migrate
   - yarn run test
   - yarn run coverage
-  - cd packages/contracts && codecov
 after_script:
-  - cd packages/contracts && yarn coverage && cat coverage/lcov.info | coveralls
+  - cd packages/contracts && codecov
