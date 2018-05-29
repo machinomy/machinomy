@@ -3,6 +3,7 @@
   "compilerOptions": {
     "types": [
       "@machinomy/types-ethereumjs-util",
+      "@machinomy/types-web3",
       "@types/mocha"
     ]
   },

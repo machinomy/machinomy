@@ -38,7 +38,7 @@ contract('Unidirectional', accounts => {
   async function createChannel (settlingPeriod?: number) {
     let channelId = contracts.channelId(sender, receiver)
     let log = await createChannelRaw(channelId, settlingPeriod)
-    return log.logs[0].args as contracts.Unidirectional.DidOpen
+    return log.logs[0].args
   }
 
   async function paymentSignature (sender: string, channelId: string, payment: BigNumber.BigNumber): Promise<string> {
@@ -116,7 +116,7 @@ contract('Unidirectional', accounts => {
     })
     specify('remove channel', async () => {
       let tx = await openAndClaim()
-      let event = tx.logs[0].args as contracts.Unidirectional.DidClaim
+      let event = tx.logs[0].args
       let channelId = event.channelId
 
       let channel = await instance.channels(channelId)
