@@ -1,0 +1,34 @@
+{
+  "name": "@machinomy/playground",
+  "version": "1.4.0",
+  "description": "Playground for Machinomy dapplications",
+  "main": "dist/index.js",
+  "author": "Sergey Ukustov",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "clean": "rm -rf dist/",
+    "lint": "tslint --format stylish --project . --exclude './node_modules/**/*.ts'",
+    "test": "exit 0",
+    "coverage": "exit 0",
+    "prepublish": "yarn lint && yarn build"
+  },
+  "dependencies": {
+    "@machinomy/hdwallet-provider": "^1.1.0",
+    "@types/debug": "^0.0.30",
+    "@types/dotenv": "^4.0.3",
+    "@types/morgan": "^1.7.35",
+    "@types/url-join": "^0.8.2",
+    "body-parser": "^1.18.2",
+    "db-migrate-sqlite3": "^0.2.1",
+    "dotenv": "^5.0.1",
+    "express": "^4.14.0",
+    "machinomy": "^1.9.2",
+    "morgan": "^1.9.0",
+    "sqlite3": "^4.0.0",
+    "tslint": "^5.10.0",
+    "tslint-config-standard": "^7.0.0",
+    "typescript": "^2.8.3",
+    "url-join": "^4.0.0"
+  }
+}
