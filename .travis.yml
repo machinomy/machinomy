@@ -20,6 +20,7 @@ script:
   - yarn run build
   - cd packages/machinomy && yarn migrate
   - yarn run test
-  - yarn run codecov
+  - yarn run coverage
+  - cd packages/contracts && codecov
 after_script:
   - cd packages/contracts && yarn coverage && cat coverage/lcov.info | coveralls
