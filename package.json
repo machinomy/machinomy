@@ -15,7 +15,7 @@
     ]
   },
   "scripts": {
-    "build": "wsrun build $PKG",
+    "build": "wsrun build $PKG --fast-exit -r --serial",
     "lint": "wsrun lint $PKG",
     "test": "wsrun test $PKG",
     "bootstrap": "lerna bootstrap"

@@ -2,9 +2,9 @@ import * as Web3 from 'web3'
 import * as chai from 'chai'
 import * as BigNumber from 'bignumber.js'
 import * as asPromised from 'chai-as-promised'
-import * as contracts from '../src/index'
+import * as contracts from './index'
 import * as support from './support'
-import Units from '../src/Units'
+import Units from './Units'
 import Gaser from './support/Gaser'
 
 chai.use(asPromised)

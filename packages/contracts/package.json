@@ -17,7 +17,7 @@
     "lib/"
   ],
   "config": {
-    "truffleTests": "test/*.test.js",
+    "truffleTests": "lib/*.test.js",
     "wrappedArtifacts": "build/contracts/@(Unidirectional).json"
   },
   "scripts": {
@@ -30,7 +30,7 @@
     "truffle:compile": "truffle compile",
     "truffle:test": "run-with-testrpc 'truffle test $npm_package_config_truffleTests'",
     "test": "yarn build && yarn truffle:test",
-    "prepublish": "yarn support:wrap && tsc --project tsconfig.prepublish.json --outDir lib/ --rootDir src/"
+    "prepublish": "yarn support:wrap && yarn build"
   },
   "devDependencies": {
     "@machinomy/types-ethereumjs-units": "^0.0.2",

@@ -1,8 +1,20 @@
 {
-  "extends": "./tsconfig.prepublish",
+  "extends": "../../tsconfig",
+  "compilerOptions": {
+    "sourceRoot": "src/",
+    "outDir": "lib/",
+    "types": [
+      "@machinomy/types-truffle-deployer",
+      "@machinomy/types-truffle",
+      "@machinomy/types-truffle-contract",
+      "@machinomy/types-ethereumjs-units",
+      "@machinomy/types-ethereumjs-util",
+      "@machinomy/types-web3",
+      "@types/node",
+      "@types/mocha"
+    ]
+  },
   "include": [
-    "src/index.ts",
-    "test/*.test.ts",
-    "migrations/*.ts"
+    "src/**/*"
   ]
 }
