@@ -1,0 +1,43 @@
+import * as BigNumber from 'bignumber.js'
+import * as Web3 from 'web3'
+import * as truffle from 'truffle-contract'
+
+export namespace {{contractName}} {
+  export const ARTIFACT = require('{{relativeArtifactPath}}')
+
+  export interface Contract {
+    address: string
+
+  {{#each getters}}
+    {{> getter contractName=../contractName}}
+  {{/each}}
+
+  {{#each functions}}
+    {{> function contractName=../contractName}}
+  {{/each}}
+
+  {{#each events}}
+    {{> filter contractName=../contractName}}
+  {{/each}}
+
+    send: (value: BigNumber.BigNumber | number) => Promise<truffle.TransactionResult>
+    sendTransaction: (opts: Web3.CallData) => Promise<truffle.TransactionResult>
+  }
+
+{{#each events}}
+{{> event contractName=../contractName}}
+{{/each}}
+
+  export function contract (provider?: Web3.Provider, defaults?: Web3.CallData): truffle.TruffleContract<Contract> {
+    let instance = truffle<Contract>(ARTIFACT)
+    if (provider) {
+      instance.setProvider(provider)
+    }
+    if (defaults) {
+      instance.defaults(defaults)
+    }
+    return instance
+  }
+}
+
+export default {{contractName}}

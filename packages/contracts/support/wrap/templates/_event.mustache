@@ -1,0 +1,11 @@
+  export interface {{this.name}} {
+  {{#if inputs}}
+    {{#each inputs}}
+    {{name}}: {{#inputType type}}{{/inputType}}
+    {{/each}}
+  {{/if}}
+  }
+
+  export function is{{this.name}}Event (something: truffle.AnyTransactionEvent): something is truffle.TransactionEvent<{{this.name}}> {
+    return something.event === '{{this.name}}'
+  }

@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "commonjs",
+    "lib": [
+      "es2017"
+    ],
+    "outDir": "./",
+    "rootDir": "./",
+    "types": [
+      "@machinomy/types-truffle-contract-sources",
+      "@machinomy/types-truffle",
+      "@machinomy/types-truffle-contract",
+      "@machinomy/types-truffle-compile",
+      "@machinomy/types-truffle-config",
+      "@machinomy/types-truffle-resolver",
+      "@machinomy/types-ethereumjs-units",
+      "@machinomy/types-web3",
+      "@types/node"
+    ]
+  },
+  "include": [
+    "natspec/**/*.ts",
+    "wrap/**/*.ts"
+  ],
+  "exclude": []
+}

@@ -3,16 +3,7 @@
   "packages": [
     "packages/*"
   ],
-  "version": "independent",
+  "version": "0.0.0",
   "npmClient": "yarn",
-  "npmClientArgs": ["--production", "--no-optional"],
-  "useWorkspaces": true,
-  "publishConfig": {
-    "access": "public"
-  },
-  "commands": {
-    "publish": {
-      "ignore": ["test/**/*", "*.md", "scripts", "*.ts", "lib", "tslint.json", "tsconfig.json"]
-    }
-  }
+  "useWorkspaces": true
 }

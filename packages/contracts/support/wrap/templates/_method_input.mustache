@@ -1,0 +1,4 @@
+{{~#if inputs~}}
+{{~#each inputs~}}{{name}}: {{#inputType type}} {{/inputType}}{{#unless @last}}, {{/unless}}{{~/each~}}
+{{~#if trailingComma~}}, {{/if}}
+{{~/if~}}

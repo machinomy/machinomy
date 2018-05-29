@@ -1,0 +1,12 @@
+{
+  "extends": "solium:all",
+  "plugins": [
+    "security"
+  ],
+  "rules": {
+    "arg-overflow": [
+      "warning",
+      5
+    ]
+  }
+}

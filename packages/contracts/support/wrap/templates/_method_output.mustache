@@ -1,0 +1,10 @@
+{{~#if outputs~}}
+{{~#singleReturnValue~}}
+  {{#outputType outputs.0.type}}{{/outputType}}
+{{~/singleReturnValue~}}
+{{~^singleReturnValue~}}
+  [{{#each outputs}}{{#outputType type}}{{/outputType}}{{#unless @last}}, {{/unless}}{{/each}}]
+{{~/singleReturnValue~}}
+{{~else~}}
+  void
+{{~/if~}}

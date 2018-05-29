@@ -1,0 +1,5 @@
+{{this.name}}: {
+  ({{> method_input inputs=inputs trailingComma=true}}options?: Web3.CallData): Promise<truffle.TransactionResult>
+  call ({{> method_input inputs=inputs trailingComma=true}}options?: Web3.CallData): Promise<{{> method_output outputs=outputs}}>
+  estimateGas ({{> method_input inputs=inputs}}): Promise<number>
+}

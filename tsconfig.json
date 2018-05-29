@@ -9,10 +9,6 @@
     "noImplicitReturns": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "experimentalDecorators": true,
-    "types": [
-      "@machinomy/types-web3",
-      "@machinomy/types-truffle-contract"
-    ]
+    "experimentalDecorators": true
   }
 }

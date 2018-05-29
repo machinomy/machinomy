@@ -1,14 +1,28 @@
 {
-  "private": true,
   "name": "@machinomy/monorepo",
-  "workspaces": [
-    "packages/*"
-  ],
+  "private": true,
+  "version": "1.0.0",
+  "repository": "git@github.com:machinomy/machinomy.git",
+  "author": "Sergey Ukustov <sergey.ukustov@machinomy.com>",
+  "license": "Apache-2.0",
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ],
+    "nohoist": [
+      "**/openzeppelin-solidity",
+      "**/openzeppelin-solidity/**"
+    ]
+  },
   "scripts": {
-    "build": "wsrun build $PKG --fast-exit -r --stages",
-    "test": "wsrun test $PKG --fast-exit --serial --exclude-missing"
+    "build": "wsrun build $PKG",
+    "lint": "wsrun lint $PKG",
+    "test": "wsrun test $PKG",
+    "bootstrap": "lerna bootstrap"
   },
   "devDependencies": {
+    "lerna": "^2.11.0",
+    "typescript": "^2.8.3",
     "wsrun": "^2.2.0"
   }
 }

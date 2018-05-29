@@ -12,3 +12,4 @@ documentation
 !/migrations/**/*
 dist
 lerna-debug.log
+packages/contracts/coverage.json
