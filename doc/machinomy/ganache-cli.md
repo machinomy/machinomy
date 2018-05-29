@@ -7,7 +7,8 @@ speed of transactions.
 ## Prerequisites
 
 1. Install [Ganache CLI](https://github.com/trufflesuite/ganache-cli)
-2. Clone [`machinomy`](https://github.com/machinomy/machinomy) and [`machinomy-contracts`](https://github.com/machinomy/machinomy-contracts) repositories from GitHub
+2. Clone [`machinomy`](https://github.com/machinomy/machinomy) repository from GitHub
+3. Do ```yarn install && yarn bootstrap```
 
 ## Running Ganache CLI and Loading Contracts
 
@@ -20,33 +21,33 @@ $ ganache-cli --networkId 1024
 Please, set network id to something less then 2 millions. The contract assumes network id to be of `uint32` type.
 By default, Ganache CLI sets the network id to some very big number that does not fit the type.
 
-2\. Deploy machinomy-contracts onto the Ganache CLI Ethereum network.
+2\. Deploy contracts onto the Ganache CLI Ethereum network.
 
 ```shell
-cd machinomy-contracts/
-yarn
-yarn truffle:migrate
+cd packages/contracts
+yarn truffle:compile
+yarn truffle:migrate --reset
 ```
 
-3\. Make `machinomy-contracts` package available as a local dependency.
+3\. Make `contracts` package available as a local dependency.
 
 ```shell
-yarn link && yarn build
+yarn link && yarn prepublish
 ```
 
-`yarn build` compiles the TypeScript files into JavaScript.
+`yarn prepublish` compiles the TypeScript files into JavaScript.
 
-4\. Make `machinomy` package use custom `machinomy-contracts`.
+4\. Make `machinomy` package use custom `contracts`.
 
 ```shell
-cd machinomy/
+cd packages/machinomy
 yarn link @machinomy/contracts
 ```
 
 5\. Make `machinomy` available as a local dependency.
 
 ```shell
-yarn link && yarn build
+yarn link && yarn prepublish
 ```
 
 6\. Use the package in your project as a dependency.
@@ -62,8 +63,9 @@ Now point Machinomy to the local provider running at `http://localhost:8545` and
 
 # Propagating Contract Changes
 
-If you modify `machinomy-contract`, you need to rebuild it in order for `your-awesome-project` to reflect the changes:
+If you modify `contracts`, you need to rebuild it in order for `your-awesome-project` to reflect the changes:
 
 ```shell
-cd machinomy-contract/ && yarn build
+cd packages/contracts
+yarn prepublish
 ```
