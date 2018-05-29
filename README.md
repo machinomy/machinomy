@@ -24,17 +24,17 @@ The library supports mainnet, Ropsten, and [Rinkeby](https://www.rinkeby.io/) ne
 
 ## Tinkering
 
-It takes two to tango: a seller and a buyer. Seller is `examples/server.ts` script. Build it or run through node-ts.
+It takes two to tango: a seller and a buyer. Seller is `packages/machinomy/examples/server.ts` script. Build it or run through node-ts.
 ```
 $ git clone https://github.com/machinomy/machinomy
-$ yarn install && yarn build
-$ node examples/server.js
+$ yarn install && yarn bootstrap
+$ node packages/machinomy/examples/server.js
 ```
 
 And then run client script:
 
 ```
-$ node examples/client.js
+$ node packages/machinomy/examples/client.js
 ```
 
 ## Usage
@@ -54,7 +54,7 @@ console.log(contents)
 
 ### Sell
 
-The process is more convoluted than buying. Better consult [examples/server.ts](examples/server.ts) file.
+The process is more convoluted than buying. Better consult [packages/machinomy/examples/server.ts](packages/machinomy/examples/server.ts) file.
 
 ## Contributing
 
