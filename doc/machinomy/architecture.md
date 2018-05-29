@@ -5,7 +5,7 @@
 Notation:
 - a layer uses the one on bottom,
 - grayed out box is external to the library,
-- mustard blocks belong to [@machinomy/contracts](https://github.com/machinomy/machinomy-contracts) package.
+- mustard blocks belong to [contracts](https://github.com/machinomy/machinomy/tree/master/packages/contracts) package.
 
 ## Entities
 
