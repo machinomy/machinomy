@@ -12,8 +12,8 @@ before_install:
   - export PATH="$HOME/.yarn/bin:$PATH"
 before_script:
   - psql -c 'create database machinomy_test;' -U postgres -d postgres
-  - yarn migrate
 script:
   - yarn lint
   - yarn build
+  - cd packages/machinomy && yarn migrate
   - yarn test
