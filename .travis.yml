@@ -22,4 +22,4 @@ script:
   - yarn run test
   - yarn run coverage
 after_script:
-  - cd packages/contracts && codecov -t $CODECOV
+  - bash <(curl -s https://codecov.io/bash) -s packages/contracts -t $CODECOV
