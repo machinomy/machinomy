@@ -23,8 +23,8 @@
     "test_mongo": "NODE_ENV=test ENGINE_NAME=mongo mocha lib/**/*.test.js",
     "test_postgres": "NODE_ENV=test ENGINE_NAME=postgresql mocha lib/**/*.test.js",
     "test_sqlite": "NODE_ENV=test ENGINE_NAME=sqlite mocha lib/**/*.test.js",
-    "test": "exit 0",
-    "coverage": "exit 0"
+    "test": "yarn build && yarn run test_nedb && yarn run test_mongo && yarn run test_postgres",
+    "coverage": "yarn build && nyc --reporter=text-lcov yarn run test_nedb"
   },
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
