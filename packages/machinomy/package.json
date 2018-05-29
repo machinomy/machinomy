@@ -28,8 +28,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
-    "lib/index.js",
-    "lib/index.d.ts"
+    "lib/"
   ],
   "dependencies": {
     "@machinomy/contracts": "^4.0.14",
