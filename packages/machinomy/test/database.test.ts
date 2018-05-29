@@ -102,14 +102,14 @@ describe('storage', () => {
 
   describe('ChannelsDatabase', () => {
     describe('#updateState', () => {
-      it('updates the state value', () => {
+      it('updates the state value', async () => {
         const id = ChannelId.random().toString()
 
         sinon.stub(channels.contract, 'getState').resolves(2)
-        return channels.save(new PaymentChannel('sender', 'receiver', id, new BigNumber.BigNumber(69), new BigNumber.BigNumber(8), 0, undefined))
-          .then(() => channels.updateState(id, 2))
-          .then(() => channels.firstById(id))
-          .then((chan: PaymentChannel | null) => expect(chan!.state).toBe(2))
+        await channels.save(new PaymentChannel('sender', 'receiver', id, new BigNumber.BigNumber(69), new BigNumber.BigNumber(8), 0, undefined))
+        await channels.updateState(id, 2)
+        let chan = await channels.firstById(id)
+        expect(chan!.state).toBe(2)
       })
     })
 
@@ -281,7 +281,7 @@ describe('storage', () => {
     })
 
     describe('#findUsable', () => {
-      it('returns the first channel for the specified sender and receiver whose value is less than the sum of the channel value and amount', () => {
+      it('returns the first channel for the specified sender and receiver whose value is less than the sum of the channel value and amount', async () => {
         const correct = ChannelId.random().toString()
 
         const remotelyModifiedId = ChannelId.random().toString()
@@ -304,9 +304,9 @@ describe('storage', () => {
           cb.withArgs(chan.channelId).resolves([null, null, chan.value.toString()])
         })
 
-        return Promise.all(instances.map((chan: PaymentChannel) => channels.save(chan)))
-          .then(() => channels).then((channels) => channels.findUsable('sender', 'receiver', new BigNumber.BigNumber(2)))
-          .then((channel: PaymentChannel | null) => expect(channel!.channelId.toString()).toEqual(correct))
+        await Promise.all(instances.map(chan => channels.save(chan)))
+        let channel = await channels.findUsable('sender', 'receiver', new BigNumber.BigNumber(2))
+        expect(channel!.channelId.toString()).toEqual(correct)
       })
     })
   })
