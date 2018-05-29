@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig",
+  "compilerOptions": {
+    "types": [
+      "@machinomy/types-ethereumjs-util",
+      "@types/mocha"
+    ]
+  },
+  "include": [
+    "src/index.ts"
+  ]
+}

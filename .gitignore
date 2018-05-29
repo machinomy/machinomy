@@ -13,3 +13,4 @@ documentation
 dist
 lerna-debug.log
 packages/contracts/coverage.json
+packages/contracts/coverage
