@@ -30,7 +30,8 @@
     "truffle:compile": "truffle compile",
     "truffle:test": "run-with-testrpc 'truffle test $npm_package_config_truffleTests'",
     "test": "yarn build && yarn truffle:test",
-    "prepublish": "yarn support:wrap && yarn build"
+    "prepublish": "yarn support:wrap && yarn build",
+    "coverage": "solidity-coverage"
   },
   "devDependencies": {
     "@machinomy/types-ethereumjs-units": "^0.0.2",

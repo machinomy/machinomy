@@ -19,3 +19,5 @@ script:
   - yarn build
   - cd packages/machinomy && yarn migrate
   - yarn test
+after_script:
+  - cd packages/contracts && yarn coverage && cat coverage/lcov.info | coveralls

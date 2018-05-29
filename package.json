@@ -21,6 +21,7 @@
     "bootstrap": "lerna bootstrap"
   },
   "devDependencies": {
+    "coveralls": "^3.0.1",
     "lerna": "^2.11.0",
     "typescript": "^2.8.3",
     "wsrun": "^2.2.0"
