@@ -2,14 +2,13 @@ import * as sinon from 'sinon'
 import * as support from './support'
 import ChannelId from '../lib/ChannelId'
 import * as BigNumber from 'bignumber.js'
-import { PaymentChannel } from '../lib/PaymentChannel'
+import { PaymentChannel } from '../lib'
 import ChannelContract from '../lib/ChannelContract'
 import expectsRejection from './util/expects_rejection'
 import IEngine from '../lib/storage/IEngine'
 import EngineMongo from '../lib/storage/mongo/EngineMongo'
 import EngineNedb from '../lib/storage/nedb/EngineNedb'
 import EnginePostgres from '../lib/storage/postgresql/EnginePostgres'
-import IChannelsDatabase from '../lib/storage/IChannelsDatabase'
 import AbstractChannelsDatabase from '../lib/storage/AbstractChannelsDatabase'
 import NedbChannelsDatabase from '../lib/storage/nedb/NedbChannelsDatabase'
 import MongoChannelsDatabase from '../lib/storage/mongo/MongoChannelsDatabase'
@@ -46,7 +45,7 @@ function buildEngine (filename: string): IEngine {
   }
 }
 
-function buildDatabases (engine: IEngine, channelContract: ChannelContract): [IChannelsDatabase, IPaymentsDatabase, ITokensDatabase] {
+function buildDatabases (engine: IEngine, channelContract: ChannelContract): [AbstractChannelsDatabase<IEngine>, IPaymentsDatabase, ITokensDatabase] {
   if (engine instanceof EngineNedb) {
     return [new NedbChannelsDatabase(engine, channelContract, null), new NedbPaymentsDatabase(engine, null), new NedbTokensDatabase(engine, null)]
   }
@@ -69,7 +68,7 @@ function buildDatabases (engine: IEngine, channelContract: ChannelContract): [IC
 describe('storage', () => {
   let engine: IEngine
 
-  let channels: IChannelsDatabase
+  let channels: AbstractChannelsDatabase<IEngine>
 
   let tokens: ITokensDatabase
 
@@ -106,7 +105,7 @@ describe('storage', () => {
       it('updates the state value', () => {
         const id = ChannelId.random().toString()
 
-        sinon.stub((channels as AbstractChannelsDatabase<IEngine>).contract, 'getState').resolves(2)
+        sinon.stub(channels.contract, 'getState').resolves(2)
         return channels.save(new PaymentChannel('sender', 'receiver', id, new BigNumber.BigNumber(69), new BigNumber.BigNumber(8), 0, undefined))
           .then(() => channels.updateState(id, 2))
           .then(() => channels.firstById(id))
@@ -157,8 +156,8 @@ describe('storage', () => {
 
     describe('#saveOrUpdate', () => {
       it('save new PaymentChannel', () => {
-        const gs = (channels as AbstractChannelsDatabase<IEngine>).contract.getState as sinon.SinonStub
-        const cb = (channels as AbstractChannelsDatabase<IEngine>).contract.channelById as sinon.SinonStub
+        const gs = channels.contract.getState as sinon.SinonStub
+        const cb = channels.contract.channelById as sinon.SinonStub
 
         gs.resolves(0)
         cb.resolves([null, null, '10'])
@@ -195,7 +194,7 @@ describe('storage', () => {
 
     describe('#deposit', () => {
       it('updates the channel value to the sum of the old value and new', () => {
-        const cb = (channels as AbstractChannelsDatabase<IEngine>).contract.channelById as sinon.SinonStub
+        const cb = channels.contract.channelById as sinon.SinonStub
 
         cb.resolves([null, null, '15'])
 
@@ -299,7 +298,7 @@ describe('storage', () => {
           new PaymentChannel('othersender', 'receiver', ChannelId.random().toString(), new BigNumber.BigNumber(11), new BigNumber.BigNumber(0), 2, undefined)
         ]
 
-        const cb = (channels as AbstractChannelsDatabase<IEngine>).contract.channelById as sinon.SinonStub
+        const cb = channels.contract.channelById as sinon.SinonStub
 
         instances.forEach((chan: PaymentChannel) => {
           cb.withArgs(chan.channelId).resolves([null, null, chan.value.toString()])
