@@ -6,6 +6,19 @@
 
 Machinomy contracts is a TypeScript interface for Ethereum contracts managed by [Truffle](https://github.com/trufflesuite/truffle) used by [Machinomy](https://github.com/machinomy/machinomy).
 
+:exclamation:
+Please, pay attention, this package is the part of [Machinomy Lerna Monorepo](https://github.com/machinomy/machinomy) 
+and it's intended to use with other monorepo's packages. 
+
+:no_entry: You **should not** git clone this repository alone
+
+:white_check_mark: You **should** git clone the main repository via
+```
+git clone https://github.com/machinomy/machinomy.git
+or 
+git clone git@github.com:machinomy/machinomy.git
+```
+
 ## Install
 ```
 $ yarn add @machinomy/contracts

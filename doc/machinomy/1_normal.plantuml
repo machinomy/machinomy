@@ -1,0 +1,46 @@
+@startuml
+  Sender -> Contract : Create Channel*
+  Contract -->> Sender : Did Create Channel
+  Contract -->> Receiver : Did Create Channel
+
+  loop
+    Sender ->> Receiver : Offchain Payment
+  end
+
+  opt
+    Sender -> Contract : Deposit*
+    Contract -->> Sender: Did Deposit
+    Contract -->> Receiver: Did Deposit
+  end
+
+  alt close initiated by receiver
+    Receiver ->> Contract : Claim
+    Contract --> Receiver : *
+    opt funds left unclaimed
+      Contract --> Sender : *
+    end
+
+    Contract -->> Receiver : Did Claim
+    Contract -->> Sender : Did Claim
+  else close initiated by sender
+    Sender ->> Contract: Settle Channel
+    Contract -->> Receiver : Did Initiate Settle
+    Contract -->> Sender : Did Initiate Settle
+    alt receiver comes && in time
+      Receiver ->> Contract : Claim
+      Contract --> Receiver : *
+      opt funds left unclaimed
+        Contract --> Sender : *
+      end
+    else no claim && over time
+      Sender ->> Contract: Close Channel
+      Contract --> Receiver : *
+      opt funds left unclaimed
+        Contract --> Sender : *
+      end
+    end
+  end
+
+  Contract -->> Receiver : Did Settle
+  Contract -->> Sender : Did Settle
+@enduml
