@@ -1,4 +1,4 @@
-import Mutex from './util/mutex'
+import Mutex from './util/Mutex'
 
 const expect = require('expect')
 
@@ -10,16 +10,20 @@ describe('Mutex', () => {
   })
 
   function wait (time: number): Promise<number> {
-    return new Promise((resolve) => setTimeout(() => resolve(time), time))
+    return new Promise(resolve => setTimeout(() => resolve(time), time))
   }
 
   // use setImmediate to mimic an async operation calling the method
   function now (task: Function) {
-    return new Promise((resolve) => setImmediate(() => task().then(resolve)))
+    return new Promise((resolve, reject) => {
+      setImmediate(() => {
+        task().then(resolve).catch(reject)
+      })
+    })
   }
 
   it('should process tasks in order', () => {
-    const outs: number[] = []
+    const outs: Array<number> = []
 
     return Promise.all([
       now(() => mutex.synchronize(() => wait(2)).then((num) => outs.push(num))),
@@ -29,7 +33,7 @@ describe('Mutex', () => {
   })
 
   it('should process tasks in order by queue name', () => {
-    const outs: number[] = []
+    const outs: Array<number> = []
 
     return Promise.all([
       now(() => mutex.synchronizeOn('honk', () => wait(2)).then((num) => outs.push(num))),
