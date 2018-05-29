@@ -14,14 +14,15 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
-    "lib/"
+    "lib/",
+    "build/"
   ],
   "config": {
     "truffleTests": "lib/*.test.js",
     "wrappedArtifacts": "build/contracts/@(Unidirectional).json"
   },
   "scripts": {
-    "build": "yarn support:wrap && tsc --project tsconfig.json",
+    "build": "yarn support:wrap && tsc --project tsconfig.json && tsc --project tsconfig.migrations.json",
     "lint": "yarn lint:solidity && yarn lint:typescript",
     "lint:solidity": "solium -d contracts/",
     "lint:typescript": "tslint --format stylish --project .",
