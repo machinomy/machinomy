@@ -10,10 +10,9 @@ env:
 before_install:
   - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.7.0
   - export PATH="$HOME/.yarn/bin:$PATH"
+  - lerna bootstrap
 before_script:
   - psql -c 'create database machinomy_test;' -U postgres -d postgres
-  - lerna bootstrap
-  - yarn install
 script:
   - yarn lint
   - yarn build
