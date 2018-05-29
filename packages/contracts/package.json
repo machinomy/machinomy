@@ -51,6 +51,7 @@
     "chai-as-promised": "^7.1.1",
     "coveralls": "^3.0.1",
     "mocha": "^5.2.0",
+    "nyc": "^11.8.0",
     "openzeppelin-solidity": "^1.9.0",
     "run-with-testrpc": "^0.3.0",
     "solidity-coverage": "^0.5.4",
