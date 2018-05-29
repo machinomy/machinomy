@@ -16,10 +16,10 @@ before_install:
 before_script:
   - psql -c 'create database machinomy_test;' -U postgres -d postgres
 script:
-  - lerna run lint
-  - lerna run build
+  - yarn run lint
+  - yarn run build
   - cd packages/machinomy && yarn migrate
-  - lerna run test
-  - lerna run codecov
+  - yarn run test
+  - yarn run codecov
 after_script:
   - cd packages/contracts && yarn coverage && cat coverage/lcov.info | coveralls

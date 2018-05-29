@@ -18,6 +18,7 @@
     "build": "wsrun build $PKG --fast-exit -r --serial",
     "lint": "wsrun lint $PKG",
     "test": "wsrun test $PKG",
+    "codecov": "wsrun codecov $PKG",
     "bootstrap": "lerna bootstrap"
   },
   "devDependencies": {
