@@ -11,13 +11,15 @@ before_install:
   - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.7.0
   - export PATH="$HOME/.yarn/bin:$PATH"
   - yarn global add lerna
+  - yarn global add codecov
   - lerna bootstrap
 before_script:
   - psql -c 'create database machinomy_test;' -U postgres -d postgres
 script:
-  - yarn lint
-  - yarn build
+  - lerna run lint
+  - lerna run build
   - cd packages/machinomy && yarn migrate
-  - yarn test
+  - lerna run test
+  - lerna run codecov
 after_script:
   - cd packages/contracts && yarn coverage && cat coverage/lcov.info | coveralls

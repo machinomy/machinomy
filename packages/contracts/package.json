@@ -31,7 +31,8 @@
     "truffle:test": "run-with-testrpc 'truffle test $npm_package_config_truffleTests'",
     "test": "yarn build && yarn truffle:test",
     "prepublish": "yarn support:wrap && yarn build",
-    "coverage": "solidity-coverage && cat coverage/lcov.info | coveralls"
+    "coverage": "solidity-coverage",
+    "codecov": "yarn coverage && codecov"
   },
   "devDependencies": {
     "@machinomy/types-ethereumjs-units": "^0.0.2",
