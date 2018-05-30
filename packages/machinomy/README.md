@@ -15,7 +15,7 @@ Twitter: [@machinomy](http://twitter.com/machinomy).
 Support/Discussion: [Gitter](https://gitter.im/machinomy/machinomy).
 
 :exclamation:
-Please, pay attention, this package is the part of [Machinomy Lerna Monorepo](https://github.com/machinomy/machinomy)  
+Please, pay attention, this package is the part of [Machinomy Lerna Monorepo](https://github.com/machinomy/machinomy).  
 and it's intended to use with other monorepo's packages. 
 
 :no_entry: You **should not** git clone this repository alone
@@ -27,58 +27,7 @@ or
 git clone git@github.com:machinomy/machinomy.git
 ```
 
-## Documentation
-
-## Installation
-
-    $ yarn add machinomy
-
-The library supports mainnet, Ropsten, and [Rinkeby](https://www.rinkeby.io/) networks.
-
-## Tinkering
-
-It takes two to tango: a seller and a buyer. Seller is `examples/server.ts` script. Build it or run through node-ts.
-```
-$ git clone https://github.com/machinomy/machinomy
-$ yarn install && yarn build
-$ node examples/server.js
-```
-
-And then run client script:
-
-```
-$ node examples/client.js
-```
-
-## Usage
-
-### Buy
-
-Using TypeScript
-
-```typescript
-import Machinomy from 'machinomy'
-const uri = 'http://localhost:3000/content'
-
-const machinomy = new Machinomy(SENDER_ACCOUNT, web3)
-const contents = await machinomy.buy({ receiver: RECEIVER_ACCOUNT, price: 100, gateway: 'http://localhost:3001/accept' })
-console.log(contents)
-```
-
-### Sell
-
-The process is more convoluted than buying. Better consult [examples/server.ts](examples/server.ts) file.
-
-## Contributing
-
-**Developers:** Machinomy is for you. Feel free to use it, break it, fork it, and make the world better. The code is standard TypeScript, no special skills required:
-
-    $ yarn install
-
-**Non-Developers:** You are lovely. As a starter, help us spread the word! Tell a friend right now.
-If not enough, developers need flesh-world guidance. It starts with proper documentation and a pinch of fantasy.
-Really anything, whether it is a short post on a use case of IoT micropayments, addition to the documentation (code comments, yay!),
-or an elaborate analysis of machine economy implications. Do not hesitate to share any idea with us on [Gitter](https://gitter.im/machinomy/machinomy).
+**For documentation, usage and contributing please see [Machinomy Monorepo](https://github.com/machinomy/machinomy).**
 
 ## License
 
