@@ -4,7 +4,7 @@
 [coveralls]: https://coveralls.io/github/machinomy/machinomy-contracts?branch=master
 [coveralls-img]: https://coveralls.io/repos/github/machinomy/machinomy-contracts/badge.svg?branch=master
 
-Machinomy contracts is a TypeScript interface for Ethereum contracts managed by [Truffle](https://github.com/trufflesuite/truffle) used by [Machinomy](https://github.com/machinomy/machinomy).
+Machinomy contracts is a TypeScript interface for Ethereum contracts managed by [Truffle](https://github.com/trufflesuite/truffle) used by [Machinomy](https://github.com/machinomy/machinomy/tree/master/packages/machinomy).
 
 :exclamation:
 Please, pay attention, this package is the part of [Machinomy Lerna Monorepo](https://github.com/machinomy/machinomy) 
@@ -32,18 +32,18 @@ $ ganache-cli
 
 Then deploy contracts to the tesrpc network:
 ```
-$ yarn truffle:migrate
+$ yarn truffle:migrate --reset
 ```
 
 Truffle generates json files by default. You need to compile the json files to ts files. Run:
 ```
-$ yarn build
+$ yarn prepublish
 ```
-Now package is ready to use by Machinony.
+Now package is ready to use by Machinomy.
 
 ## Deployment
 To deploy the package to the Ropsten network you need to run local geth instance and then run commands:
 ```
 $ yarn truffle:migrate --network ropsten
-$ yarn build
+$ yarn prepublish
 ```
