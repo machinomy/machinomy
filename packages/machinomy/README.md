@@ -15,8 +15,7 @@ Twitter: [@machinomy](http://twitter.com/machinomy).
 Support/Discussion: [Gitter](https://gitter.im/machinomy/machinomy).
 
 :exclamation:
-Please, pay attention, this package is the part of [Machinomy Lerna Monorepo](https://github.com/machinomy/machinomy).  
-and it's intended to use with other monorepo's packages. 
+Please, pay attention, this package is the part of [Machinomy Lerna Monorepo](https://github.com/machinomy/machinomy) and it's intended to use with other monorepo's packages. 
 
 :no_entry: You **should not** git clone this repository alone
 
@@ -28,7 +27,3 @@ git clone git@github.com:machinomy/machinomy.git
 ```
 
 **For documentation, usage and contributing please see [Machinomy Monorepo](https://github.com/machinomy/machinomy).**
-
-## License
-
-Licensed under [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
