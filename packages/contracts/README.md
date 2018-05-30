@@ -19,31 +19,4 @@ or
 git clone git@github.com:machinomy/machinomy.git
 ```
 
-## Install
-```
-$ yarn add @machinomy/contracts
-```
-
-## Workflow
-Use [ganache-cli](https://github.com/trufflesuite/ganache-cli) for fast development. Start it:
-```
-$ ganache-cli
-```
-
-Then deploy contracts to the tesrpc network:
-```
-$ yarn truffle:migrate --reset
-```
-
-Truffle generates json files by default. You need to compile the json files to ts files. Run:
-```
-$ yarn prepublish
-```
-Now package is ready to use by Machinomy.
-
-## Deployment
-To deploy the package to the Ropsten network you need to run local geth instance and then run commands:
-```
-$ yarn truffle:migrate --network ropsten
-$ yarn prepublish
-```
+**For documentation, usage and contributing please see [Machinomy Monorepo](https://github.com/machinomy/machinomy).**
