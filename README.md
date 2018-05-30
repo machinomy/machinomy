@@ -19,12 +19,6 @@ Web site: [machinomy.com](http://machinomy.com).
 Twitter: [@machinomy](http://twitter.com/machinomy).
 Support/Discussion: [Gitter](https://gitter.im/machinomy/machinomy).
 
-## Documentation
-
-[for Machinomy](https://github.com/machinomy/machinomy/tree/master/doc/machinomy)
-
-[for Contracts](https://github.com/machinomy/machinomy/tree/master/doc/contracts)
-
 ## Installation
 
     $ yarn add machinomy
@@ -64,6 +58,11 @@ console.log(contents)
 ### Sell
 
 The process is more convoluted than buying. Better consult [packages/machinomy/examples/server.ts](packages/machinomy/examples/server.ts) file.
+
+
+## Documentation
+
+For more advanced documentation go to [doc/](doc/) folder.
 
 ## Contributing
 
