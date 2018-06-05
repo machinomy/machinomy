@@ -60,7 +60,7 @@ async function main (): Promise<string> {
    */
   let content = await fetcher.fetch(TARGET, {
     headers: {
-      authorization: `paywall ${token}`
+      authorization: `paywall ${token} ${'metaidexample'} ${String(headers.get('paywall-price'))}`
     }
   })
 
@@ -69,9 +69,9 @@ async function main (): Promise<string> {
   return body.read().toString()
 }
 
-main().then(content => {
+main().then((content: string) => {
   console.log('Bought content: ')
-  console.log(content)
+  console.log(`"${content}"`)
   process.exit(0)
 }).catch(error => {
   console.error(error)
