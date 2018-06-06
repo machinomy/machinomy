@@ -1,6 +1,6 @@
 import * as configuration from '../lib/configuration'
 import * as Web3 from 'web3'
-import Machinomy from '../index'
+import Machinomy from '../src'
 import * as express from 'express'
 import * as bodyParser from 'body-parser'
 import * as fs from 'fs'

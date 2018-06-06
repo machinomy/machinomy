@@ -20,11 +20,11 @@
 
 import * as express from 'express'
 import * as Web3 from 'web3'
-import Machinomy from '../index'
+import Machinomy from '../src'
 import * as bodyParser from 'body-parser'
-import { AcceptTokenRequestSerde } from '../lib/accept_token_request'
+import { AcceptTokenRequestSerde } from '../src/accept_token_request'
 import { PaymentChannelSerde } from '../lib/PaymentChannel'
-import fetcher from '../lib/util/fetcher'
+import fetcher from '../src/util/fetcher'
 import HDWalletProvider from '@machinomy/hdwallet-provider'
 
 async function main () {

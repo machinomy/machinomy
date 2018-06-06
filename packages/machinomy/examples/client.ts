@@ -17,9 +17,9 @@
 
 import * as Web3 from 'web3'
 import HDWalletProvider from '@machinomy/hdwallet-provider'
-import Machinomy from '../'
+import Machinomy from '../src'
 import * as BigNumber from 'bignumber.js'
-import fetcher from '../lib/util/fetcher'
+import fetcher from '../src/util/fetcher'
 
 async function main (): Promise<string> {
   const PROVIDER_URL = String(process.env.PROVIDER_URL)
