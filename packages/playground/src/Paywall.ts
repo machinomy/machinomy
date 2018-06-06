@@ -95,7 +95,7 @@ export default class Paywall {
     return (req: express.Request, res: express.Response, next: express.NextFunction) => {
       log(`Requested ${req.path}`)
       parseToken(req, (error, token, meta) => {
-        return _guard(price!, req, res, next, error, token!, meta!)
+        return _guard(price, req, res, next, error, token!, meta!)
       })
     }
   }
