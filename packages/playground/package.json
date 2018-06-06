@@ -1,4 +1,5 @@
 {
+  "private": true,
   "name": "@machinomy/playground",
   "version": "1.4.0",
   "description": "Playground for Machinomy dapplications",
