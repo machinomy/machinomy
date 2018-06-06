@@ -30,7 +30,8 @@
   "types": "lib/index.d.ts",
   "files": [
     "lib/",
-    "migrations/"
+    "migrations/",
+    "examples/"
   ],
   "dependencies": {
     "@machinomy/contracts": "^4.0.15",
