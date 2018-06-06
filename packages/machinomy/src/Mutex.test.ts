@@ -3,12 +3,6 @@ import Mutex from './util/Mutex'
 const expect = require('expect')
 
 describe('Mutex', () => {
-  let mutex: Mutex
-
-  beforeEach(() => {
-    mutex = new Mutex()
-  })
-
   function wait (time: number): Promise<number> {
     return new Promise(resolve => setTimeout(() => resolve(time), time))
   }
@@ -23,7 +17,8 @@ describe('Mutex', () => {
   }
 
   it('should process tasks in order', () => {
-    const outs: Array<number> = []
+    let outs: Array<number> = []
+    let mutex = new Mutex()
 
     return Promise.all([
       now(() => mutex.synchronize(() => wait(2)).then((num) => outs.push(num))),
@@ -33,7 +28,8 @@ describe('Mutex', () => {
   })
 
   it('should process tasks in order by queue name', () => {
-    const outs: Array<number> = []
+    let outs: Array<number> = []
+    let mutex = new Mutex()
 
     return Promise.all([
       now(() => mutex.synchronizeOn('honk', () => wait(2)).then((num) => outs.push(num))),
