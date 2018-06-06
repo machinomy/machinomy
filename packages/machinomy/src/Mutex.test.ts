@@ -1,4 +1,4 @@
-import Mutex from './util/Mutex'
+import Mutex from './Mutex'
 
 const expect = require('expect')
 
