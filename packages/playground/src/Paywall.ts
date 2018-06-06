@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv'
 import * as express from 'express'
 import { URL } from 'url'
 import * as urljoin from 'url-join'
-import fetcher from '../../machinomy/lib/util/fetcher'
+import fetcher from 'machinomy/lib/util/fetcher'
 import * as BigNumber from 'bignumber.js'
 
 const log = debug('paywall')
