@@ -11,8 +11,7 @@
     "clean": "rm -rf dist/",
     "lint": "tslint --format stylish --project . --exclude './node_modules/**/*.ts'",
     "test": "exit 0",
-    "coverage": "exit 0",
-    "prepublish": "yarn lint && yarn build"
+    "coverage": "exit 0"
   },
   "dependencies": {
     "@machinomy/hdwallet-provider": "^1.1.0",
