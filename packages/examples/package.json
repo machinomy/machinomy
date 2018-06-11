@@ -1,0 +1,47 @@
+{
+  "private": true,
+  "name": "@machinomy/examples",
+  "version": "1.0.0",
+  "description": "Examples of Machinomy usage",
+  "author": "Sergey Ukustov <sergey.ukustov@machinomy.com>",
+  "license": "Apache-2.0",
+  "keywords": [
+    "micropayments",
+    "ethereum",
+    "express"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/machinomy/machinomy.git"
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "lint": "tslint --format stylish --project . --exclude './node_modules/**/*.ts'"
+  },
+  "dependencies": {
+    "machinomy": "^1.9.6",
+    "@machinomy/types-bn": "^0.0.3",
+    "@machinomy/types-truffle-contract": "^0.0.3",
+    "@machinomy/types-web3": "^0.0.4",
+    "@types/bignumber.js": "^4.0.2",
+    "bignumber.js": "^4.1.0",
+    "commander": "^2.9.0",
+    "debug": "^3.1.0",
+    "decko": "^1.2.0",
+    "ethereumjs-util": "^5.1.5",
+    "fetch-ponyfill": "^6.0.0",
+    "homedir": "https://github.com/ukstv/node-homedir",
+    "nedb": "^1.8.0",
+    "prompt": "^1.0.0",
+    "request": "^2.76.0",
+    "safe-buffer": "^5.1.2",
+    "types-rlp": "^0.0.1",
+    "uuid": "^3.2.1",
+    "web3": "^0.20.1"
+  },
+  "devDependencies": {
+    "tslint": "^5.10.0",
+    "tslint-config-standard": "^7.0.0",
+    "typescript": "^2.8.3"
+  }
+}

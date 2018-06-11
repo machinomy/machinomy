@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig",
+  "compilerOptions": {
+    "sourceRoot": "src/",
+    "outDir": "lib/",
+    "types": [
+      "@machinomy/types-ethereumjs-util",
+      "@machinomy/types-web3",
+      "@machinomy/types-truffle-contract",
+      "@types/mocha"
+    ]
+  },
+  "include": [
+    "./src/**/*"
+  ]
+}
