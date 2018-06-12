@@ -10,4 +10,5 @@ export default interface MachinomyOptions {
   minimumSettlementPeriod?: number
   settlementPeriod?: number,
   closeOnInvalidPayment?: boolean
+  migrate?: 'silent' | 'raise'
 }
