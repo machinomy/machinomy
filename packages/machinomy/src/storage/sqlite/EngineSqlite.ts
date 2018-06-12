@@ -11,7 +11,7 @@ export default class EngineSqlite implements IEngine, IExec<SqliteDatastore> {
   private readonly datastore: SqliteDatastore
   private migrator: MigratorSqlite
 
-  constructor (url: string) {
+  constructor (url: string, migrateOptions?: Object | string) {
     if (url.startsWith('sqlite://')) {
       url = url.replace('sqlite://', '')
     }
@@ -22,7 +22,7 @@ export default class EngineSqlite implements IEngine, IExec<SqliteDatastore> {
       this.datastore = new SqliteDatastore(new sqlite.Database(url))
       db.set(url, this.datastore)
     }
-    this.migrator = new MigratorSqlite(this)
+    this.migrator = new MigratorSqlite(this, migrateOptions)
   }
 
   isConnected (): boolean {

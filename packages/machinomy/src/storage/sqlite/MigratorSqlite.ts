@@ -2,14 +2,19 @@ import IMigrator from '../IMigrator'
 import EngineSqlite from './EngineSqlite'
 import * as fs from 'fs'
 const DBMigrate = require('db-migrate')
-const dbmigrate = DBMigrate.getInstance(true, { cwd: '../../../migrations', config: __dirname + '/../../../database.json' })
+let dbmigrate: any
 const LENGTH_OF_MIGRATION_NAME = 14
 
 export default class MigratorSqlite implements IMigrator {
   engine: EngineSqlite
 
-  constructor (engine: EngineSqlite) {
+  constructor (engine: EngineSqlite, migrateOptions?: Object | string) {
     this.engine = engine
+    if (migrateOptions) {
+      dbmigrate = DBMigrate.getInstance(true, migrateOptions)
+    } else {
+      dbmigrate = DBMigrate.getInstance(true, { cwd: '../../../migrations', config: __dirname + '/../../../database.json' })
+    }
   }
 
   isLatest (): Promise<boolean> {
@@ -55,12 +60,12 @@ export default class MigratorSqlite implements IMigrator {
   retrieveUpMigrationList (): Promise<string[]> {
     return new Promise((resolve) => {
       // tslint:disable-next-line:no-floating-promises
-      this.engine.exec((client: any) => client.query(
+      this.engine.exec((client: any) => client.all(
         'SELECT name FROM migrations ORDER BY name ASC'
       )).then((res: any) => {
-        const names: string[] = res.rows
+        const names: string[] = res.map((element: any) => element['name'])
         let result: string[] = []
-        for (let migrationName in names) {
+        for (let migrationName of names) {
           result.push(migrationName.substring(1))
         }
         resolve(result)
