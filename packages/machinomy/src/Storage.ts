@@ -12,7 +12,7 @@ export interface Storage {
 }
 
 export namespace Storage {
-  export function build (databaseUrl: string, channelContract: ChannelContract): Promise<Storage> {
+  export function build (databaseUrl: string, channelContract: ChannelContract, migrate?: 'silent' | 'raise'): Promise<Storage> {
     const splits = databaseUrl.split('://')
     const protocol = splits[0]
     const namespace = 'shared' // TODO Namespace
@@ -23,7 +23,7 @@ export namespace Storage {
       case 'mongo':
         return buildMongo(databaseUrl, channelContract, namespace)
       case 'postgresql':
-        return buildPostgres(databaseUrl, channelContract, namespace)
+        return buildPostgres(databaseUrl, channelContract, namespace, migrate)
       case 'sqlite':
         return buildSqlite(databaseUrl, channelContract, namespace)
       default:
@@ -76,13 +76,22 @@ export namespace Storage {
     }
   }
 
-  async function buildPostgres (databaseUrl: string, channelContract: ChannelContract, namespace: string): Promise<Storage> {
+  async function buildPostgres (databaseUrl: string, channelContract: ChannelContract, namespace: string, migrate?: 'silent' | 'raise'): Promise<Storage> {
     let EnginePostgres = (await import('./storage/postgresql/EnginePostgres')).default
     let PostgresTokensDatabase = (await import('./storage/postgresql/PostgresTokensDatabase')).default
     let PostgresPaymentsDatabase = (await import('./storage/postgresql/PostgresPaymentsDatabase')).default
     let PostgresChannelsDatabase = (await import('./storage/postgresql/PostgresChannelsDatabase')).default
 
     let engine = new EnginePostgres(databaseUrl)
+    if (!engine.migrate().isLatest()) {
+      if (migrate === undefined || migrate === 'silent') {
+        // tslint:disable-next-line:no-floating-promises
+        engine.migrate().sync()
+      } else {
+        throw new Error('There are non-applied db-migrations!')
+      }
+    }
+
     return {
       engine: engine,
       tokensDatabase: new PostgresTokensDatabase(engine, namespace),
