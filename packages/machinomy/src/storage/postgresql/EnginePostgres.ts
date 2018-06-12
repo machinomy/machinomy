@@ -1,14 +1,17 @@
 import IEngine from '../IEngine'
 import * as pg from 'pg'
 import IExec from '../IExec'
+import MigratorPostgres from './MigratorPostgres'
 
 export default class EnginePostgres implements IEngine, IExec<pg.Client> {
   private readonly url?: string
   private connectionInProgress?: Promise<pg.Client>
   private _client?: pg.Client
+  private migrator: MigratorPostgres
 
   constructor (url?: string) {
     this.url = url
+    this.migrator = new MigratorPostgres(this)
   }
 
   async connect (): Promise<void> {
@@ -61,5 +64,9 @@ export default class EnginePostgres implements IEngine, IExec<pg.Client> {
     })
 
     return this.connectionInProgress
+  }
+
+  migrate (): MigratorPostgres {
+    return this.migrator
   }
 }

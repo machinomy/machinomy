@@ -1,16 +1,19 @@
 import IEngine from '../IEngine'
 import { MongoClient, Db } from 'mongodb'
 import IExec from '../IExec'
+import MigratorMongo from './MigratorMongo'
 
 export default class EngineMongo implements IEngine, IExec<Db> {
   private readonly url: string
   private connectionInProgress: Promise<Db> | null
   private _client: Db | null
+  private migrator: MigratorMongo
 
   constructor (url: string) {
     this.url = url
     this._client = null
     this.connectionInProgress = null
+    this.migrator = new MigratorMongo(this)
   }
 
   async connect (): Promise<void> {
@@ -65,5 +68,9 @@ export default class EngineMongo implements IEngine, IExec<Db> {
     })
 
     return this.connectionInProgress
+  }
+
+  migrate (): MigratorMongo {
+    return this.migrator
   }
 }
