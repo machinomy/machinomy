@@ -2,14 +2,19 @@ import IMigrator from '../IMigrator'
 import EnginePostgres from './EnginePostgres'
 import * as fs from 'fs'
 const DBMigrate = require('db-migrate')
-const dbmigrate = DBMigrate.getInstance(true, { cwd: '../../../migrations', config: __dirname + '/../../../database.json' })
+let dbmigrate: any
 const LENGTH_OF_MIGRATION_NAME = 14
 
 export default class MigratorPostgres implements IMigrator {
   engine: EnginePostgres
 
-  constructor (engine: EnginePostgres) {
+  constructor (engine: EnginePostgres, migrateOptions?: Object | string) {
     this.engine = engine
+    if (migrateOptions) {
+      dbmigrate = DBMigrate.getInstance(true, migrateOptions)
+    } else {
+      dbmigrate = DBMigrate.getInstance(true, { cwd: '../../../migrations', config: __dirname + '/../../../database.json' })
+    }
   }
 
   isLatest (): Promise<boolean> {
@@ -60,7 +65,7 @@ export default class MigratorPostgres implements IMigrator {
       )).then((res: any) => {
         const names: string[] = res.rows
         let result: string[] = []
-        for (let migrationName in names) {
+        for (let migrationName of names) {
           result.push(migrationName.substring(1))
         }
         resolve(result)
