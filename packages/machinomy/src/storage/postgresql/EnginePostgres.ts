@@ -9,9 +9,9 @@ export default class EnginePostgres implements IEngine, IExec<pg.Client> {
   private _client?: pg.Client
   private migrator: MigratorPostgres
 
-  constructor (url?: string) {
+  constructor (url?: string, migrateOptions?: Object | string) {
     this.url = url
-    this.migrator = new MigratorPostgres(this)
+    this.migrator = new MigratorPostgres(this, migrateOptions)
   }
 
   async connect (): Promise<void> {
