@@ -1,6 +1,6 @@
-import * as configuration from '../lib/configuration'
+import * as configuration from 'machinomy/lib/configuration'
 import * as Web3 from 'web3'
-import Machinomy from '../src'
+import Machinomy from 'machinomy'
 import * as express from 'express'
 import * as bodyParser from 'body-parser'
 import * as fs from 'fs'

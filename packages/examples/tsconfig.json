@@ -1,8 +1,6 @@
 {
   "extends": "../../tsconfig",
   "compilerOptions": {
-    "sourceRoot": "src/",
-    "outDir": "lib/",
     "types": [
       "@machinomy/types-ethereumjs-util",
       "@machinomy/types-web3",
