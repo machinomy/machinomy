@@ -24,6 +24,7 @@ describe('sqlite migrator', () => {
   let dbmigrate: any
 
   function showMigrationsInDB () {
+    // tslint:disable-next-line:no-floating-promises
     engine.connect().then(() => engine.exec(async (client: any) => {
       let rows = await client.all('SELECT name FROM migrations ORDER BY name ASC')
       const names: string[] = rows
@@ -48,6 +49,7 @@ describe('sqlite migrator', () => {
         }
       }
       engine = new EngineSqlite(filename, dbMigrateConfig)
+      // tslint:disable-next-line:no-floating-promises
       engine.connect().then(() =>
         engine.exec((client: any) => client.run('CREATE TABLE IF NOT EXISTS migrations(id INTEGER, name TEXT, run_on TEXT);')).then(() => {
           dbmigrate = DBMigrate.getInstance(true, dbMigrateConfig)
@@ -102,11 +104,11 @@ describe('sqlite migrator', () => {
     })
   })
 
-  function removeFirstRowFromMigrationsTable (): Promise<void> {
-    return engine.connect().then(() =>
-      engine.exec((client: any) => client.run('DELETE FROM migrations WHERE id = 0'))
-    )
-  }
+  // function removeFirstRowFromMigrationsTable (): Promise<void> {
+  //   return engine.connect().then(() =>
+  //     engine.exec((client: any) => client.run('DELETE FROM migrations WHERE id = 0'))
+  //   )
+  // }
 
   function removeLastRowFromMigrationsTable (): Promise<void> {
     return engine.connect().then(() =>

@@ -10,13 +10,13 @@ export default class MigratorNedb implements IMigrator {
 
   isLatest (): Promise<boolean> {
     return new Promise((resolve) => {
-      resolve(true)
+      return resolve(true)
     })
   }
 
   sync (n?: string): Promise<void> {
     return new Promise((resolve) => {
-      resolve()
+      return resolve()
     })
   }
 }
