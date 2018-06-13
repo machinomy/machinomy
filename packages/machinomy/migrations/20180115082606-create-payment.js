@@ -17,36 +17,40 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db, callback) {
-  db.createTable('payment', {
-    channelId: {
-      type: 'string',
-      notNull: true,
-      foreignKey: {
-        name: 'tokens_channel_id_fk',
-        table: 'channel',
-        mapping: 'channelId',
-        rules: {
-          onDelete: 'CASCADE'
+  var createTableOptions = {
+    columns: {
+      channelId: {
+        type: 'string',
+        notNull: true,
+        foreignKey: {
+          name: 'tokens_channel_id_fk',
+          table: 'channel',
+          mapping: 'channelId',
+          rules: {
+            onDelete: 'CASCADE'
+          }
         }
-      }
+      },
+      kind: 'string',
+      token: {
+        type: 'string',
+        notNull: true,
+        unique: true
+      },
+      sender: 'string',
+      receiver: 'string',
+      price: bigNumberColumn,
+      value: bigNumberColumn,
+      channelValue: bigNumberColumn,
+      v: 'int',
+      r: 'string',
+      s: 'string',
+      meta: 'string',
+      contractAddress: 'string'
     },
-    kind: 'string',
-    token: {
-      type: 'string',
-      notNull: true,
-      unique: true
-    },
-    sender: 'string',
-    receiver: 'string',
-    price: bigNumberColumn,
-    value: bigNumberColumn,
-    channelValue: bigNumberColumn,
-    v: 'int',
-    r: 'string',
-    s: 'string',
-    meta: 'string',
-    contractAddress: 'string'
-  }, callback);
+    ifNotExists: true
+  }
+  db.createTable('payment', createTableOptions, callback);
 };
 
 exports.down = function(db, callback) {

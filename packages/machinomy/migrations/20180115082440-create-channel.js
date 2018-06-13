@@ -17,19 +17,24 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function (db, callback) {
-  db.createTable('channel', {
-    channelId: {
-      type: 'string',
-      primaryKey: true
-    },
-    kind: 'string',
-    sender: 'string',
-    receiver: 'string',
-    value: bigNumberColumn,
-    spent: bigNumberColumn,
-    state: 'smallint',
-    contractAddress: 'string'
-  }, callback);
+  var createTableOptions = {
+    columns:
+      {
+        channelId: {
+          type: 'string',
+          primaryKey: true
+        },
+        kind: 'string',
+        sender: 'string',
+        receiver: 'string',
+        value: bigNumberColumn,
+        spent: bigNumberColumn,
+        state: 'smallint',
+        contractAddress: 'string'
+      },
+    ifNotExists: true
+  }
+  db.createTable('channel', createTableOptions, callback);
 };
 
 exports.down = function (db, callback) {
