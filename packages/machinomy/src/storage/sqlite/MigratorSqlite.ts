@@ -20,11 +20,13 @@ export default class MigratorSqlite implements IMigrator {
   isLatest (): Promise<boolean> {
     return new Promise(async (resolve) => {
       const commonIndex: number = await this.getCommonIndex()
+      let result: boolean
       if (commonIndex === -1) {
-        resolve(true)
+        result = true
       } else {
-        resolve(false)
+        result = false
       }
+      return resolve(result)
     })
   }
 
@@ -39,22 +41,23 @@ export default class MigratorSqlite implements IMigrator {
       } else {
         dbmigrate.sync()
       }
-      resolve()
+      return resolve()
     })
   }
 
-  async getCommonIndex (): Promise<number> {
-    const migrationsInDB = await this.retrieveUpMigrationList()
-    const migrationsInFolder = await this.retrieveInFolderMigrationList()
-    let commonIndex = -1
-    for (let i = 0; i < migrationsInFolder.length; i++) {
-      if (migrationsInDB[i] !== migrationsInFolder[i]) {
-        commonIndex = i
-        break
+  getCommonIndex (): Promise<number> {
+    return new Promise(async (resolve) => {
+      const migrationsInDB = await this.retrieveUpMigrationList()
+      const migrationsInFolder = await this.retrieveInFolderMigrationList()
+      let commonIndex = -1
+      for (let i = 0; i < migrationsInFolder.length; i++) {
+        if (migrationsInDB[i] !== migrationsInFolder[i]) {
+          commonIndex = i
+          break
+        }
       }
-    }
-
-    return Promise.resolve(commonIndex)
+      return resolve(commonIndex)
+    })
   }
 
   retrieveUpMigrationList (): Promise<string[]> {
@@ -68,7 +71,7 @@ export default class MigratorSqlite implements IMigrator {
         for (let migrationName of names) {
           result.push(migrationName.substring(1))
         }
-        resolve(result)
+        return resolve(result)
       })
     })
   }
@@ -86,7 +89,7 @@ export default class MigratorSqlite implements IMigrator {
       }
       result.sort()
       console.log('debug::DB migration files: ' + JSON.stringify(result))
-      resolve(result)
+      return resolve(result)
     })
   }
 }
