@@ -15,22 +15,26 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db, callback) {
-  db.createTable('token', {
-    token: 'string',
-    kind: 'string',
-    channelId: {
-      type: 'string',
-      notNull: true,
-      foreignKey: {
-        name: 'tokens_channel_id_fk',
-        table: 'channel',
-        mapping: 'channelId',
-        rules: {
-          onDelete: 'CASCADE'
+  var createTableOptions = {
+    columns: {
+      token: 'string',
+      kind: 'string',
+      channelId: {
+        type: 'string',
+        notNull: true,
+        foreignKey: {
+          name: 'tokens_channel_id_fk',
+          table: 'channel',
+          mapping: 'channelId',
+          rules: {
+            onDelete: 'CASCADE'
+          }
         }
       }
-    }
-  }, callback)
+    },
+    ifNotExists: true
+  }
+  db.createTable('token', createTableOptions, callback)
 };
 
 exports.down = function(db, callback) {
