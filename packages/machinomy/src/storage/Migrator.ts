@@ -1,7 +1,7 @@
 import IMigrator from './IMigrator'
 import EngineSqlite from './sqlite/EngineSqlite'
 import * as fs from 'fs'
-const DBMigrate = require('db-migrate')
+import * as DBMigrate from 'db-migrate'
 let dbmigrate: any
 const LENGTH_OF_MIGRATION_NAME = 14
 
