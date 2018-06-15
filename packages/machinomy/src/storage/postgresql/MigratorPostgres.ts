@@ -39,7 +39,9 @@ export default class MigratorPostgres implements IMigrator {
           console.error('DB migration name must have ' + LENGTH_OF_MIGRATION_NAME + ' chars. But got ' + n.length)
         }
       } else {
-        dbmigrate.sync()
+        const migrationsInFolder = await this.retrieveInFolderMigrationList()
+        const lastMigrationInFolderName = migrationsInFolder[migrationsInFolder.length - 1].substring(0, LENGTH_OF_MIGRATION_NAME)
+        dbmigrate.sync(lastMigrationInFolderName)
       }
       return resolve()
     })
