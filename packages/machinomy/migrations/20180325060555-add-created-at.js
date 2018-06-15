@@ -15,13 +15,17 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.addColumn('payment', '"createdAt"', {
-    type: 'bigint'
-  });
+  return db.runSql('SELECT createdAt FROM payment', (err) => {
+    if (err !== null) {
+      return db.addColumn('payment', 'createdAt', {
+        type: 'bigint'
+      });
+    }
+  })
 };
 
 exports.down = function(db) {
-  return db.removeColumn('payment', '"createdAt"');
+  return db.removeColumn('payment', 'createdAt');
 };
 
 exports._meta = {
