@@ -33,11 +33,7 @@ export default class Migrator implements IMigrator {
   sync (n?: string): Promise<void> {
     return new Promise(async (resolve) => {
       if (n !== undefined) {
-        if (n.length === LENGTH_OF_MIGRATION_NAME) {
-          dbmigrate.sync(n)
-        } else {
-          console.error('DB migration name must have ' + LENGTH_OF_MIGRATION_NAME + ' chars. But got ' + n.length)
-        }
+        dbmigrate.sync(n)
       } else {
         const migrationsInFolder = await this.retrieveInFolderMigrationList()
         const lastMigrationInFolderName = migrationsInFolder[migrationsInFolder.length - 1].substring(0, LENGTH_OF_MIGRATION_NAME)
