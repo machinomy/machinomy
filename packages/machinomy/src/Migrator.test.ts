@@ -22,6 +22,7 @@ function showMigrationsInFolder () {
 describe('sqlite migrator', () => {
   let engine: EngineSqlite
   let dbmigrate: any
+  let filename: string
 
   function showMigrationsInDB () {
     // tslint:disable-next-line:no-floating-promises
@@ -65,25 +66,14 @@ describe('sqlite migrator', () => {
     return engine.close()
   })
 
-  afterEach(() => {
-    // return engine.drop()
-  })
-
-  describe('silent behaviour', () => {
-    it('get Available Migrations In Folder', async () => {
-      let listOfMigrations = await engine.migrate().retrieveInFolderMigrationList()
-      console.log(listOfMigrations)
-    })
-
+  describe('common', () => {
     it('all migrations synced', async () => {
       let listOfMigrations = await engine.migrate().retrieveInFolderMigrationList()
       let listOfUpMigrations = await engine.migrate().retrieveUpMigrationList()
       if (listOfMigrations.length === listOfUpMigrations.length) {
         expect(await engine.migrate().isLatest() === true)
       }
-      console.log(listOfMigrations)
-      console.log(listOfUpMigrations)
-    })
+    }).timeout(3000)
 
     it('not all migrations synced', async () => {
       let listOfMigrations = await engine.migrate().retrieveInFolderMigrationList()
@@ -91,28 +81,36 @@ describe('sqlite migrator', () => {
       if (listOfMigrations.length === listOfUpMigrations.length) {
         expect(await engine.migrate().isLatest() === true)
       }
-      console.log(listOfMigrations)
-      console.log(listOfUpMigrations)
-
       await removeLastRowFromMigrationsTable()
-
       expect(await engine.migrate().isLatest() === false)
+    }).timeout(3000)
 
+    it('trying to sync migrations', async () => {
+      let listOfMigrations = await engine.migrate().retrieveInFolderMigrationList()
+      let listOfUpMigrations = await engine.migrate().retrieveUpMigrationList()
+      if (listOfMigrations.length === listOfUpMigrations.length) {
+        expect(await engine.migrate().isLatest() === true)
+      }
+      await removeLastRowFromMigrationsTable()
+      expect(await engine.migrate().isLatest() === false)
       await engine.migrate().sync()
-
       expect(await engine.migrate().isLatest() === true)
-    })
+    }).timeout(3000)
   })
 
   // function removeFirstRowFromMigrationsTable (): Promise<void> {
   //   return engine.connect().then(() =>
-  //     engine.exec((client: any) => client.run('DELETE FROM migrations WHERE id = 0'))
+  //     return engine.exec((client: any) => client.run('DELETE FROM migrations WHERE id = 0'))
   //   )
   // }
 
   function removeLastRowFromMigrationsTable (): Promise<void> {
-    return engine.connect().then(() =>
-      engine.exec((client: any) => client.run('DELETE FROM migrations WHERE ID=(SELECT MAX(id) FROM migrations)'))
-    )
+    return engine.connect().then(() => {
+      engine.exec((client: any) => client.get(
+        'SELECT MAX(name) FROM migrations'
+      )).then((res: any) => {
+        return engine.exec((client: any) => client.run(`DELETE FROM migrations WHERE name='${res['MAX(name)']}'`))
+      })
+    })
   }
 })
