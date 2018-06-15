@@ -1,6 +1,6 @@
 import * as fs from 'fs'
-import EngineSqlite from './storage/sqlite/EngineSqlite'
-import * as support from './support'
+import EngineSqlite from './EngineSqlite'
+import * as support from '../../support'
 import expect = require('expect')
 
 const DBMigrate = require('db-migrate')
