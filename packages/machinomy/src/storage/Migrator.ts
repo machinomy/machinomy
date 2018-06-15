@@ -1,11 +1,11 @@
-import IMigrator from '../IMigrator'
-import EngineSqlite from './EngineSqlite'
+import IMigrator from './IMigrator'
+import EngineSqlite from './sqlite/EngineSqlite'
 import * as fs from 'fs'
 const DBMigrate = require('db-migrate')
 let dbmigrate: any
 const LENGTH_OF_MIGRATION_NAME = 14
 
-export default class MigratorSqlite implements IMigrator {
+export default class Migrator implements IMigrator {
   engine: EngineSqlite
 
   constructor (engine: EngineSqlite, migrateOptions?: Object | string) {
