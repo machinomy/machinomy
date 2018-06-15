@@ -3,7 +3,7 @@ import EngineSqlite from './sqlite/EngineSqlite'
 import * as support from '../support'
 import expect = require('expect')
 
-const DBMigrate = require('db-migrate')
+import * as DBMigrate from 'db-migrate'
 
 function showMigrationsInFolder () {
   let result: string[] = []
