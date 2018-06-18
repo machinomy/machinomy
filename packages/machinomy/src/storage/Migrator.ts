@@ -1,6 +1,7 @@
 import IEngine from './IEngine'
 import IMigrator from './IMigrator'
 import * as fs from 'fs'
+import { ConnectionString } from 'connection-string'
 const DBMigrate = require('db-migrate')
 
 let dbmigrate: any
@@ -12,8 +13,8 @@ export default class Migrator implements IMigrator {
 
   constructor (engine: IEngine, connectionString: string, migrationsPath: string) {
     this.engine = engine
-    process.env.DATABASE_URL = connectionString
-    dbmigrate = DBMigrate.getInstance(true)
+    const dbMigrateConfig = this.generateConfigObject(connectionString)
+    dbmigrate = DBMigrate.getInstance(true, dbMigrateConfig)
     this.migrationsPath = migrationsPath
   }
 
@@ -67,5 +68,24 @@ export default class Migrator implements IMigrator {
       console.log('debug::DB migration files: ' + JSON.stringify(result))
       return resolve(result)
     })
+  }
+
+  generateConfigObject (connectionUrl: string) {
+    const driversMap = new Map<string, string>()
+    driversMap.set('postgres', 'pg')
+    driversMap.set('sqlite', 'sqlite3')
+    const connectionObject = new ConnectionString(connectionUrl)
+
+    const result = {
+      'defaultEnv': 'envSet',
+      'envSet': {
+        'driver': `${driversMap.get(connectionObject.protocol!)}`,
+        'user': `${connectionObject.user}`,
+        'password': `${connectionObject.password}`,
+        'host': `${connectionObject.hostname}`,
+        'database': `${connectionObject.segments![0]}`
+      }
+    }
+    return result
   }
 }
