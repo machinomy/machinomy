@@ -19,8 +19,8 @@ export default class Migrator implements IMigrator {
   }
 
   isLatest (): Promise<boolean> {
-    return new Promise(async (resolve) => {
-      return resolve()
+    return new Promise((resolve) => {
+      return resolve(dbmigrate.check())
     })
   }
 
@@ -34,22 +34,6 @@ export default class Migrator implements IMigrator {
         dbmigrate.sync(lastMigrationInFolderName)
       }
       return resolve()
-    })
-  }
-
-  retrieveUpMigrationList (): Promise<string[]> {
-    return new Promise((resolve) => {
-      // tslint:disable-next-line:no-floating-promises
-      (this.engine as any).exec((client: any) => client.all(
-        'SELECT name FROM migrations ORDER BY name ASC'
-      )).then((res: any) => {
-        const names: string[] = res.map((element: any) => element['name'])
-        let result: string[] = []
-        for (let migrationName of names) {
-          result.push(migrationName.substring(1))
-        }
-        return resolve(result)
-      })
     })
   }
 
