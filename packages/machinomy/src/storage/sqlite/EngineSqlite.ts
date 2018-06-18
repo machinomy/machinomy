@@ -2,16 +2,14 @@ import IExec from '../IExec'
 import IEngine from '../IEngine'
 import * as fs from 'fs'
 import * as sqlite from 'sqlite3'
-import Migrator from '../Migrator'
 import SqliteDatastore from './SqliteDatastore'
 
 let db = new Map<string, SqliteDatastore>()
 
 export default class EngineSqlite implements IEngine, IExec<SqliteDatastore> {
   private readonly datastore: SqliteDatastore
-  private migrator: Migrator
 
-  constructor (url: string, migrateOptions?: Object | string) {
+  constructor (url: string) {
     if (url.startsWith('sqlite://')) {
       url = url.replace('sqlite://', '')
     }
@@ -22,7 +20,6 @@ export default class EngineSqlite implements IEngine, IExec<SqliteDatastore> {
       this.datastore = new SqliteDatastore(new sqlite.Database(url))
       db.set(url, this.datastore)
     }
-    this.migrator = new Migrator(this, migrateOptions)
   }
 
   isConnected (): boolean {
@@ -50,9 +47,5 @@ export default class EngineSqlite implements IEngine, IExec<SqliteDatastore> {
 
   async exec <B> (fn: (client: SqliteDatastore) => B): Promise<B> {
     return fn(this.datastore)
-  }
-
-  migrate (): Migrator {
-    return this.migrator
   }
 }
