@@ -1,14 +1,12 @@
 import * as Datastore from 'nedb'
 import IEngine from '../IEngine'
 import IExec from '../IExec'
-import MigratorNedb from './MigratorNedb'
 import NedbDatastore from './NedbDatastore'
 
 let db = new Map<string, NedbDatastore>()
 
 export default class EngineNedb implements IEngine, IExec<NedbDatastore> {
   datastore: NedbDatastore
-  migrator: MigratorNedb
 
   constructor (path: string, inMemoryOnly: boolean = false) {
     let found = db.get(path)
@@ -19,7 +17,6 @@ export default class EngineNedb implements IEngine, IExec<NedbDatastore> {
       this.datastore = new NedbDatastore(datastore)
       db.set(path, this.datastore)
     }
-    this.migrator = new MigratorNedb(this)
   }
 
   isConnected (): boolean {
@@ -42,9 +39,5 @@ export default class EngineNedb implements IEngine, IExec<NedbDatastore> {
 
   async exec <B> (fn: (client: NedbDatastore) => B): Promise<B> {
     return fn(this.datastore)
-  }
-
-  migrate (): MigratorNedb {
-    return this.migrator
   }
 }

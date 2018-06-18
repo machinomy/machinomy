@@ -7,7 +7,7 @@ export default class EnginePostgres implements IEngine, IExec<pg.Client> {
   private connectionInProgress?: Promise<pg.Client>
   private _client?: pg.Client
 
-  constructor (url?: string, migrateOptions?: Object | string) {
+  constructor (url?: string) {
     this.url = url
   }
 
