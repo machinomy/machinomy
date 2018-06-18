@@ -1,7 +1,7 @@
 import IMigrator from '../IMigrator'
 import EnginePostgres from './EnginePostgres'
 import * as fs from 'fs'
-import * as DBMigrate from 'db-migrate'
+const DBMigrate = require('db-migrate')
 let dbmigrate: any
 const LENGTH_OF_MIGRATION_NAME = 14
 

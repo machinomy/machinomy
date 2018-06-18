@@ -1,32 +1,25 @@
+import IEngine from './IEngine'
 import IMigrator from './IMigrator'
-import EngineSqlite from './sqlite/EngineSqlite'
 import * as fs from 'fs'
-import * as DBMigrate from 'db-migrate'
+const DBMigrate = require('db-migrate')
+
 let dbmigrate: any
 const LENGTH_OF_MIGRATION_NAME = 14
 
 export default class Migrator implements IMigrator {
-  engine: EngineSqlite
+  engine: IEngine
+  migrationsPath: string
 
-  constructor (engine: EngineSqlite, migrateOptions?: Object | string) {
+  constructor (engine: IEngine, connectionString: string, migrationsPath: string) {
     this.engine = engine
-    if (migrateOptions) {
-      dbmigrate = DBMigrate.getInstance(true, migrateOptions)
-    } else {
-      dbmigrate = DBMigrate.getInstance(true, { cwd: '../../../migrations', config: __dirname + '/../../../database.json' })
-    }
+    process.env.DATABASE_URL = connectionString
+    dbmigrate = DBMigrate.getInstance(true)
+    this.migrationsPath = migrationsPath
   }
 
   isLatest (): Promise<boolean> {
     return new Promise(async (resolve) => {
-      const commonIndex: number = await this.getCommonIndex()
-      let result: boolean
-      if (commonIndex === -1) {
-        result = true
-      } else {
-        result = false
-      }
-      return resolve(result)
+      return resolve()
     })
   }
 
@@ -43,25 +36,10 @@ export default class Migrator implements IMigrator {
     })
   }
 
-  getCommonIndex (): Promise<number> {
-    return new Promise(async (resolve) => {
-      const migrationsInDB = await this.retrieveUpMigrationList()
-      const migrationsInFolder = await this.retrieveInFolderMigrationList()
-      let commonIndex = -1
-      for (let i = 0; i < migrationsInFolder.length; i++) {
-        if (migrationsInDB[i] !== migrationsInFolder[i]) {
-          commonIndex = i
-          break
-        }
-      }
-      return resolve(commonIndex)
-    })
-  }
-
   retrieveUpMigrationList (): Promise<string[]> {
     return new Promise((resolve) => {
       // tslint:disable-next-line:no-floating-promises
-      this.engine.exec((client: any) => client.all(
+      (this.engine as any).exec((client: any) => client.all(
         'SELECT name FROM migrations ORDER BY name ASC'
       )).then((res: any) => {
         const names: string[] = res.map((element: any) => element['name'])
@@ -77,10 +55,10 @@ export default class Migrator implements IMigrator {
   retrieveInFolderMigrationList (): Promise<string[]> {
     return new Promise(async (resolve) => {
       let result: string[] = []
-      const listOfFiles: string[] = fs.readdirSync(__dirname + '/../../../migrations/')
-      console.log('debug::' + __dirname + '/../../../migrations/')
+      const listOfFiles: string[] = fs.readdirSync(this.migrationsPath)
+      console.log(this.migrationsPath)
       for (let filename of listOfFiles) {
-        const isDir = fs.statSync(__dirname + '/../../../migrations/' + filename).isDirectory()
+        const isDir = fs.statSync(this.migrationsPath + filename).isDirectory()
         if (!isDir) {
           result.push(filename.slice(0, -3))
         }

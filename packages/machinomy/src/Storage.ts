@@ -1,14 +1,19 @@
+import IMigrator from './storage/IMigrator'
 import ITokensDatabase from './storage/ITokensDatabase'
 import IPaymentsDatabase from './storage/IPaymentsDatabase'
 import IChannelsDatabase from './storage/IChannelsDatabase'
 import ChannelContract from './ChannelContract'
 import IEngine from './storage/IEngine'
+import Migrator from './storage/Migrator'
+
+const resolvePath = require('path').resolve
 
 export interface Storage {
   engine: IEngine,
   tokensDatabase: ITokensDatabase,
   paymentsDatabase: IPaymentsDatabase,
-  channelsDatabase: IChannelsDatabase
+  channelsDatabase: IChannelsDatabase,
+  migrator: IMigrator | undefined
 }
 
 export namespace Storage {
@@ -42,7 +47,8 @@ export namespace Storage {
       engine: engine,
       tokensDatabase: new NedbTokensDatabase(engine, namespace),
       paymentsDatabase: new NedbPaymentsDatabase(engine, namespace),
-      channelsDatabase: new NedbChannelsDatabase(engine, channelContract, namespace)
+      channelsDatabase: new NedbChannelsDatabase(engine, channelContract, namespace),
+      migrator: undefined
     }
   }
 
@@ -57,7 +63,8 @@ export namespace Storage {
       engine: engine,
       tokensDatabase: new SqliteTokensDatabase(engine, namespace),
       paymentsDatabase: new SqlitePaymentsDatabase(engine, namespace),
-      channelsDatabase: new SqliteChannelsDatabase(engine, channelContract, namespace)
+      channelsDatabase: new SqliteChannelsDatabase(engine, channelContract, namespace),
+      migrator: new Migrator(engine, databaseUrl, resolvePath('../migrations/'))
     }
   }
 
@@ -72,7 +79,8 @@ export namespace Storage {
       engine: engine,
       tokensDatabase: new MongoTokensDatabase(engine, namespace),
       paymentsDatabase: new MongoPaymentsDatabase(engine, namespace),
-      channelsDatabase: new MongoChannelsDatabase(engine, channelContract, namespace)
+      channelsDatabase: new MongoChannelsDatabase(engine, channelContract, namespace),
+      migrator: undefined
     }
   }
 
@@ -83,20 +91,13 @@ export namespace Storage {
     let PostgresChannelsDatabase = (await import('./storage/postgresql/PostgresChannelsDatabase')).default
 
     let engine = new EnginePostgres(databaseUrl)
-    if (!engine.migrate().isLatest()) {
-      if (migrate === undefined || migrate === 'silent') {
-        // tslint:disable-next-line:no-floating-promises
-        engine.migrate().sync()
-      } else {
-        throw new Error('There are non-applied db-migrations!')
-      }
-    }
 
     return {
       engine: engine,
       tokensDatabase: new PostgresTokensDatabase(engine, namespace),
       paymentsDatabase: new PostgresPaymentsDatabase(engine, namespace),
-      channelsDatabase: new PostgresChannelsDatabase(engine, channelContract, namespace)
+      channelsDatabase: new PostgresChannelsDatabase(engine, channelContract, namespace),
+      migrator: new Migrator(engine, databaseUrl, resolvePath('../migrations/'))
     }
   }
 }
