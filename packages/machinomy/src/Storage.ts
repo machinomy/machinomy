@@ -64,7 +64,7 @@ export namespace Storage {
       tokensDatabase: new SqliteTokensDatabase(engine, namespace),
       paymentsDatabase: new SqlitePaymentsDatabase(engine, namespace),
       channelsDatabase: new SqliteChannelsDatabase(engine, channelContract, namespace),
-      migrator: new Migrator(engine, databaseUrl, resolvePath('../migrations/'))
+      migrator: new Migrator(engine, databaseUrl, resolvePath('migrations/'))
     }
   }
 
@@ -97,7 +97,7 @@ export namespace Storage {
       tokensDatabase: new PostgresTokensDatabase(engine, namespace),
       paymentsDatabase: new PostgresPaymentsDatabase(engine, namespace),
       channelsDatabase: new PostgresChannelsDatabase(engine, channelContract, namespace),
-      migrator: new Migrator(engine, databaseUrl, resolvePath('../migrations/'))
+      migrator: new Migrator(engine, databaseUrl, resolvePath('migrations/'))
     }
   }
 }
