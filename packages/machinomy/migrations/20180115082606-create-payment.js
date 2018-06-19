@@ -54,7 +54,7 @@ exports.up = function(db, callback) {
 };
 
 exports.down = function(db, callback) {
-  db.dropTable('payments', callback);
+  db.dropTable('payment', callback);
 };
 
 exports._meta = {
