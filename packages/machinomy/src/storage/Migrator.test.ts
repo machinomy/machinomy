@@ -134,7 +134,7 @@ describe('sqlite migrator', () => {
       } else {
         expect(await storage.migrator!.isLatest() === false)
       }
-    }).timeout(3000)
+    }).timeout(5000)
 
     it('not all migrations synced', async () => {
       const listOfMigrations = await retrieveInFolderMigrationList()
@@ -143,7 +143,7 @@ describe('sqlite migrator', () => {
         await removeLastRowFromMigrationsTable()
       }
       expect(await storage.migrator!.isLatest() === false)
-    }).timeout(3000)
+    }).timeout(5000)
 
     it('trying to sync migrations', async () => {
       const listOfMigrations = await retrieveInFolderMigrationList()
@@ -155,7 +155,7 @@ describe('sqlite migrator', () => {
       expect(await storage.migrator!.isLatest() === false)
       await storage.migrator!.sync()
       expect(await storage.migrator!.isLatest() === true)
-    }).timeout(3000)
+    }).timeout(5000)
   })
 
   // function removeFirstRowFromMigrationsTable (): Promise<void> {
