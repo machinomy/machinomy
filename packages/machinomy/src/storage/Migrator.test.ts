@@ -6,13 +6,13 @@ import Storage from '../Storage'
 import expect = require('expect')
 import * as Web3 from 'web3'
 import * as sinon from 'sinon'
+import * as support from '../support'
+import * as DBMigrate from 'db-migrate'
 
-const DBMigrate = require('db-migrate')
-
+// tslint:disable-next-line:no-unused-variable
 function showMigrationsInFolder () {
   let result: string[] = []
   const listOfFiles: string[] = fs.readdirSync(__dirname + '/../../migrations/')
-  console.log('debug::' + __dirname + '/../../migrations/')
   for (let filename of listOfFiles) {
     const isDir = fs.statSync(__dirname + '/../../migrations/' + filename).isDirectory()
     if (!isDir) {
@@ -20,14 +20,12 @@ function showMigrationsInFolder () {
     }
   }
   result.sort()
-  console.log('debug::DB migration files: ' + JSON.stringify(result))
 }
 
 function retrieveInFolderMigrationList (): Promise<string[]> {
   return new Promise(async (resolve) => {
     let result: string[] = []
     const listOfFiles: string[] = fs.readdirSync(__dirname + '/../../migrations/')
-    console.log(__dirname + '/../../migrations/')
     for (let filename of listOfFiles) {
       const isDir = fs.statSync(__dirname + '/../../migrations/' + filename).isDirectory()
       if (!isDir) {
@@ -35,14 +33,13 @@ function retrieveInFolderMigrationList (): Promise<string[]> {
       }
     }
     result.sort()
-    console.log('debug::DB migration files: ' + JSON.stringify(result))
     return resolve(result)
   })
 }
 
 describe('sqlite migrator', () => {
   let engine: EngineSqlite
-  let dbmigrate: any
+  let dbmigrate: DBMigrate.DBMigrate
   let storage: Storage
   let web3: Web3
   let deployed: any
@@ -65,6 +62,7 @@ describe('sqlite migrator', () => {
     })
   }
 
+  // tslint:disable-next-line:no-unused-variable
   function showMigrationsInDB () {
     // tslint:disable-next-line:no-floating-promises
     engine.connect().then(() => engine.exec(async (client: any) => {
@@ -74,78 +72,82 @@ describe('sqlite migrator', () => {
       for (let migrationName in names) {
         result.push(migrationName.substring(1))
       }
-      console.log('IN DB: ' + result)
     }))
   }
 
-  before(async () => {
-    let filename = 'test236.sqlite3' // await support.tmpFileName()
+  beforeEach(async () => {
+    return new Promise(async (resolve) => {
+      web3 = {
+        currentProvider: {}
+      } as Web3
 
-    storage = await Storage.build(`sqlite://${filename}`, channelContract)
-    const dbMigrateConfig = {
-      config: {
-        defaultEnv: 'envSet',
-        envSet: {
-          driver: 'sqlite3',
-          filename: filename
+      deployed = {} as any
+      contractStub = sinon.stub(Unidirectional, 'contract')
+      contractStub.withArgs(web3.currentProvider).returns({
+        deployed: sinon.stub().resolves(Promise.resolve(deployed))
+      })
+      channelContract = new ChannelContract(web3)
+
+      const filename = await support.tmpFileName()
+      console.log('Filename of DB is ' + filename)
+
+      storage = await Storage.build(`sqlite://${filename}`, channelContract)
+      const dbMigrateConfig: DBMigrate.InstanceOptions = {
+        config: {
+          defaultEnv: 'defaultSqlite',
+          defaultSqlite: {
+            driver: 'sqlite3',
+            filename: filename
+          }
         }
       }
-    }
-    engine = new EngineSqlite(filename)
-    // tslint:disable-next-line:no-floating-promises
-    engine.connect().then(() =>
-      engine.exec((client: any) => client.run('CREATE TABLE IF NOT EXISTS migrations(id INTEGER, name TEXT, run_on TEXT);')).then(() => {
-        dbmigrate = DBMigrate.getInstance(true, dbMigrateConfig)
-        dbmigrate.up()
-        showMigrationsInFolder()
-        showMigrationsInDB()
-      })
-    )
-  })
 
-  beforeEach(() => {
-    web3 = {
-      currentProvider: {}
-    } as Web3
-
-    deployed = {} as any
-    contractStub = sinon.stub(Unidirectional, 'contract')
-    contractStub.withArgs(web3.currentProvider).returns({
-      deployed: sinon.stub().resolves(Promise.resolve(deployed))
+      engine = new EngineSqlite(filename)
+      // tslint:disable-next-line:no-floating-promises
+      engine.connect().then(() =>
+        engine.exec((client: any) => client.run('CREATE TABLE IF NOT EXISTS migrations(id INTEGER, name TEXT, run_on TEXT);')).then(async () => {
+          dbmigrate = DBMigrate.getInstance(true, dbMigrateConfig)
+          await dbmigrate.reset()
+          await dbmigrate.up()
+          // showMigrationsInFolder()
+          // showMigrationsInDB()
+          resolve()
+        })
+      )
     })
-    channelContract = new ChannelContract(web3)
-
   })
 
   afterEach(() => {
-    contractStub.restore()
-  })
-
-  after(() => {
-    return engine.close()
+    return new Promise(async (resolve) => {
+      contractStub.restore()
+      await engine.close()
+      resolve()
+    })
   })
 
   describe('common', () => {
     it('all migrations synced', async () => {
-      let listOfMigrations = await retrieveInFolderMigrationList()
-      let listOfUpMigrations = await retrieveUpMigrationList()
+      const listOfMigrations = await retrieveInFolderMigrationList()
+      const listOfUpMigrations = await retrieveUpMigrationList()
       if (listOfMigrations.length === listOfUpMigrations.length) {
         expect(await storage.migrator!.isLatest() === true)
+      } else {
+        expect(await storage.migrator!.isLatest() === false)
       }
     }).timeout(3000)
 
     it('not all migrations synced', async () => {
-      let listOfMigrations = await retrieveInFolderMigrationList()
-      let listOfUpMigrations = await retrieveUpMigrationList()
+      const listOfMigrations = await retrieveInFolderMigrationList()
+      const listOfUpMigrations = await retrieveUpMigrationList()
       if (listOfMigrations.length === listOfUpMigrations.length) {
-        expect(await storage.migrator!.isLatest() === true)
+        await removeLastRowFromMigrationsTable()
       }
       expect(await storage.migrator!.isLatest() === false)
     }).timeout(3000)
 
     it('trying to sync migrations', async () => {
-      let listOfMigrations = await retrieveInFolderMigrationList()
-      let listOfUpMigrations = await retrieveUpMigrationList()
+      const listOfMigrations = await retrieveInFolderMigrationList()
+      const listOfUpMigrations = await retrieveUpMigrationList()
       if (listOfMigrations.length === listOfUpMigrations.length) {
         expect(await storage.migrator!.isLatest() === true)
       }
@@ -170,6 +172,10 @@ describe('sqlite migrator', () => {
       )).then((res: any) => {
         return engine.exec((client: any) => {
           client.run(`DELETE FROM migrations WHERE name='${res['MAX(name)']}'`)
+        }).then(() => {
+          return dbmigrate.down(1).then(() => {
+            console.log('successfully migrated 1 migrations down')
+          })
         })
       })
     })
