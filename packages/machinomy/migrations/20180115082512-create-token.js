@@ -38,7 +38,7 @@ exports.up = function(db, callback) {
 };
 
 exports.down = function(db, callback) {
-  db.dropTable('tokens', callback);
+  db.dropTable('token', callback);
 };
 
 exports._meta = {
