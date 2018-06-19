@@ -2,7 +2,7 @@ import IEngine from './IEngine'
 import IMigrator from './IMigrator'
 import * as fs from 'fs'
 import { ConnectionString } from 'connection-string'
-const DBMigrate = require('db-migrate')
+import * as DBMigrate from 'db-migrate'
 
 let dbmigrate: any
 const LENGTH_OF_MIGRATION_NAME = 14
@@ -44,7 +44,6 @@ export default class Migrator implements IMigrator {
     return new Promise(async (resolve) => {
       let result: string[] = []
       const listOfFiles: string[] = fs.readdirSync(this.migrationsPath)
-      console.log(this.migrationsPath)
       for (let filename of listOfFiles) {
         const isDir = fs.statSync(this.migrationsPath + filename).isDirectory()
         if (!isDir) {
@@ -52,7 +51,6 @@ export default class Migrator implements IMigrator {
         }
       }
       result.sort()
-      console.log('debug::DB migration files: ' + JSON.stringify(result))
       return resolve(result)
     })
   }
@@ -62,7 +60,7 @@ export default class Migrator implements IMigrator {
     driversMap.set('postgres', 'pg')
     driversMap.set('sqlite', 'sqlite3')
     const connectionObject = new ConnectionString(connectionUrl)
-    let result
+    let result: DBMigrate.InstanceOptions
     if (connectionObject.protocol! === 'postgres') {
       result = {
         config: {
