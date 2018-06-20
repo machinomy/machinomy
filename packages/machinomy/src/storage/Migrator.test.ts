@@ -169,39 +169,8 @@ describe('Main', () => {
 
   function removeLastRowFromMigrationsTable (): Promise<void> {
     return engine.connect().then(() => {
-      // tslint:disable-next-line:no-floating-promises
-      return engine.exec((client: any) => {
-        let selectLastQuery: string = ''
-        switch (process.env.DBMS_URL!.split('://')[0]) {
-          case 'sqlite': {
-            selectLastQuery = 'SELECT MAX(name) FROM migrations'
-            break
-          }
-          case 'postgresql': {
-            selectLastQuery = 'SELECT name FROM migrations ORDER BY name DESC LIMIT 1'
-            break
-          }
-        }
-        return runSql(selectLastQuery)
-      }).then((res: any) => {
-        return engine.exec(async (client: any) => {
-          let maxValue: string = ''
-          switch (process.env.DBMS_URL!.split('://')[0]) {
-            case 'sqlite': {
-              maxValue = res.rows['MAX(name)']
-              break
-            }
-            case 'postgresql': {
-              maxValue = res.rows[0]
-              break
-            }
-          }
-          return runSql(`DELETE FROM migrations WHERE name='${maxValue}'`)
-        }).then(async () => {
-          // return dbmigrate.down(1).then(() => {
-          //   console.log('successfully migrated 1 migrations down')
-          // })
-        })
+      return dbmigrate.down(1).then(() => {
+        console.log('successfully migrated 1 migrations down')
       })
     })
   }
