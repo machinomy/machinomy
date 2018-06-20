@@ -19,7 +19,7 @@
     "prepublish": "yarn lint && yarn build",
     "lint": "tslint --format stylish --project . --exclude './node_modules/**/*.ts'",
     "migrate": "db-migrate up",
-    "integration_test": "yarn build && mocha integration_test/**/*.test.js",
+    "integration_test": "yarn build && mocha lib/integration_test/**/*.test.js",
     "test_nedb": "ENGINE_NAME=nedb mocha lib/**/*.test.js",
     "test_mongo": "ENGINE_NAME=mongo mocha lib/**/*.test.js",
     "test_postgres": "ENGINE_NAME=postgresql mocha lib/**/*.test.js",
