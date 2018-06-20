@@ -40,7 +40,7 @@ function retrieveInFolderMigrationList (): Promise<string[]> {
   })
 }
 
-describe('sqlite migrator', () => {
+describe('Main', () => {
   let engine: IEngine & { exec<B> (fn: (client: any) => B): Promise<B>}
   let dbmigrate: DBMigrate.DBMigrate
   let storage: Storage
