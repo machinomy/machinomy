@@ -28,7 +28,7 @@ export namespace Storage {
       case 'mongo':
         return buildMongo(databaseUrl, channelContract, namespace)
       case 'postgresql':
-        return buildPostgres(databaseUrl, channelContract, namespace, migrate)
+        return buildPostgres(databaseUrl, channelContract, namespace)
       case 'sqlite':
         return buildSqlite(databaseUrl, channelContract, namespace)
       default:
@@ -84,7 +84,7 @@ export namespace Storage {
     }
   }
 
-  async function buildPostgres (databaseUrl: string, channelContract: ChannelContract, namespace: string, migrate?: 'silent' | 'raise'): Promise<Storage> {
+  async function buildPostgres (databaseUrl: string, channelContract: ChannelContract, namespace: string): Promise<Storage> {
     let EnginePostgres = (await import('./storage/postgresql/EnginePostgres')).default
     let PostgresTokensDatabase = (await import('./storage/postgresql/PostgresTokensDatabase')).default
     let PostgresPaymentsDatabase = (await import('./storage/postgresql/PostgresPaymentsDatabase')).default

@@ -1,6 +1,8 @@
 import * as fs from 'fs'
 import { Unidirectional } from '../../../contracts/lib'
 import ChannelContract from '../ChannelContract'
+import IEngine from './IEngine'
+import EnginePostgres from './postgresql/EnginePostgres'
 import EngineSqlite from './sqlite/EngineSqlite'
 import Storage from '../Storage'
 import expect = require('expect')
@@ -38,20 +40,28 @@ function retrieveInFolderMigrationList (): Promise<string[]> {
 }
 
 describe('sqlite migrator', () => {
-  let engine: EngineSqlite
+  let engine: IEngine & { exec<B> (fn: (client: any) => B): Promise<B>}
   let dbmigrate: DBMigrate.DBMigrate
   let storage: Storage
   let web3: Web3
   let deployed: any
   let contractStub: sinon.SinonStub
   let channelContract: ChannelContract
+  let runSql: any
+  let runSqlAll: any
 
   function retrieveUpMigrationList (): Promise<string[]> {
     return new Promise((resolve) => {
       // tslint:disable-next-line:no-floating-promises
-      engine.exec((client: any) => client.all(
-        'SELECT name FROM migrations ORDER BY name ASC'
-      )).then((res: any) => {
+      engine.exec((client: any) => {
+        return runSqlAll('SELECT name FROM migrations ORDER BY name ASC')
+      }).then((res: any) => {
+        switch (process.env.DBMS_URL!.split('://')[0]) {
+          case 'postgresql': {
+            res = res.rows
+            break
+          }
+        }
         const names: string[] = res.map((element: any) => element['name'])
         let result: string[] = []
         for (let migrationName of names) {
@@ -60,19 +70,6 @@ describe('sqlite migrator', () => {
         return resolve(result)
       })
     })
-  }
-
-  // tslint:disable-next-line:no-unused-variable
-  function showMigrationsInDB () {
-    // tslint:disable-next-line:no-floating-promises
-    engine.connect().then(() => engine.exec(async (client: any) => {
-      let rows = await client.all('SELECT name FROM migrations ORDER BY name ASC')
-      const names: string[] = rows
-      let result: string[] = []
-      for (let migrationName in names) {
-        result.push(migrationName.substring(1))
-      }
-    }))
   }
 
   beforeEach(async () => {
@@ -89,25 +86,53 @@ describe('sqlite migrator', () => {
       channelContract = new ChannelContract(web3)
 
       const filename = await support.tmpFileName()
-      console.log('Filename of DB is ' + filename)
 
-      storage = await Storage.build(`sqlite://${filename}`, channelContract)
-      const dbMigrateConfig: DBMigrate.InstanceOptions = {
-        config: {
-          defaultEnv: 'defaultSqlite',
-          defaultSqlite: {
-            driver: 'sqlite3',
-            filename: filename
+      storage = await Storage.build(process.env.DBMS_URL!, channelContract)
+      let dbMigrateConfig: DBMigrate.InstanceOptions
+
+      switch (process.env.DBMS_URL!.split('://')[0]) {
+        case 'sqlite': {
+          dbMigrateConfig = {
+            config: {
+              defaultEnv: 'defaultSqlite',
+              defaultSqlite: {
+                driver: 'sqlite3',
+                filename: filename
+              }
+            }
           }
+          console.log('Filename of DB is ' + filename)
+          engine = new EngineSqlite(filename)
+          break
+        }
+        case 'postgresql': {
+          dbMigrateConfig = {
+            config: {
+              defaultEnv: 'defaultPg',
+              defaultPg: {
+                driver: 'pg',
+                user: 'testuser',
+                password: 'testpassword',
+                host: '127.0.0.1',
+                database: 'testdb'
+              }
+            }
+          }
+          engine = new EnginePostgres(process.env.DBMS_URL!)
+          break
         }
       }
-
-      engine = new EngineSqlite(filename)
       // tslint:disable-next-line:no-floating-promises
       engine.connect().then(() =>
-        engine.exec((client: any) => client.run('CREATE TABLE IF NOT EXISTS migrations(id INTEGER, name TEXT, run_on TEXT);')).then(async () => {
+        engine.exec(async (client: any) => {
+          if (process.env.DBMS_URL!.split('://')[0] === 'sqlite') {
+            runSql = client.run.bind(client)
+            runSqlAll = client.all.bind(client)
+          } else if (process.env.DBMS_URL!.split('://')[0] === 'postgresql') {
+            runSql = client.query.bind(client)
+            runSqlAll = client.query.bind(client)
+          }
           dbmigrate = DBMigrate.getInstance(true, dbMigrateConfig)
-          await dbmigrate.reset()
           await dbmigrate.up()
           // showMigrationsInFolder()
           // showMigrationsInDB()
@@ -167,15 +192,37 @@ describe('sqlite migrator', () => {
   function removeLastRowFromMigrationsTable (): Promise<void> {
     return engine.connect().then(() => {
       // tslint:disable-next-line:no-floating-promises
-      return engine.exec((client: any) => client.get(
-        'SELECT MAX(name) FROM migrations'
-      )).then((res: any) => {
-        return engine.exec((client: any) => {
-          client.run(`DELETE FROM migrations WHERE name='${res['MAX(name)']}'`)
-        }).then(() => {
-          return dbmigrate.down(1).then(() => {
-            console.log('successfully migrated 1 migrations down')
-          })
+      return engine.exec((client: any) => {
+        let selectLastQuery: string = ''
+        switch (process.env.DBMS_URL!.split('://')[0]) {
+          case 'sqlite': {
+            selectLastQuery = 'SELECT MAX(name) FROM migrations'
+            break
+          }
+          case 'postgresql': {
+            selectLastQuery = 'SELECT name FROM migrations ORDER BY name DESC LIMIT 1'
+            break
+          }
+        }
+        return runSql(selectLastQuery)
+      }).then((res: any) => {
+        return engine.exec(async (client: any) => {
+          let maxValue: string = ''
+          switch (process.env.DBMS_URL!.split('://')[0]) {
+            case 'sqlite': {
+              maxValue = res.rows['MAX(name)']
+              break
+            }
+            case 'postgresql': {
+              maxValue = res.rows[0]
+              break
+            }
+          }
+          return runSql(`DELETE FROM migrations WHERE name='${maxValue}'`)
+        }).then(async () => {
+          // return dbmigrate.down(1).then(() => {
+          //   console.log('successfully migrated 1 migrations down')
+          // })
         })
       })
     })

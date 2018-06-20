@@ -57,32 +57,37 @@ export default class Migrator implements IMigrator {
 
   generateConfigObject (connectionUrl: string) {
     const driversMap = new Map<string, string>()
-    driversMap.set('postgres', 'pg')
+    driversMap.set('postgresql', 'pg')
     driversMap.set('sqlite', 'sqlite3')
     const connectionObject = new ConnectionString(connectionUrl)
-    let result: DBMigrate.InstanceOptions
-    if (connectionObject.protocol! === 'postgres') {
-      result = {
-        config: {
-          defaultEnv: 'envSet',
-          envSet: {
-            driver: `${driversMap.get(connectionObject.protocol!)}`,
-            user: `${connectionObject.user}`,
-            password: `${connectionObject.password}`,
-            host: `${connectionObject.hostname}`,
-            database: `${connectionObject.segments![0]}`
+    let result: DBMigrate.InstanceOptions = {}
+    switch (process.env.DBMS_URL!.split('://')[0]) {
+      case 'sqlite': {
+        result = {
+          config: {
+            defaultEnv: 'defaultSqlite',
+            defaultSqlite: {
+              driver: `${driversMap.get(connectionObject.protocol!)}`,
+              filename: `${connectionObject.hostname}`
+            }
           }
         }
+        break
       }
-    } else {
-      result = {
-        config: {
-          defaultEnv: 'envSet',
-          envSet: {
-            driver: `${driversMap.get(connectionObject.protocol!)}`,
-            filename: `${connectionObject.hostname}`
+      case 'postgresql': {
+        result = {
+          config: {
+            defaultEnv: 'defaultPg',
+            defaultPg: {
+              driver: `${driversMap.get(connectionObject.protocol!)}`,
+              user: `${connectionObject.user}`,
+              password: `${connectionObject.password}`,
+              host: `${connectionObject.hostname}`,
+              database: `${connectionObject.segments![0]}`
+            }
           }
         }
+        break
       }
     }
     return result
