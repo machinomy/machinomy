@@ -25,10 +25,10 @@ describe('Main', () => {
   function retrieveInFolderMigrationList (): Promise<string[]> {
     return new Promise(async (resolve) => {
       let result: string[] = []
-      let pathToRead = `${__dirname}/../../migrations/${process.env.DBMS_URL!.split('://')[0]}`
+      let pathToRead = `${__dirname}/../../migrations/${process.env.DB_URL!.split('://')[0]}`
       const listOfFiles: string[] = fs.readdirSync(pathToRead)
       for (let filename of listOfFiles) {
-        let pathToStat = `${__dirname}/../../migrations/${process.env.DBMS_URL!.split('://')[0]}/${filename}`
+        let pathToStat = `${__dirname}/../../migrations/${process.env.DB_URL!.split('://')[0]}/${filename}`
         const isDir = fs.statSync(pathToStat).isDirectory()
         if (!isDir) {
           result.push(filename.slice(0, -3))
@@ -45,7 +45,7 @@ describe('Main', () => {
       engine.exec((client: any) => {
         return runSqlAll('SELECT name FROM migrations ORDER BY name ASC')
       }).then((res: any) => {
-        switch (process.env.DBMS_URL!.split('://')[0]) {
+        switch (process.env.DB_URL!.split('://')[0]) {
           case 'postgresql': {
             res = res.rows
             break
@@ -76,24 +76,24 @@ describe('Main', () => {
 
       const filename = await support.tmpFileName()
 
-      storage = await Storage.build(process.env.DBMS_URL!, channelContract)
-      let dbMigrateConfig: DBMigrate.InstanceOptions = Migrator.generateConfigObject(process.env.DBMS_URL!)
-      switch (process.env.DBMS_URL!.split('://')[0]) {
+      storage = await Storage.build(process.env.DB_URL!, channelContract)
+      let dbMigrateConfig: DBMigrate.InstanceOptions = Migrator.generateConfigObject(process.env.DB_URL!)
+      switch (process.env.DB_URL!.split('://')[0]) {
         case 'sqlite': {
           engine = new EngineSqlite(filename)
           break
         }
         case 'postgresql': {
-          engine = new EnginePostgres(process.env.DBMS_URL!)
+          engine = new EnginePostgres(process.env.DB_URL!)
           break
         }
       }
       // tslint:disable-next-line:no-floating-promises
       engine.connect().then(() =>
         engine.exec(async (client: any) => {
-          if (process.env.DBMS_URL!.split('://')[0] === 'sqlite') {
+          if (process.env.DB_URL!.split('://')[0] === 'sqlite') {
             runSqlAll = client.all.bind(client)
-          } else if (process.env.DBMS_URL!.split('://')[0] === 'postgresql') {
+          } else if (process.env.DB_URL!.split('://')[0] === 'postgresql') {
             runSqlAll = client.query.bind(client)
           }
           dbmigrate = DBMigrate.getInstance(true, dbMigrateConfig)

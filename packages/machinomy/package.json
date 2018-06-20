@@ -25,7 +25,7 @@
     "test_mongo": "ENGINE_NAME=mongo mocha lib/**/*.test.js",
     "test_postgres": "ENGINE_NAME=postgresql mocha lib/**/*.test.js",
     "test_sqlite": "ENGINE_NAME=sqlite mocha lib/**/*.test.js",
-    "test": "yarn build && DBMS_URL='postgresql://testuser:testpassword@127.0.0.1/testdb' mocha lib/**/Migrator.test.js",
+    "test": "yarn build && DB_URL='postgresql://testuser:testpassword@127.0.0.1/testdb' mocha lib/**/Migrator.test.js",
     "coverage": "yarn build && nyc --reporter=lcov yarn run test"
   },
   "main": "lib/index.js",

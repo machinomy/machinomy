@@ -27,7 +27,7 @@ export default class Migrator implements IMigrator {
     driversMap.set('sqlite', 'sqlite3')
     const connectionObject = new ConnectionString(connectionUrl)
     let result: DBMigrate.InstanceOptions = {}
-    switch (process.env.DBMS_URL!.split('://')[0]) {
+    switch (process.env.DB_URL!.split('://')[0]) {
       case 'sqlite': {
         result = {
           cmdOptions: {
