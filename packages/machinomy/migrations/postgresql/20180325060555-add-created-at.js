@@ -21,8 +21,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  // temporary disabled because of 'throw new Error('not implemented')' in db-migrate-sqlite
-  // return db.removeColumn('payment', 'createdAt');
+  return db.removeColumn('payment', 'createdAt');
 };
 
 exports._meta = {
