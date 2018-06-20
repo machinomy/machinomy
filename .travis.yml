@@ -16,6 +16,8 @@ before_install:
   - lerna bootstrap
 before_script:
   - psql -c 'create database machinomy_test;' -U postgres -d postgres
+  - psql -c "create user testuser with password 'testpassword';" -U postgres
+  - PGPASSWORD='testpassword' psql -c 'create database testdb;' -U testuser -d testdb
 script:
   - yarn run lint
   - yarn run build
