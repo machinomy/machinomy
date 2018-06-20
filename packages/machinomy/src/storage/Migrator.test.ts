@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import { Unidirectional } from '../../../contracts/lib'
 import ChannelContract from '../ChannelContract'
 import IEngine from './IEngine'
+import Migrator from './Migrator'
 import EnginePostgres from './postgresql/EnginePostgres'
 import EngineSqlite from './sqlite/EngineSqlite'
 import Storage from '../Storage'
@@ -88,36 +89,13 @@ describe('sqlite migrator', () => {
       const filename = await support.tmpFileName()
 
       storage = await Storage.build(process.env.DBMS_URL!, channelContract)
-      let dbMigrateConfig: DBMigrate.InstanceOptions
-
+      let dbMigrateConfig: DBMigrate.InstanceOptions = Migrator.generateConfigObject(process.env.DBMS_URL!)
       switch (process.env.DBMS_URL!.split('://')[0]) {
         case 'sqlite': {
-          dbMigrateConfig = {
-            config: {
-              defaultEnv: 'defaultSqlite',
-              defaultSqlite: {
-                driver: 'sqlite3',
-                filename: filename
-              }
-            }
-          }
-          console.log('Filename of DB is ' + filename)
           engine = new EngineSqlite(filename)
           break
         }
         case 'postgresql': {
-          dbMigrateConfig = {
-            config: {
-              defaultEnv: 'defaultPg',
-              defaultPg: {
-                driver: 'pg',
-                user: 'testuser',
-                password: 'testpassword',
-                host: '127.0.0.1',
-                database: 'testdb'
-              }
-            }
-          }
           engine = new EnginePostgres(process.env.DBMS_URL!)
           break
         }
