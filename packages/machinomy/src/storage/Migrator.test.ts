@@ -12,34 +12,6 @@ import * as sinon from 'sinon'
 import * as support from '../support'
 import * as DBMigrate from 'db-migrate'
 
-// tslint:disable-next-line:no-unused-variable
-function showMigrationsInFolder () {
-  let result: string[] = []
-  const listOfFiles: string[] = fs.readdirSync(__dirname + '/../../migrations/')
-  for (let filename of listOfFiles) {
-    const isDir = fs.statSync(__dirname + '/../../migrations/' + filename).isDirectory()
-    if (!isDir) {
-      result.push(filename.slice(0, -3))
-    }
-  }
-  result.sort()
-}
-
-function retrieveInFolderMigrationList (): Promise<string[]> {
-  return new Promise(async (resolve) => {
-    let result: string[] = []
-    const listOfFiles: string[] = fs.readdirSync(__dirname + '/../../migrations/')
-    for (let filename of listOfFiles) {
-      const isDir = fs.statSync(__dirname + '/../../migrations/' + filename).isDirectory()
-      if (!isDir) {
-        result.push(filename.slice(0, -3))
-      }
-    }
-    result.sort()
-    return resolve(result)
-  })
-}
-
 describe('Main', () => {
   let engine: IEngine & { exec<B> (fn: (client: any) => B): Promise<B>}
   let dbmigrate: DBMigrate.DBMigrate
@@ -48,8 +20,24 @@ describe('Main', () => {
   let deployed: any
   let contractStub: sinon.SinonStub
   let channelContract: ChannelContract
-  let runSql: any
   let runSqlAll: any
+
+  function retrieveInFolderMigrationList (): Promise<string[]> {
+    return new Promise(async (resolve) => {
+      let result: string[] = []
+      let pathToRead = `${__dirname}/../../migrations/${process.env.DBMS_URL!.split('://')[0]}`
+      const listOfFiles: string[] = fs.readdirSync(pathToRead)
+      for (let filename of listOfFiles) {
+        let pathToStat = `${__dirname}/../../migrations/${process.env.DBMS_URL!.split('://')[0]}/${filename}`
+        const isDir = fs.statSync(pathToStat).isDirectory()
+        if (!isDir) {
+          result.push(filename.slice(0, -3))
+        }
+      }
+      result.sort()
+      return resolve(result)
+    })
+  }
 
   function retrieveUpMigrationList (): Promise<string[]> {
     return new Promise((resolve) => {
@@ -104,10 +92,8 @@ describe('Main', () => {
       engine.connect().then(() =>
         engine.exec(async (client: any) => {
           if (process.env.DBMS_URL!.split('://')[0] === 'sqlite') {
-            runSql = client.run.bind(client)
             runSqlAll = client.all.bind(client)
           } else if (process.env.DBMS_URL!.split('://')[0] === 'postgresql') {
-            runSql = client.query.bind(client)
             runSqlAll = client.query.bind(client)
           }
           dbmigrate = DBMigrate.getInstance(true, dbMigrateConfig)
@@ -160,12 +146,6 @@ describe('Main', () => {
       expect(await storage.migrator!.isLatest() === true)
     }).timeout(5000)
   })
-
-  // function removeFirstRowFromMigrationsTable (): Promise<void> {
-  //   return engine.connect().then(() =>
-  //     return engine.exec((client: any) => client.run('DELETE FROM migrations WHERE id = 0'))
-  //   )
-  // }
 
   function removeLastRowFromMigrationsTable (): Promise<void> {
     return engine.connect().then(() => {

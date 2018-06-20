@@ -30,6 +30,9 @@ export default class Migrator implements IMigrator {
     switch (process.env.DBMS_URL!.split('://')[0]) {
       case 'sqlite': {
         result = {
+          cmdOptions: {
+            'migrations-dir': './migrations/sqlite'
+          },
           config: {
             defaultEnv: 'defaultSqlite',
             defaultSqlite: {
@@ -42,6 +45,9 @@ export default class Migrator implements IMigrator {
       }
       case 'postgresql': {
         result = {
+          cmdOptions: {
+            'migrations-dir': './migrations/postgresql'
+          },
           config: {
             defaultEnv: 'defaultPg',
             defaultPg: {
