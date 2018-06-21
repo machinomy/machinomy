@@ -93,13 +93,12 @@ describe('Main', () => {
         engine.exec(async (client: any) => {
           if (process.env.DB_URL!.split('://')[0] === 'sqlite') {
             runSqlAll = client.all.bind(client)
+            await runSqlAll('CREATE TABLE migrations(id INTEGER, name TEXT, run_on TEXT)')
           } else if (process.env.DB_URL!.split('://')[0] === 'postgresql') {
             runSqlAll = client.query.bind(client)
           }
           dbmigrate = DBMigrate.getInstance(true, dbMigrateConfig)
           await dbmigrate.up()
-          // showMigrationsInFolder()
-          // showMigrationsInDB()
           resolve()
         })
       )
