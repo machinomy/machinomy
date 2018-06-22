@@ -17,7 +17,7 @@ export interface Storage {
 }
 
 export namespace Storage {
-  export function build (databaseUrl: string, channelContract: ChannelContract, migrate?: 'silent' | 'raise'): Promise<Storage> {
+  export function build (databaseUrl: string, channelContract: ChannelContract): Promise<Storage> {
     const splits = databaseUrl.split('://')
     const protocol = splits[0]
     const namespace = 'shared' // TODO Namespace
