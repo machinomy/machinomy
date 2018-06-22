@@ -87,6 +87,8 @@ describe('Main', () => {
           engine = new EnginePostgres(process.env.DB_URL!)
           break
         }
+        default:
+          return resolve()
       }
       // tslint:disable-next-line:no-floating-promises
       engine.connect().then(() =>
@@ -108,13 +110,18 @@ describe('Main', () => {
   afterEach(() => {
     return new Promise(async (resolve) => {
       contractStub.restore()
-      await engine.close()
+      if (engine) {
+        await engine.close()
+      }
       resolve()
     })
   })
 
   describe('common', () => {
-    it('all migrations synced', async () => {
+    it('all migrations synced', async (done) => {
+      if (!engine) {
+        return done()
+      }
       const listOfMigrations = await retrieveInFolderMigrationList()
       const listOfUpMigrations = await retrieveUpMigrationList()
       if (listOfMigrations.length === listOfUpMigrations.length) {
@@ -124,7 +131,10 @@ describe('Main', () => {
       }
     }).timeout(5000)
 
-    it('not all migrations synced', async () => {
+    it('not all migrations synced', async (done) => {
+      if (!engine) {
+        return done()
+      }
       const listOfMigrations = await retrieveInFolderMigrationList()
       const listOfUpMigrations = await retrieveUpMigrationList()
       if (listOfMigrations.length === listOfUpMigrations.length) {
@@ -133,7 +143,10 @@ describe('Main', () => {
       expect(await storage.migrator!.isLatest() === false)
     }).timeout(5000)
 
-    it('trying to sync migrations', async () => {
+    it('trying to sync migrations', async (done) => {
+      if (!engine) {
+        return done()
+      }
       const listOfMigrations = await retrieveInFolderMigrationList()
       const listOfUpMigrations = await retrieveUpMigrationList()
       if (listOfMigrations.length === listOfUpMigrations.length) {
