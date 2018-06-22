@@ -1,4 +1,5 @@
 import * as BigNumber from 'bignumber.js'
+import { MigrateOption } from './MigrateOption'
 
 /**
  * Params for Machinomy. Currenty Machinomy supports mongodb and nedb as a database engine.
@@ -10,5 +11,5 @@ export default interface MachinomyOptions {
   minimumSettlementPeriod?: number
   settlementPeriod?: number,
   closeOnInvalidPayment?: boolean
-  migrate?: 'silent' | 'raise'
+  migrate?: MigrateOption
 }
