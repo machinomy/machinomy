@@ -1,23 +1,17 @@
-'use strict';
+import { Base as DBMigrateBase, CallbackFunction } from 'db-migrate-base'
+import bigNumberColumn from './util/bigNumberColumn'
 
-var bigNumberColumn = require('./util/bigNumberColumn');
+let dbm: any
+let _meta: Object = {
+  version: 1
+}
 
-var dbm;
-var type;
-var seed;
+exports.setup = (options: any, seedLink: any) => {
+  dbm = options.dbmigrate
+}
 
-/**
- * We receive the dbmigrate dependency from dbmigrate initially.
- * This enables us to not have to rely on NODE_PATH.
- */
-exports.setup = function(options, seedLink) {
-  dbm = options.dbmigrate;
-  type = dbm.dataType;
-  seed = seedLink;
-};
-
-exports.up = function(db, callback) {
-  var createTableOptions = {
+exports.up = (db: any, callback: CallbackFunction) => {
+  const createTableOptions = {
     columns: {
       channelId: {
         type: 'string',
@@ -50,13 +44,9 @@ exports.up = function(db, callback) {
     },
     ifNotExists: true
   }
-  db.createTable('payment', createTableOptions, callback);
-};
+  db.createTable('payment', createTableOptions, callback)
+}
 
-exports.down = function(db, callback) {
-  db.dropTable('payment', callback);
-};
-
-exports._meta = {
-  "version": 1
-};
+exports.down = (db: DBMigrateBase, callback: CallbackFunction) => {
+  db.dropTable('payment', callback)
+}
