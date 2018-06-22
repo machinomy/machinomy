@@ -29,7 +29,7 @@ export default class Registry {
   @memoize
   async storage (): Promise<Storage> {
     let channelContract = await this.channelContract()
-    return Storage.build(this.options.databaseUrl, channelContract, this.options.migrate)
+    return Storage.build(this.options.databaseUrl, channelContract)
   }
 
   @memoize
