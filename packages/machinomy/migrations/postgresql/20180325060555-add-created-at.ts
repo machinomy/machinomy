@@ -7,7 +7,7 @@ let _meta: Object = {
 exports.up = (db: any, callback: CallbackFunction) => {
   return db.addColumn('payment', 'createdAt', {
     type: 'bigint'
-  })
+  }, callback)
 }
 
 exports.down = (db: DBMigrateBase, callback: CallbackFunction) => {

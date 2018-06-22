@@ -1,20 +1,20 @@
-import { Base as DBMigrateBase } from 'db-migrate-base'
+import { Base as DBMigrateBase, CallbackFunction } from 'db-migrate-base'
 
 let _meta: Object = {
   version: 1
 }
 
-exports.up = (db: any, callback: Function) => {
+exports.up = (db: any, callback: CallbackFunction) => {
   return db.addColumn('payment', 'createdAt', {
     type: 'bigint'
-  })
+  }, callback)
 }
 
-exports.down = (db: DBMigrateBase, callback: Function) => {
-  exports.removeColumn(db, 'payment', 'createdAt', callback)
+exports.down = (db: DBMigrateBase, callback: CallbackFunction) => {
+  exports.removeColumnSqlite(db, 'payment', 'createdAt', callback)
 }
 
-exports.removeColumn = (db: any, tableName: string, columnName: string, cb: Function) => {
+exports.removeColumnSqlite = (db: any, tableName: string, columnName: string, cb: CallbackFunction) => {
   db.all(`PRAGMA table_info(${tableName});`, async (err: Error, rows: any[]) => {
     if (err) {
       console.error(err)
@@ -40,7 +40,7 @@ exports.removeColumn = (db: any, tableName: string, columnName: string, cb: Func
         DROP TABLE ${tableName + '_backup'};
        `
       await db.runSql(removeColumnSql)
-      cb()
+      cb(null, 'ok')
     }
   })
 }
