@@ -1,12 +1,7 @@
 import { Base as DBMigrateBase, CallbackFunction } from 'db-migrate-base'
 
-let dbm: any
 let _meta: Object = {
   version: 1
-}
-
-exports.setup = (options: any, seedLink: any) => {
-  dbm = options.dbmigrate
 }
 
 exports.up = (db: any, callback: CallbackFunction) => {
