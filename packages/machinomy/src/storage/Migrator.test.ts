@@ -13,6 +13,21 @@ import * as sinon from 'sinon'
 import * as support from '../support'
 import * as DBMigrate from 'db-migrate'
 
+async function retrieveInFolderMigrationList (): Promise<string[]> {
+  let result: string[] = []
+  let pathToRead = `${__dirname}/../../migrations/${process.env.DB_URL!.split('://')[0]}`
+  const listOfFiles: string[] = fs.readdirSync(pathToRead)
+  for (let filename of listOfFiles) {
+    let pathToStat = `${__dirname}/../../migrations/${process.env.DB_URL!.split('://')[0]}/${filename}`
+    const isDir = fs.statSync(pathToStat).isDirectory()
+    if (!isDir) {
+      result.push(filename.slice(0, -3))
+    }
+  }
+  result.sort()
+  return result
+}
+
 describe('Main', () => {
   let engine: IEngine & IExec<any>
   let dbmigrate: DBMigrate.DBMigrate
@@ -23,42 +38,23 @@ describe('Main', () => {
   let channelContract: ChannelContract
   let runSqlAll: any
 
-  function retrieveInFolderMigrationList (): Promise<string[]> {
-    return new Promise(async (resolve) => {
-      let result: string[] = []
-      let pathToRead = `${__dirname}/../../migrations/${process.env.DB_URL!.split('://')[0]}`
-      const listOfFiles: string[] = fs.readdirSync(pathToRead)
-      for (let filename of listOfFiles) {
-        let pathToStat = `${__dirname}/../../migrations/${process.env.DB_URL!.split('://')[0]}/${filename}`
-        const isDir = fs.statSync(pathToStat).isDirectory()
-        if (!isDir) {
-          result.push(filename.slice(0, -3))
+  function retrieveUpMigrationList (): Promise<string[]> {
+    // tslint:disable-next-line:no-floating-promises
+    return engine.exec((client: any) => {
+      return runSqlAll('SELECT name FROM migrations ORDER BY name ASC')
+    }).then((res: any) => {
+      switch (process.env.DB_URL!.split('://')[0]) {
+        case 'postgresql': {
+          res = res.rows
+          break
         }
       }
-      result.sort()
-      return resolve(result)
-    })
-  }
-
-  function retrieveUpMigrationList (): Promise<string[]> {
-    return new Promise((resolve) => {
-      // tslint:disable-next-line:no-floating-promises
-      engine.exec((client: any) => {
-        return runSqlAll('SELECT name FROM migrations ORDER BY name ASC')
-      }).then((res: any) => {
-        switch (process.env.DB_URL!.split('://')[0]) {
-          case 'postgresql': {
-            res = res.rows
-            break
-          }
-        }
-        const names: string[] = res.map((element: any) => element['name'])
-        let result: string[] = []
-        for (let migrationName of names) {
-          result.push(migrationName.substring(1))
-        }
-        return resolve(result)
-      })
+      const names: string[] = res.map((element: any) => element['name'])
+      let result: string[] = []
+      for (let migrationName of names) {
+        result.push(migrationName.substring(1))
+      }
+      return result
     })
   }
 
