@@ -1,4 +1,5 @@
 import * as Web3 from 'web3'
+import { MigrateOption } from './MigrateOption'
 import { PaymentChannel } from './PaymentChannel'
 import * as BigNumber from 'bignumber.js'
 import Payment, { PaymentSerde } from './payment'
@@ -53,6 +54,7 @@ export default class Machinomy {
    * </code></pre>
    */
   async buy (options: BuyOptions): Promise<BuyResult> {
+    await this.checkMigrationsState()
     if (!options.gateway) {
       throw new Error('gateway must be specified.')
     }
@@ -67,6 +69,7 @@ export default class Machinomy {
   }
 
   async payment (options: BuyOptions): Promise<NextPaymentResult> {
+    await this.checkMigrationsState()
     let channelManager = await this.registry.channelManager()
     const payment = await this.nextPayment(options)
     await channelManager.spendChannel(payment)
@@ -74,11 +77,13 @@ export default class Machinomy {
   }
 
   async pry (uri: string): Promise<PaymentRequired> {
+    await this.checkMigrationsState()
     let client = await this.registry.client()
     return client.doPreflight(uri)
   }
 
   async buyUrl (uri: string): Promise<BuyResult> {
+    await this.checkMigrationsState()
     let client = await this.registry.client()
     let req = await client.doPreflight(uri)
     return this.buy({
@@ -103,12 +108,14 @@ export default class Machinomy {
    * @param value - Size of deposit in Wei.
    */
   async deposit (channelId: string, value: BigNumber.BigNumber | number): Promise<TransactionResult> {
+    await this.checkMigrationsState()
     const _value = new BigNumber.BigNumber(value)
     let channelManager = await this.registry.channelManager()
     return channelManager.deposit(channelId, _value)
   }
 
   async open (receiver: string, value: BigNumber.BigNumber | number, channelId?: ChannelId | string): Promise<PaymentChannel> {
+    await this.checkMigrationsState()
     const _value = new BigNumber.BigNumber(value)
     let channelManager = await this.registry.channelManager()
     return channelManager.openChannel(this.account, receiver, new BigNumber.BigNumber(0), _value, channelId)
@@ -118,21 +125,25 @@ export default class Machinomy {
    * Returns the list of opened channels.
    */
   async channels (): Promise<PaymentChannel[]> {
+    await this.checkMigrationsState()
     let channelManager = await this.registry.channelManager()
     return channelManager.channels()
   }
 
   async openChannels (): Promise<PaymentChannel[]> {
+    await this.checkMigrationsState()
     let channelManager = await this.registry.channelManager()
     return channelManager.openChannels()
   }
 
   async settlingChannels (): Promise<PaymentChannel[]> {
+    await this.checkMigrationsState()
     let channelManager = await this.registry.channelManager()
     return channelManager.settlingChannels()
   }
 
   async channelById (channelId: string): Promise<PaymentChannel | null> {
+    await this.checkMigrationsState()
     let channelManager = await this.registry.channelManager()
     return channelManager.channelById(channelId)
   }
@@ -150,6 +161,7 @@ export default class Machinomy {
    * For more details on how payment channels work refer to a website.
    */
   async close (channelId: string): Promise<TransactionResult> {
+    await this.checkMigrationsState()
     let channelManager = await this.registry.channelManager()
     return channelManager.closeChannel(channelId)
   }
@@ -158,6 +170,7 @@ export default class Machinomy {
    * Save payment into the storage and return an id of the payment. The id can be used by {@link Machinomy.paymentById}.
    */
   async acceptPayment (req: any): Promise<AcceptPaymentResponse> {
+    await this.checkMigrationsState()
     let client = await this.registry.client()
     return client.acceptPayment(AcceptPaymentRequestSerde.instance.deserialize(req))
   }
@@ -166,25 +179,43 @@ export default class Machinomy {
    * Return information about the payment by id.
    */
   async paymentById (id: string): Promise<Payment | null> {
+    await this.checkMigrationsState()
     let storage = await this.registry.storage()
     return storage.paymentsDatabase.findByToken(id)
   }
 
   async acceptToken (req: AcceptTokenRequest): Promise<AcceptTokenResponse> {
+    await this.checkMigrationsState()
     let client = await this.registry.client()
     return client.acceptVerify(req)
   }
 
   async shutdown (): Promise<void> {
+    await this.checkMigrationsState()
     let storage = await this.registry.storage()
     return storage.engine.close()
   }
 
   private async nextPayment (options: BuyOptions): Promise<Payment> {
+    await this.checkMigrationsState()
     const price = new BigNumber.BigNumber(options.price)
 
     let channelManager = await this.registry.channelManager()
     const channel = await channelManager.requireOpenChannel(this.account, options.receiver, price)
     return channelManager.nextPayment(channel.channelId, price, options.meta || '')
+  }
+
+  private async checkMigrationsState (): Promise<any> {
+    return new Promise(async () => {
+      const storage = await this.registry.storage()
+      if (storage.migrator && !storage.migrator.isLatest()) {
+        if (this.registry.options.migrate === undefined || this.registry.options.migrate === MigrateOption.Silent) {
+          // tslint:disable-next-line:no-floating-promises
+          return storage.migrator.sync()
+        } else {
+          throw new Error('There are non-applied db-migrations!')
+        }
+      }
+    })
   }
 }
