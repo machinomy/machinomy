@@ -15,6 +15,7 @@ import MachinomyOptions from './MachinomyOptions'
 import BuyOptions from './BuyOptions'
 import NextPaymentResult from './NextPaymentResult'
 import BuyResult from './BuyResult'
+import { memoize } from 'decko'
 
 /**
  * Machinomy is a library for micropayments in Ether over HTTP.
@@ -205,6 +206,7 @@ export default class Machinomy {
     return channelManager.nextPayment(channel.channelId, price, options.meta || '')
   }
 
+  @memoize
   private async checkMigrationsState (): Promise<void> {
     const storage = await this.registry.storage()
     if (storage.migrator && !storage.migrator.isLatest()) {
