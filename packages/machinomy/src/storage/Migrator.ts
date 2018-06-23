@@ -65,37 +65,30 @@ export default class Migrator implements IMigrator {
     return result
   }
 
-  isLatest (): Promise<boolean> {
-    return new Promise((resolve) => {
-      return resolve(this.dbmigrate.check())
-    })
+  async isLatest (): Promise<boolean> {
+    return this.dbmigrate.check()
   }
 
-  sync (n?: string): Promise<void> {
-    return new Promise(async (resolve) => {
-      if (n !== undefined) {
-        this.dbmigrate.sync(n)
-      } else {
-        const migrationsInFolder = await this.retrieveInFolderMigrationList()
-        const lastMigrationInFolderName = migrationsInFolder[migrationsInFolder.length - 1].substring(0, LENGTH_OF_MIGRATION_NAME)
-        this.dbmigrate.sync(lastMigrationInFolderName)
-      }
-      return resolve()
-    })
+  async sync (n?: string): Promise<void> {
+    if (n !== undefined) {
+      this.dbmigrate.sync(n)
+    } else {
+      const migrationsInFolder = await this.retrieveInFolderMigrationList()
+      const lastMigrationInFolderName = migrationsInFolder[migrationsInFolder.length - 1].substring(0, LENGTH_OF_MIGRATION_NAME)
+      this.dbmigrate.sync(lastMigrationInFolderName)
+    }
   }
 
-  retrieveInFolderMigrationList (): Promise<string[]> {
-    return new Promise(async (resolve) => {
-      let result: string[] = []
-      const listOfFiles: string[] = fs.readdirSync(this.migrationsPath)
-      for (let filename of listOfFiles) {
-        const isDir = fs.statSync(this.migrationsPath + filename).isDirectory()
-        if (!isDir) {
-          result.push(filename.slice(0, -3))
-        }
+  async retrieveInFolderMigrationList (): Promise<string[]> {
+    let result: string[] = []
+    const listOfFiles: string[] = fs.readdirSync(this.migrationsPath)
+    for (let filename of listOfFiles) {
+      const isDir = fs.statSync(this.migrationsPath + filename).isDirectory()
+      if (!isDir) {
+        result.push(filename.slice(0, -3))
       }
-      result.sort()
-      return resolve(result)
-    })
+    }
+    result.sort()
+    return result
   }
 }
