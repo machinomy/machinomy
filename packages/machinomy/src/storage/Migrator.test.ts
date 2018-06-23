@@ -129,7 +129,7 @@ describe('Main', () => {
       } else {
         expect(await storage.migrator!.isLatest() === false)
       }
-    }).timeout(5000)
+    }).timeout(15000)
 
     it('not all migrations synced', async (done) => {
       if (!engine) {
@@ -141,7 +141,7 @@ describe('Main', () => {
         await removeLastRowFromMigrationsTable()
       }
       expect(await storage.migrator!.isLatest() === false)
-    }).timeout(5000)
+    }).timeout(15000)
 
     it('trying to sync migrations', async (done) => {
       if (!engine) {
@@ -156,7 +156,7 @@ describe('Main', () => {
       expect(await storage.migrator!.isLatest() === false)
       await storage.migrator!.sync()
       expect(await storage.migrator!.isLatest() === true)
-    }).timeout(5000)
+    }).timeout(15000)
   })
 
   function removeLastRowFromMigrationsTable (): Promise<void> {
