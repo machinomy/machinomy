@@ -12,7 +12,8 @@ Machinomy Lerna Monorepo repository.
 Available sub-projects:
 - [Machinomy](packages/machinomy) is a Node.js library for micropayments in Ether over HTTP. It allows you to send and receive a minuscule amount of money instantly.
 - [Contracts](packages/contracts) is a TypeScript interface for Ethereum contracts managed by [Truffle](https://github.com/trufflesuite/truffle) used by [Machinomy](packages/machinomy).
-- [Playground](packages/playground) is [Machinomy](packages/machinomy) examples.
+- [Examples](packages/examples) is [Machinomy](packages/machinomy) examples.
+- [Playground](packages/playground) contains code of playground.machinomy.com
 
 
 
