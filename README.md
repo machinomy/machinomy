@@ -38,7 +38,7 @@ $ node packages/examples/src/server.js
 And then run client script:
 
 ```
-$ node packages/machinomy/examples/client.js
+$ node packages/examples/src/client.js
 ```
 
 ## Usage
