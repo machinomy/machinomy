@@ -5,8 +5,7 @@ import IChannelsDatabase from './storage/IChannelsDatabase'
 import ChannelContract from './ChannelContract'
 import IEngine from './storage/IEngine'
 import Migrator from './storage/Migrator'
-
-const resolvePath = require('path').resolve
+import { resolve as resolvePath } from 'path'
 
 export interface Storage {
   engine: IEngine,
