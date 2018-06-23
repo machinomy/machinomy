@@ -74,7 +74,7 @@ export default class Paywall {
         log(error)
         this.paymentRequired(fixedPrice, req, res)
       } else {
-        const response = await fetcher.fetch(`${GATEWAY_URL}${PREFIX}/verify?token=${token}&meta=${meta}&price=${price}`, {
+        const response = await fetcher.fetch(`${GATEWAY_URL}${PREFIX}/verify/${token}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'
