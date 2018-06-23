@@ -6,7 +6,7 @@ import Migrator from './Migrator'
 import EnginePostgres from './postgresql/EnginePostgres'
 import EngineSqlite from './sqlite/EngineSqlite'
 import Storage from '../Storage'
-import expect = require('expect')
+import * as expect from 'expect'
 import * as Web3 from 'web3'
 import * as sinon from 'sinon'
 import * as support from '../support'
