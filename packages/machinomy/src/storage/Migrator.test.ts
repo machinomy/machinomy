@@ -28,7 +28,7 @@ async function retrieveInFolderMigrationList (): Promise<string[]> {
   return result
 }
 
-describe('Main', () => {
+describe('Migrator', () => {
   let engine: IEngine & IExec<any>
   let dbmigrate: DBMigrate.DBMigrate
   let storage: Storage
@@ -114,47 +114,45 @@ describe('Main', () => {
     })
   })
 
-  describe('common', () => {
-    it('all migrations synced', async () => {
-      if (!engine) {
-        return
-      }
-      const listOfMigrations = await retrieveInFolderMigrationList()
-      const listOfUpMigrations = await retrieveUpMigrationList()
-      if (listOfMigrations.length === listOfUpMigrations.length) {
-        expect(await storage.migrator!.isLatest() === true)
-      } else {
-        expect(await storage.migrator!.isLatest() === false)
-      }
-    }).timeout(5000)
-
-    it('not all migrations synced', async () => {
-      if (!engine) {
-        return
-      }
-      const listOfMigrations = await retrieveInFolderMigrationList()
-      const listOfUpMigrations = await retrieveUpMigrationList()
-      if (listOfMigrations.length === listOfUpMigrations.length) {
-        await removeLastRowFromMigrationsTable()
-      }
-      expect(await storage.migrator!.isLatest() === false)
-    }).timeout(5000)
-
-    it('trying to sync migrations', async () => {
-      if (!engine) {
-        return
-      }
-      const listOfMigrations = await retrieveInFolderMigrationList()
-      const listOfUpMigrations = await retrieveUpMigrationList()
-      if (listOfMigrations.length === listOfUpMigrations.length) {
-        expect(await storage.migrator!.isLatest() === true)
-      }
-      await removeLastRowFromMigrationsTable()
-      expect(await storage.migrator!.isLatest() === false)
-      await storage.migrator!.sync()
+  it('all migrations already synced', async () => {
+    if (!engine) {
+      return
+    }
+    const listOfMigrations = await retrieveInFolderMigrationList()
+    const listOfUpMigrations = await retrieveUpMigrationList()
+    if (listOfMigrations.length === listOfUpMigrations.length) {
       expect(await storage.migrator!.isLatest() === true)
-    }).timeout(5000)
-  })
+    } else {
+      expect(await storage.migrator!.isLatest() === false)
+    }
+  }).timeout(5000)
+
+  it('not all migrations synced at the moment', async () => {
+    if (!engine) {
+      return
+    }
+    const listOfMigrations = await retrieveInFolderMigrationList()
+    const listOfUpMigrations = await retrieveUpMigrationList()
+    if (listOfMigrations.length === listOfUpMigrations.length) {
+      await removeLastRowFromMigrationsTable()
+    }
+    expect(await storage.migrator!.isLatest() === false)
+  }).timeout(5000)
+
+  it('trying to sync migrations', async () => {
+    if (!engine) {
+      return
+    }
+    const listOfMigrations = await retrieveInFolderMigrationList()
+    const listOfUpMigrations = await retrieveUpMigrationList()
+    if (listOfMigrations.length === listOfUpMigrations.length) {
+      expect(await storage.migrator!.isLatest() === true)
+    }
+    await removeLastRowFromMigrationsTable()
+    expect(await storage.migrator!.isLatest() === false)
+    await storage.migrator!.sync()
+    expect(await storage.migrator!.isLatest() === true)
+  }).timeout(5000)
 
   function removeLastRowFromMigrationsTable (): Promise<void> {
     return engine.connect().then(() => {
