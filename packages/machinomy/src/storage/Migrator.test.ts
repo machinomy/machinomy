@@ -118,9 +118,9 @@ describe('Main', () => {
   })
 
   describe('common', () => {
-    it('all migrations synced', async (done) => {
+    it('all migrations synced', async () => {
       if (!engine) {
-        return done()
+        return
       }
       const listOfMigrations = await retrieveInFolderMigrationList()
       const listOfUpMigrations = await retrieveUpMigrationList()
@@ -129,11 +129,11 @@ describe('Main', () => {
       } else {
         expect(await storage.migrator!.isLatest() === false)
       }
-    }).timeout(15000)
+    }).timeout(5000)
 
-    it('not all migrations synced', async (done) => {
+    it('not all migrations synced', async () => {
       if (!engine) {
-        return done()
+        return
       }
       const listOfMigrations = await retrieveInFolderMigrationList()
       const listOfUpMigrations = await retrieveUpMigrationList()
@@ -141,11 +141,11 @@ describe('Main', () => {
         await removeLastRowFromMigrationsTable()
       }
       expect(await storage.migrator!.isLatest() === false)
-    }).timeout(15000)
+    }).timeout(5000)
 
-    it('trying to sync migrations', async (done) => {
+    it('trying to sync migrations', async () => {
       if (!engine) {
-        return done()
+        return
       }
       const listOfMigrations = await retrieveInFolderMigrationList()
       const listOfUpMigrations = await retrieveUpMigrationList()
@@ -156,7 +156,7 @@ describe('Main', () => {
       expect(await storage.migrator!.isLatest() === false)
       await storage.migrator!.sync()
       expect(await storage.migrator!.isLatest() === true)
-    }).timeout(15000)
+    }).timeout(5000)
   })
 
   function removeLastRowFromMigrationsTable (): Promise<void> {
