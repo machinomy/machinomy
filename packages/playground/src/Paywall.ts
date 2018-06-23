@@ -10,7 +10,7 @@ const log = debug('paywall')
 
 const HEADER_NAME = 'authorization'
 const TOKEN_NAME = 'paywall'
-const PREFIX = '/v1'
+const PREFIX = '/payments'
 
 dotenv.config()
 
