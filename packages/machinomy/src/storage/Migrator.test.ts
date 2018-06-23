@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import { Unidirectional } from '../../../contracts/lib'
 import ChannelContract from '../ChannelContract'
 import IEngine from './IEngine'
+import IExec from './IExec'
 import Migrator from './Migrator'
 import EnginePostgres from './postgresql/EnginePostgres'
 import EngineSqlite from './sqlite/EngineSqlite'
@@ -13,7 +14,7 @@ import * as support from '../support'
 import * as DBMigrate from 'db-migrate'
 
 describe('Main', () => {
-  let engine: IEngine & { exec<B> (fn: (client: any) => B): Promise<B>}
+  let engine: IEngine & IExec<any>
   let dbmigrate: DBMigrate.DBMigrate
   let storage: Storage
   let web3: Web3
