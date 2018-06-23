@@ -205,17 +205,15 @@ export default class Machinomy {
     return channelManager.nextPayment(channel.channelId, price, options.meta || '')
   }
 
-  private async checkMigrationsState (): Promise<any> {
-    return new Promise(async () => {
-      const storage = await this.registry.storage()
-      if (storage.migrator && !storage.migrator.isLatest()) {
-        if (this.registry.options.migrate === undefined || this.registry.options.migrate === MigrateOption.Silent) {
-          // tslint:disable-next-line:no-floating-promises
-          return storage.migrator.sync()
-        } else {
-          throw new Error('There are non-applied db-migrations!')
-        }
+  private async checkMigrationsState (): Promise<void> {
+    const storage = await this.registry.storage()
+    if (storage.migrator && !storage.migrator.isLatest()) {
+      if (this.registry.options.migrate === undefined || this.registry.options.migrate === MigrateOption.Silent) {
+        // tslint:disable-next-line:no-floating-promises
+        return storage.migrator.sync()
+      } else {
+        throw new Error('There are non-applied db-migrations!')
       }
-    })
+    }
   }
 }
