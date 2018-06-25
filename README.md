@@ -23,6 +23,8 @@ Support/Discussion: [Gitter](https://gitter.im/machinomy/machinomy).
 
 ## Installation
 
+Using [yarn](https://yarnpkg.com/lang/en/) is mandatory (**don't use npm!**)
+
     $ yarn add machinomy
 
 The library supports mainnet, Ropsten, and [Rinkeby](https://www.rinkeby.io/) networks.
@@ -70,6 +72,8 @@ For more advanced documentation go to [doc/](doc/) folder.
 **Developers:** Machinomy is for you. Feel free to use it, break it, fork it, and make the world better. The code is standard TypeScript, no special skills required:
 
     $ yarn install && yarn bootstrap
+
+Using [yarn](https://yarnpkg.com/lang/en/) is mandatory (**don't use npm!**)
 
 **Non-Developers:** You are lovely. As a starter, help us spread the word! Tell a friend right now.
 If not enough, developers need flesh-world guidance. It starts with proper documentation and a pinch of fantasy.
