@@ -6,19 +6,15 @@ import { PaymentChannel } from './PaymentChannel'
 import ChannelContract from './ChannelContract'
 import expectsRejection from './util/expects_rejection'
 import IEngine from './storage/IEngine'
-import EngineMongo from './storage/mongo/EngineMongo'
 import EngineNedb from './storage/nedb/EngineNedb'
 import EnginePostgres from './storage/postgresql/EnginePostgres'
 import AbstractChannelsDatabase from './storage/AbstractChannelsDatabase'
 import NedbChannelsDatabase from './storage/nedb/NedbChannelsDatabase'
-import MongoChannelsDatabase from './storage/mongo/MongoChannelsDatabase'
 import PostgresChannelsDatabase from './storage/postgresql/PostgresChannelsDatabase'
 import IPaymentsDatabase from './storage/IPaymentsDatabase'
 import NedbPaymentsDatabase from './storage/nedb/NedbPaymentsDatabase'
 import PostgresPaymentsDatabase from './storage/postgresql/PostgresPaymentsDatabase'
-import MongoPaymentsDatabase from './storage/mongo/MongoPaymentsDatabase'
 import PostgresTokensDatabase from './storage/postgresql/PostgresTokensDatabase'
-import MongoTokensDatabase from './storage/mongo/MongoTokensDatabase'
 import ITokensDatabase from './storage/ITokensDatabase'
 import NedbTokensDatabase from './storage/nedb/NedbTokensDatabase'
 import EngineSqlite from './storage/sqlite/EngineSqlite'
@@ -34,8 +30,6 @@ function buildEngine (filename: string): IEngine {
   switch (engineName) {
     case 'nedb':
       return new EngineNedb(filename, false)
-    case 'mongo':
-      return new EngineMongo('mongodb://localhost:27017/machinomy')
     case 'postgresql':
       return new EnginePostgres()
     case 'sqlite':
@@ -52,10 +46,6 @@ function buildDatabases (engine: IEngine, channelContract: ChannelContract): [Ab
 
   if (engine instanceof EnginePostgres) {
     return [new PostgresChannelsDatabase(engine, channelContract, null), new PostgresPaymentsDatabase(engine, null), new PostgresTokensDatabase(engine, null)]
-  }
-
-  if (engine instanceof EngineMongo) {
-    return [new MongoChannelsDatabase(engine, channelContract, null), new MongoPaymentsDatabase(engine, null), new MongoTokensDatabase(engine, null)]
   }
 
   if (engine instanceof EngineSqlite) {

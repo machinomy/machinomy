@@ -24,8 +24,6 @@ export namespace Storage {
     switch (protocol) {
       case 'nedb':
         return buildNedb(splits[1], channelContract, namespace)
-      case 'mongo':
-        return buildMongo(databaseUrl, channelContract, namespace)
       case 'postgresql':
         return buildPostgres(databaseUrl, channelContract, namespace)
       case 'sqlite':
@@ -64,22 +62,6 @@ export namespace Storage {
       paymentsDatabase: new SqlitePaymentsDatabase(engine, namespace),
       channelsDatabase: new SqliteChannelsDatabase(engine, channelContract, namespace),
       migrator: new Migrator(engine, databaseUrl, resolvePath('migrations/sqlite/'))
-    }
-  }
-
-  async function buildMongo (databaseUrl: string, channelContract: ChannelContract, namespace: string): Promise<Storage> {
-    let EngineMongo = (await import('./storage/mongo/EngineMongo')).default
-    let MongoTokensDatabase = (await import('./storage/mongo/MongoTokensDatabase')).default
-    let MongoPaymentsDatabase = (await import('./storage/mongo/MongoPaymentsDatabase')).default
-    let MongoChannelsDatabase = (await import('./storage/mongo/MongoChannelsDatabase')).default
-
-    let engine = new EngineMongo(databaseUrl)
-    return {
-      engine: engine,
-      tokensDatabase: new MongoTokensDatabase(engine, namespace),
-      paymentsDatabase: new MongoPaymentsDatabase(engine, namespace),
-      channelsDatabase: new MongoChannelsDatabase(engine, channelContract, namespace),
-      migrator: undefined
     }
   }
 

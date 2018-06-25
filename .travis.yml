@@ -4,7 +4,6 @@ node_js:
   - "9"
 cache: yarn
 services:
-  - mongodb
   - postgresql
 env:
   - PGUSER=postgres PGDATABASE=machinomy_test NODE_ENV=test

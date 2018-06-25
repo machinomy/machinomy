@@ -6,10 +6,6 @@ import NedbChannelsDatabase from './storage/nedb/NedbChannelsDatabase'
 import NedbTokensDatabase from './storage/nedb/NedbTokensDatabase'
 import NedbPaymentsDatabase from './storage/nedb/NedbPaymentsDatabase'
 import ChannelContract from './ChannelContract'
-import EngineMongo from './storage/mongo/EngineMongo'
-import MongoChannelsDatabase from './storage/mongo/MongoChannelsDatabase'
-import MongoTokensDatabase from './storage/mongo/MongoTokensDatabase'
-import MongoPaymentsDatabase from './storage/mongo/MongoPaymentsDatabase'
 import EnginePostgres from './storage/postgresql/EnginePostgres'
 import PostgresChannelsDatabase from './storage/postgresql/PostgresChannelsDatabase'
 import PostgresTokensDatabase from './storage/postgresql/PostgresTokensDatabase'
@@ -49,18 +45,6 @@ describe('Storage', () => {
       expect(storage.channelsDatabase instanceof NedbChannelsDatabase).toBeTruthy()
       expect(storage.tokensDatabase instanceof NedbTokensDatabase).toBeTruthy()
       expect(storage.paymentsDatabase instanceof NedbPaymentsDatabase).toBeTruthy()
-    })
-  })
-
-  context('for Mongo', async () => {
-    let url = 'mongo://'
-
-    specify('provide Mongo databases', async () => {
-      let storage = await Storage.build(url, channelContract)
-      expect(storage.engine instanceof EngineMongo).toBeTruthy()
-      expect(storage.channelsDatabase instanceof MongoChannelsDatabase).toBeTruthy()
-      expect(storage.tokensDatabase instanceof MongoTokensDatabase).toBeTruthy()
-      expect(storage.paymentsDatabase instanceof MongoPaymentsDatabase).toBeTruthy()
     })
   })
 
