@@ -1,7 +1,7 @@
 // import machinomy from '../lib/buy'
 import * as config from '../../machinomy/lib/configuration'
 import * as fs from 'fs'
-import prompt from 'prompt'
+import prompt = require('prompt')
 import CommandPrompt from './CommandPrompt'
 const setup = (command: CommandPrompt) => {
   let namespace = command.namespace || 'sender'
