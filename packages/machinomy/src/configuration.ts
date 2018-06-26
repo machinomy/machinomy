@@ -40,7 +40,7 @@ export const configFilePath = (): string => {
 }
 
 const databaseFilePath = (): string => {
-  return path.join(baseDirPath(), DATABASE_FILE)
+  return 'nedb://' + path.join(baseDirPath(), DATABASE_FILE)
 }
 
 export interface IConfigurationOptions {
