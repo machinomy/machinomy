@@ -1,7 +1,7 @@
 // import machinomy from '../lib/buy'
 import * as config from '../../machinomy/lib/configuration'
 import * as fs from 'fs'
-import * as prompt from 'prompt'
+import prompt from 'prompt'
 import CommandPrompt from './CommandPrompt'
 const setup = (command: CommandPrompt) => {
   let namespace = command.namespace || 'sender'
@@ -23,7 +23,7 @@ const setup = (command: CommandPrompt) => {
     configuration = {}
   }
 
-  prompt.message = null
+  prompt.message = ''
   prompt.colors = false
   prompt.start()
   console.log('Please, for a command line client insert you Ethereum account address, and optionally a password')
