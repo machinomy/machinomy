@@ -1,7 +1,7 @@
 // import machinomy from '../lib/buy'
 import * as config from '../../machinomy/lib/configuration'
 import * as fs from 'fs'
-import prompt = require('prompt')
+import * as prompt from 'prompt'
 import CommandPrompt from './CommandPrompt'
 const setup = (command: CommandPrompt) => {
   let namespace = command.namespace || 'sender'
@@ -28,7 +28,8 @@ const setup = (command: CommandPrompt) => {
   prompt.start()
   console.log('Please, for a command line client insert you Ethereum account address, and optionally a password')
   console.log('For ' + namespace)
-  prompt.get<{account: string, password: string}>(['account', 'password'], function (err, result) {
+  type AccountPasswordType = { account: string, password: string }
+  prompt.get<AccountPasswordType>(['account', 'password'], (err: Error, result: AccountPasswordType) => {
     if (err) {
       throw err
     }
