@@ -19,7 +19,8 @@
   "dependencies": {
     "bignumber.js": "^7.2.1",
     "commander": "^2.9.0",
-    "homedir": "https://github.com/ukstv/node-homedir"
+    "homedir": "https://github.com/ukstv/node-homedir",
+    "prompt": "^1.0.0"
   },
   "devDependencies": {
     "@types/bignumber.js": "^5.0.0",
