@@ -1,4 +1,4 @@
 #!/usr/bin/env node
 
-import commands from '../commands'
+import * as commands from '../commands'
 commands.main(process.argv)
