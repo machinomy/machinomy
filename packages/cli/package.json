@@ -15,6 +15,7 @@
     "machinomy": "./bin/machinomy.js"
   },
   "scripts": {
+    "build": "tsc --project tsconfig.json"
   },
   "dependencies": {
     "bignumber.js": "^7.2.1",
@@ -25,6 +26,7 @@
   "devDependencies": {
     "@types/bignumber.js": "^5.0.0",
     "@types/node": "^10.3.6",
+    "@types/prompt": "https://github.com/machinomy/types-prompt",
     "tslint": "^5.10.0",
     "tslint-config-standard": "^7.1.0",
     "typescript": "^2.8.3",
