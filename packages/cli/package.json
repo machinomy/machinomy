@@ -1,0 +1,32 @@
+{
+  "name": "@machinomy/cli",
+  "version": "0.0.1",
+  "description": "Machinomy CLI",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/machinomy/machinomy#readme",
+  "bugs": {
+    "url": "https://github.com/machinomy/machinomy/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/machinomy/machinomy.git"
+  },
+  "bin": {
+    "machinomy": "./bin/machinomy.js"
+  },
+  "scripts": {
+  },
+  "dependencies": {
+    "bignumber.js": "^7.2.1",
+    "commander": "^2.9.0",
+    "homedir": "https://github.com/ukstv/node-homedir"
+  },
+  "devDependencies": {
+    "@types/bignumber.js": "^5.0.0",
+    "@types/node": "^10.3.6",
+    "tslint": "^5.10.0",
+    "tslint-config-standard": "^7.1.0",
+    "typescript": "^2.8.3",
+    "typescript-logger": "^1.1.0"
+  }
+}
