@@ -78,7 +78,7 @@ const ensure = function (command: Function) {
   }
 }
 
-const main = function (args: string[]) {
+export const main = function (args: string[]) {
   let version = PACKAGE.name + ' v' + PACKAGE.version
   let parser = commander
     .version(version)
@@ -114,8 +114,4 @@ const main = function (args: string[]) {
     .action(setup)
 
   parser.parse(args)
-}
-
-module.exports = {
-  main: main
 }
