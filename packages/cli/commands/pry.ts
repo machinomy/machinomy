@@ -1,5 +1,5 @@
 import * as configuration from 'machinomy/lib/configuration'
-import Web3 = require('web3')
+import * as Web3 from 'web3'
 import Machinomy from 'machinomy'
 
 async function pry (uri: string) {
