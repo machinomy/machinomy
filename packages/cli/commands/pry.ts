@@ -1,6 +1,6 @@
-import * as configuration from '../../machinomy/lib/configuration'
+import * as configuration from 'machinomy/lib/configuration'
 import Web3 = require('web3')
-import Machinomy from '../../machinomy/lib/index'
+import Machinomy from 'machinomy'
 
 async function pry (uri: string) {
   const settings = configuration.sender()
