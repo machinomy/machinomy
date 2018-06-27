@@ -1,4 +1,4 @@
-import * as conf from '../../machinomy/lib/configuration'
+import * as conf from 'machinomy/lib/configuration'
 import CommandPrompt from './CommandPrompt'
 
 function configuration (options: CommandPrompt) {

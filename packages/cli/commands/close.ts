@@ -1,6 +1,6 @@
-import * as configuration from '../../machinomy/lib/configuration'
+import * as configuration from 'machinomy/lib/configuration'
 import CommandPrompt from './CommandPrompt'
-import Machinomy from '../../machinomy/lib/index'
+import Machinomy from 'machinomy'
 import * as Web3 from 'web3'
 
 let provider = configuration.currentProvider()

@@ -1,7 +1,7 @@
-import * as configuration from '../../machinomy/lib/configuration'
-import Machinomy from '../../machinomy/lib/index'
+import * as configuration from 'machinomy/lib/configuration'
+import Machinomy from 'machinomy'
 import * as Web3 from 'web3'
-import { PaymentChannelSerde } from '../../machinomy/lib/PaymentChannel'
+import { PaymentChannelSerde } from 'machinomy/lib/PaymentChannel'
 
 async function channels (): Promise<void> {
   const settings = configuration.sender()

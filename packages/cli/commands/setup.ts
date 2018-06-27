@@ -1,5 +1,4 @@
-// import machinomy from '../lib/buy'
-import * as config from '../../machinomy/lib/configuration'
+import * as config from 'machinomy/lib/configuration'
 import * as fs from 'fs'
 import prompt = require('prompt')
 import CommandPrompt from './CommandPrompt'

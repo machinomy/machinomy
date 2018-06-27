@@ -1,6 +1,6 @@
-import { buyContent } from '../../machinomy/lib/buy'
+import { buyContent } from 'machinomy/lib/buy'
 import CommandPrompt from './CommandPrompt'
-import * as configuration from '../../machinomy/lib/configuration'
+import * as configuration from 'machinomy/lib/configuration'
 
 function buy (uri: string, command: CommandPrompt): void {
   let settings = configuration.sender()
