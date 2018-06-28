@@ -21,7 +21,7 @@
     "bignumber.js": "^7.2.1",
     "commander": "^2.9.0",
     "homedir": "https://github.com/ukstv/node-homedir",
-    "machinomy": "^1.10.0",
+    "machinomy": "^1.10.1",
     "prompt": "^1.0.0"
   },
   "devDependencies": {
