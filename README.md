@@ -20,6 +20,7 @@ Available sub-projects:
 Web site: [machinomy.com](http://machinomy.com).
 Twitter: [@machinomy](http://twitter.com/machinomy).
 Support/Discussion: [Gitter](https://gitter.im/machinomy/machinomy).
+FAQ: [GitHub Wiki Page](https://github.com/machinomy/machinomy/wiki/Frequently-Asked-Questions).
 
 ## Installation
 
