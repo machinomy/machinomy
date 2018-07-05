@@ -1,5 +1,5 @@
 import homedir = require('homedir')
-import Log from './util/log'
+import { log as Log } from '@machinomy/logger'
 import path = require('path')
 import Web3 = require('web3')
 import * as env from './env'

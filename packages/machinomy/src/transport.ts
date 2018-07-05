@@ -1,7 +1,7 @@
 import { RequestResponse, RequiredUriUrl, CoreOptions } from 'request'
 import Payment from './payment'
 import * as BigNumber from 'bignumber.js'
-import log from './util/log'
+import { log } from '@machinomy/logger'
 let req = require('request')
 
 const request: (opts: RequiredUriUrl & CoreOptions) => Promise<RequestResponse> = (opts: RequiredUriUrl & CoreOptions) => {

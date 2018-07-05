@@ -5,7 +5,7 @@ import { namespaced } from '../util/namespaced'
 import IEngine from './IEngine'
 import ChannelId from '../ChannelId'
 import IChannelsDatabase from './IChannelsDatabase'
-import log from '../util/log'
+import { log } from '@machinomy/logger'
 
 const LOG = log('AbstractChannelsDatabase')
 

@@ -12,7 +12,7 @@ import { EventEmitter } from 'events'
 import * as Web3 from 'web3'
 import IPaymentsDatabase from './storage/IPaymentsDatabase'
 import ITokensDatabase from './storage/ITokensDatabase'
-import log from './util/log'
+import { log } from '@machinomy/logger'
 import { PaymentChannel } from './PaymentChannel'
 
 const LOG = log('ChannelManager')
