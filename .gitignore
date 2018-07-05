@@ -9,7 +9,6 @@ build/
 .idea/
 documentation
 .DS_Store
-!/packages/machinomy/migrations/**/*
 dist
 lerna-debug.log
 packages/contracts/coverage.json
