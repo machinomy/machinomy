@@ -2,7 +2,7 @@ import * as BigNumber from 'bignumber.js'
 
 import { PaymentChannel } from './PaymentChannel'
 import Payment from './payment'
-import log from './util/log'
+import { log } from '@machinomy/logger'
 import ChannelContract from './ChannelContract'
 import ChannelManager from './ChannelManager'
 import MachinomyOptions from './MachinomyOptions'

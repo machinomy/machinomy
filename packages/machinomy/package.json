@@ -37,6 +37,7 @@
   ],
   "dependencies": {
     "@machinomy/contracts": "^4.0.15",
+    "@machinomy/logger": "^0.0.2",
     "@machinomy/types-bn": "^0.0.3",
     "@machinomy/types-truffle-contract": "^0.0.3",
     "@machinomy/types-web3": "^0.0.4",
