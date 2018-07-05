@@ -12,7 +12,8 @@
     "url": "https://github.com/machinomy/machinomy.git"
   },
   "scripts": {
-    "build": "tsc --project tsconfig.json"
+    "build": "tsc --project tsconfig.json",
+    "lint": "tslint --format stylish --project . --exclude './node_modules/**/*.ts'"
   },
   "dependencies": {
     "debug": "^3.1.0"
