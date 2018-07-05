@@ -1,0 +1,27 @@
+{
+  "name": "@machinomy/logger",
+  "version": "0.0.1",
+  "description": "Machinomy Logger",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/machinomy/machinomy#readme",
+  "bugs": {
+    "url": "https://github.com/machinomy/machinomy/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/machinomy/machinomy.git"
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json"
+  },
+  "dependencies": {
+    "debug": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^10.3.6",
+    "tslint": "^5.10.0",
+    "tslint-config-standard": "^7.1.0",
+    "typescript": "^2.8.3",
+    "typescript-logger": "^1.1.0"
+  }
+}
