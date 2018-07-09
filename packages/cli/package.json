@@ -15,7 +15,10 @@
     "machinomy": "./bin/machinomy.js"
   },
   "scripts": {
-    "build": "tsc --project tsconfig.json"
+    "build": "tsc --project tsconfig.json",
+    "lint": "tslint --format stylish --project . --exclude './node_modules/**/*.ts'",
+    "test": "exit 0",
+    "coverage": "exit 0"
   },
   "dependencies": {
     "bignumber.js": "^7.2.1",
