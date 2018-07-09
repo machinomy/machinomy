@@ -3,14 +3,14 @@ import { PaymentRequired, STATUS_CODES, Transport } from './transport'
 import Payment from './payment'
 import IChannelManager from './IChannelManager'
 import * as request from 'request'
-import { log } from '@machinomy/logger'
+import Logger from '@machinomy/logger'
 import fetcher from './util/fetcher'
 import { AcceptPaymentRequest, AcceptPaymentRequestSerde } from './accept_payment_request'
 import { AcceptPaymentResponse, AcceptPaymentResponseSerde } from './accept_payment_response'
 import { AcceptTokenRequest, AcceptTokenRequestSerde } from './accept_token_request'
 import { AcceptTokenResponse, AcceptTokenResponseSerde } from './accept_token_response'
 
-const LOG = log('Client')
+const LOG = new Logger('Client')
 
 export default interface Client extends EventEmitter {
   doPreflight (uri: string): Promise<PaymentRequired>
@@ -59,7 +59,7 @@ export class ClientImpl extends EventEmitter implements Client {
   async doPayment (payment: Payment, gateway: string, purchaseMeta?: any): Promise<AcceptPaymentResponse> {
     this.emit('willSendPayment')
 
-    LOG(`Attempting to send payment to ${gateway}. Sender: ${payment.sender} / Receiver: ${payment.receiver} / Amount: ${payment.price.toString()}`)
+    LOG.info(`Attempting to send payment to ${gateway}. Sender: ${payment.sender} / Receiver: ${payment.receiver} / Amount: ${payment.price.toString()}`)
 
     const request = new AcceptPaymentRequest(payment, purchaseMeta)
 
@@ -74,7 +74,7 @@ export class ClientImpl extends EventEmitter implements Client {
 
     const resJson = await res.json()
     const deres = AcceptPaymentResponseSerde.instance.deserialize(resJson)
-    LOG(`Successfully sent payment to ${gateway}.`)
+    LOG.info(`Successfully sent payment to ${gateway}.`)
     this.emit('didSendPayment')
     return deres
   }
@@ -82,16 +82,16 @@ export class ClientImpl extends EventEmitter implements Client {
   async acceptPayment (req: AcceptPaymentRequest): Promise<AcceptPaymentResponse> {
     const payment = req.payment
 
-    LOG(`Received payment request. Sender: ${payment.sender} / Receiver: ${payment.receiver}`)
+    LOG.info(`Received payment request. Sender: ${payment.sender} / Receiver: ${payment.receiver}`)
     let token = await this.channelManager.acceptPayment(payment)
-    LOG(`Accepted payment request. Sender: ${payment.sender} / Receiver: ${payment.receiver}`)
+    LOG.info(`Accepted payment request. Sender: ${payment.sender} / Receiver: ${payment.receiver}`)
     return new AcceptPaymentResponse(token)
   }
 
   async doVerify (token: string, gateway: string): Promise<AcceptTokenResponse> {
     this.emit('willVerifyToken')
 
-    LOG(`Attempting to verify token with ${gateway}.`)
+    LOG.info(`Attempting to verify token with ${gateway}.`)
 
     const request = new AcceptTokenRequest(token)
 
@@ -108,7 +108,7 @@ export class ClientImpl extends EventEmitter implements Client {
       const resJson = await res.json()
 
       const deres = AcceptTokenResponseSerde.instance.deserialize(resJson)
-      LOG(`Successfully verified token with ${gateway}.`)
+      LOG.info(`Successfully verified token with ${gateway}.`)
       this.emit('didVerifyToken')
       return deres
     } catch (e) {

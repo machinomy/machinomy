@@ -2,15 +2,15 @@ import * as BigNumber from 'bignumber.js'
 
 import { PaymentChannel } from './PaymentChannel'
 import Payment from './payment'
-import { log } from '@machinomy/logger'
+import Logger from '@machinomy/logger'
 import ChannelContract from './ChannelContract'
 import ChannelManager from './ChannelManager'
 import MachinomyOptions from './MachinomyOptions'
 
-const LOG = log('PaymentValidation')
+const LOG = new Logger('PaymentValidation')
 
 function error (message: string, ...args: Array<any>) {
-  LOG(`Payment is invalid: ${message}`, args)
+  LOG.error(`Payment is invalid: ${message}`, args)
 }
 
 export default class PaymentValidation {
@@ -90,10 +90,10 @@ export default class PaymentValidation {
     const minSettlementPeriod = new BigNumber.BigNumber(this.options.minimumSettlementPeriod || ChannelManager.DEFAULT_SETTLEMENT_PERIOD)
     const isAboveMinSettlementPeriod = minSettlementPeriod.lessThanOrEqualTo(settlementPeriod)
     if (!isAboveMinSettlementPeriod) {
-      LOG(`Settlement period for channel ${this.payment.channelId} is not ok: ${settlementPeriod} while min is ${minSettlementPeriod}`)
+      LOG.warn(`Settlement period for channel ${this.payment.channelId} is not ok: ${settlementPeriod} while min is ${minSettlementPeriod}`)
       error(`Settlement period is too short. settlement period: ${settlementPeriod}, minimum: ${minSettlementPeriod}. payment: %o`, this.payment)
     } else {
-      LOG(`Settlement period for channel ${this.payment.channelId} is ok: ${settlementPeriod}`)
+      LOG.info(`Settlement period for channel ${this.payment.channelId} is ok: ${settlementPeriod}`)
     }
     return isAboveMinSettlementPeriod
   }

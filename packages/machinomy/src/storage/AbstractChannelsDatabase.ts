@@ -5,9 +5,9 @@ import { namespaced } from '../util/namespaced'
 import IEngine from './IEngine'
 import ChannelId from '../ChannelId'
 import IChannelsDatabase from './IChannelsDatabase'
-import { log } from '@machinomy/logger'
+import Logger from '@machinomy/logger'
 
-const LOG = log('AbstractChannelsDatabase')
+const LOG = new Logger('AbstractChannelsDatabase')
 
 export default abstract class AbstractChannelsDatabase<T extends IEngine> implements IChannelsDatabase {
   engine: T
@@ -58,14 +58,14 @@ export default abstract class AbstractChannelsDatabase<T extends IEngine> implem
   abstract save (paymentChannel: PaymentChannel): Promise<void>
 
   saveOrUpdate (paymentChannel: PaymentChannel): Promise<void> {
-    LOG(`Saving or updating channel with ID ${paymentChannel.channelId.toString()}`)
+    LOG.info(`Saving or updating channel with ID ${paymentChannel.channelId.toString()}`)
 
     return this.firstById(paymentChannel.channelId).then((found: PaymentChannel | null) => {
       if (found) {
-        LOG(`Spending channel with ID ${paymentChannel.channelId.toString()}`)
+        LOG.info(`Spending channel with ID ${paymentChannel.channelId.toString()}`)
         return this.spend(paymentChannel.channelId, paymentChannel.spent)
       } else {
-        LOG(`Spending channel with ID ${paymentChannel.channelId.toString()}`)
+        LOG.info(`Spending channel with ID ${paymentChannel.channelId.toString()}`)
         return this.save(paymentChannel)
       }
     })

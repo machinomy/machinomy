@@ -1,12 +1,12 @@
 import * as Web3 from 'web3'
 import * as BigNumber from 'bignumber.js'
 import { TransactionResult } from 'truffle-contract'
-import { log } from '@machinomy/logger'
+import Logger from '@machinomy/logger'
 import Signature from './Signature'
 import { Unidirectional } from '@machinomy/contracts'
 import ChannelId from './ChannelId'
 
-const LOG = log('ChannelContract')
+const LOG = new Logger('ChannelContract')
 
 const CREATE_CHANNEL_GAS = 300000
 
@@ -21,7 +21,7 @@ export default class ChannelContract {
   }
 
   async open (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number | BigNumber.BigNumber, channelId?: ChannelId | string): Promise<TransactionResult> {
-    LOG(`Creating channel. Value: ${price} / Settlement: ${settlementPeriod}`)
+    LOG.info(`Creating channel. Value: ${price} / Settlement: ${settlementPeriod}`)
     let _channelId = channelId || ChannelId.random()
     const deployed = await this.contract
     return deployed.open(_channelId.toString(), receiver, new BigNumber.BigNumber(settlementPeriod), {
@@ -32,14 +32,14 @@ export default class ChannelContract {
   }
 
   async claim (receiver: string, channelId: string, value: BigNumber.BigNumber, signature: Signature): Promise<TransactionResult> {
-    LOG(`Claiming channel with id ${channelId} on behalf of receiver ${receiver}`)
-    LOG(`Values: ${value} / Signature: ${signature.toString()}`)
+    LOG.info(`Claiming channel with id ${channelId} on behalf of receiver ${receiver}`)
+    LOG.info(`Values: ${value} / Signature: ${signature.toString()}`)
     const deployed = await this.contract
     return deployed.claim(channelId, value, signature.toString(), { from: receiver })
   }
 
   async deposit (sender: string, channelId: string, value: BigNumber.BigNumber): Promise<TransactionResult> {
-    LOG(`Depositing ${value} into channel ${channelId}`)
+    LOG.info(`Depositing ${value} into channel ${channelId}`)
     const deployed = await this.contract
     return deployed.deposit(channelId, {
       from: sender,
@@ -49,7 +49,7 @@ export default class ChannelContract {
   }
 
   async getState (channelId: string): Promise<number> {
-    LOG(`Fetching state for channel ${channelId}`)
+    LOG.info(`Fetching state for channel ${channelId}`)
     const deployed = await this.contract
     const isOpen = await deployed.isOpen(channelId)
     const isSettling = await deployed.isSettling(channelId)
@@ -66,7 +66,7 @@ export default class ChannelContract {
   }
 
   async getSettlementPeriod (channelId: string): Promise<BigNumber.BigNumber> {
-    LOG(`Fetching settlement period for channel ${channelId}`)
+    LOG.info(`Fetching settlement period for channel ${channelId}`)
     const deployed = await this.contract
     const exists = await deployed.isPresent(channelId)
 
@@ -79,13 +79,13 @@ export default class ChannelContract {
   }
 
   async startSettle (account: string, channelId: string): Promise<TransactionResult> {
-    LOG(`Starting settle for account ${account} and channel id ${channelId}.`)
+    LOG.info(`Starting settle for account ${account} and channel id ${channelId}.`)
     const deployed = await this.contract
     return deployed.startSettling(channelId, { from: account })
   }
 
   async finishSettle (account: string, channelId: string): Promise<TransactionResult> {
-    LOG(`Finishing settle for account ${account} and channel ID ${channelId}.`)
+    LOG.info(`Finishing settle for account ${account} and channel ID ${channelId}.`)
     const deployed = await this.contract
     return deployed.settle(channelId, { from: account, gas: 400000 })
   }
