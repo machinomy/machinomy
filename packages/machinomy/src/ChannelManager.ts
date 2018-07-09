@@ -12,10 +12,10 @@ import { EventEmitter } from 'events'
 import * as Web3 from 'web3'
 import IPaymentsDatabase from './storage/IPaymentsDatabase'
 import ITokensDatabase from './storage/ITokensDatabase'
-import { log } from '@machinomy/logger'
+import Logger from '@machinomy/logger'
 import { PaymentChannel } from './PaymentChannel'
 
-const LOG = log('ChannelManager')
+const LOG = new Logger('ChannelManager')
 
 const DAY_IN_SECONDS = 86400
 
@@ -100,12 +100,12 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
   }
 
   async acceptPayment (payment: Payment): Promise<string> {
-    LOG(`Queueing payment of ${payment.price.toString()} Wei to channel with ID ${payment.channelId}.`)
+    LOG.info(`Queueing payment of ${payment.price.toString()} Wei to channel with ID ${payment.channelId}.`)
 
     return this.mutex.synchronizeOn(payment.channelId, async () => {
       const channel = await this.findChannel(payment)
 
-      LOG(`Adding ${payment.price.toString()} Wei to channel with ID ${channel.channelId.toString()}.`)
+      LOG.info(`Adding ${payment.price.toString()} Wei to channel with ID ${channel.channelId.toString()}.`)
 
       const valid = await this.paymentManager.isValid(payment, channel)
 
@@ -119,12 +119,12 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
       }
 
       if (this.machinomyOptions.closeOnInvalidPayment) {
-        LOG(`Received invalid payment from ${payment.sender}!`)
+        LOG.info(`Received invalid payment from ${payment.sender}!`)
         const existingChannel = await this.channelsDao.findBySenderReceiverChannelId(payment.sender, payment.receiver, payment.channelId)
 
         if (existingChannel) {
-          LOG(`Found existing channel with id ${payment.channelId} between ${payment.sender} and ${payment.receiver}.`)
-          LOG('Closing channel due to malfeasance.')
+          LOG.info(`Found existing channel with id ${payment.channelId} between ${payment.sender} and ${payment.receiver}.`)
+          LOG.info('Closing channel due to malfeasance.')
           await this.internalCloseChannel(channel.channelId)
         }
       }

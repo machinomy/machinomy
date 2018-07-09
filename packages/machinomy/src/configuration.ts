@@ -1,5 +1,5 @@
 import homedir = require('homedir')
-import { log as Log } from '@machinomy/logger'
+import Logger from '@machinomy/logger'
 import path = require('path')
 import Web3 = require('web3')
 import * as env from './env'
@@ -13,7 +13,7 @@ export const VERSION = '0.0.3'
 export const PROTOCOL = 'machinomy/' + VERSION
 export const PAYWALL_PATH = 'api/paywall/' + PROTOCOL
 
-const log = Log('configuration')
+const log = new Logger('configuration')
 
 const CONTRACTS = {
   development: '0xede26550428812f833ad7a8d1a9019561d243d6c',
@@ -72,7 +72,7 @@ export const configurationOptions = () => {
     const fs = require('fs')
     return JSON.parse(fs.readFileSync(configFilePath(), 'utf8'))
   } catch (error) {
-    log(error)
+    log.error(error)
     return {}
   }
 }
@@ -99,7 +99,7 @@ export const receiver = (): Configuration => {
       engine: process.env.MACHINOMY_DATABASE_URL || options.receiver.databaseUrl
     })
   } catch (error) {
-    log(error)
+    log.error(error)
     return new Configuration({})
   }
 }

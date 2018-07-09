@@ -1,7 +1,7 @@
 import { RequestResponse, RequiredUriUrl, CoreOptions } from 'request'
 import Payment from './payment'
 import * as BigNumber from 'bignumber.js'
-import { log } from '@machinomy/logger'
+import Logger from '@machinomy/logger'
 let req = require('request')
 
 const request: (opts: RequiredUriUrl & CoreOptions) => Promise<RequestResponse> = (opts: RequiredUriUrl & CoreOptions) => {
@@ -15,7 +15,7 @@ const request: (opts: RequiredUriUrl & CoreOptions) => Promise<RequestResponse> 
   })
 }
 
-const LOG = log('Transport')
+const LOG = new Logger('Transport')
 
 // noinspection MagicNumberJS
 export const STATUS_CODES = {
@@ -32,7 +32,7 @@ export const STATUS_CODES = {
 const extractPaywallToken = (response: RequestResponse): string => {
   let token = response.headers['paywall-token'] as string
   if (token) {
-    LOG('Got token from the server')
+    LOG.info('Got token from the server')
     return token
   } else {
     throw new Error('Can not find a token in the response')
@@ -58,7 +58,7 @@ export class Transport {
     let headers = {
       'authorization': 'Paywall ' + token
     }
-    LOG(`Getting ${uri} using access token ${token}`)
+    LOG.info(`Getting ${uri} using access token ${token}`)
     if (opts.onWillLoad) {
       opts.onWillLoad()
     }
@@ -76,7 +76,7 @@ export class Transport {
       uri: uri,
       headers: headers
     }
-    LOG(`Getting ${uri} using headers and options`, headers, options)
+    LOG.info(`Getting ${uri} using headers and options`, headers, options)
     return request(options)
   }
 
@@ -97,7 +97,7 @@ export class Transport {
       json: true,
       body: payment
     }
-    LOG('Getting request token in exchange for payment', payment)
+    LOG.info('Getting request token in exchange for payment', payment)
     if (opts.onWillSendPayment) {
       opts.onWillSendPayment()
     }
