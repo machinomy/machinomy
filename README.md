@@ -14,7 +14,7 @@ Available sub-projects:
 - [Contracts](packages/contracts) is a TypeScript interface for Ethereum contracts managed by [Truffle](https://github.com/trufflesuite/truffle) used by [Machinomy](packages/machinomy).
 - [Examples](packages/examples) is [Machinomy](packages/machinomy) examples.
 - [Playground](packages/playground) contains code of playground.machinomy.com
-
+- [cli](packages/cli) is Machinomy Command Line Interface.
 
 
 Web site: [machinomy.com](http://machinomy.com).
