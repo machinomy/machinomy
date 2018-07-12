@@ -129,6 +129,30 @@ contract TokenUnidirectional {
         emit DidSettle(channelId);
     }
 
+    /// @notice Ensure `origin` address can deposit money into the channel identified by `channelId`.
+    /// @dev Constraint `deposit` call.
+    /// @param channelId Identifier of the channel.
+    /// @param origin Caller of `deposit` function.
+    function canDeposit(bytes32 channelId, address origin) public view returns(bool) {
+        PaymentChannel storage channel = channels[channelId];
+        bool isSender = channel.sender == origin;
+        return isOpen(channelId) && isSender;
+    }
+
+    /// @notice Add more money to the contract.
+    /// @param channelId Identifier of the channel.
+    /// @param value Amount to be deposited.
+    function deposit(bytes32 channelId, uint256 value) public payable {
+        require(canDeposit(channelId, msg.sender));
+
+        PaymentChannel storage channel = channels[channelId];
+        StandardToken token = StandardToken(channel.tokenContract);
+        require(token.transferFrom(msg.sender, address(this), value));
+        channel.value = channel.value.add(value);
+
+        emit DidDeposit(channelId, value);
+    }
+
     /// @notice Check if the channel is not present.
     /// @param channelId Identifier of the channel.
     function isAbsent(bytes32 channelId) public view returns(bool) {

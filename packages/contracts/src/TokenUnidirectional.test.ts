@@ -3,7 +3,6 @@ import * as chai from 'chai'
 import * as BigNumber from 'bignumber.js'
 import * as asPromised from 'chai-as-promised'
 import * as contracts from './index'
-import * as support from './support'
 import Units from './Units'
 import Gaser from './support/Gaser'
 import MintableToken from './support/MintableToken'
@@ -278,6 +277,74 @@ contract('TokenUnidirectional', accounts => {
       let didOpenEvent = await createChannel(30)
       await instance.startSettling(didOpenEvent.channelId, { from: sender })
       return assert.isRejected(instance.settle(didOpenEvent.channelId, { from: sender }))
+    })
+  })
+
+  describe('.deposit', () => {
+    specify('emit DidDeposit event', async () => {
+      let didOpenEvent = await createChannel()
+      let channelId = didOpenEvent.channelId
+      await token.approve(instance.address, payment)
+      let tx = await gaser.tx('Unidirectional.deposit', instance.deposit(channelId, payment, { from: sender }))
+      assert(contracts.Unidirectional.isDidDepositEvent(tx.logs[0]))
+      let event = tx.logs[0].args as contracts.Unidirectional.DidDeposit
+      assert.equal(event.channelId, channelId)
+    })
+
+    specify('increase contract balance', async () => {
+      let before = await token.balanceOf(instance.address)
+      let channelId = (await createChannel()).channelId
+      await token.approve(instance.address, payment)
+      await instance.deposit(channelId, payment, { from: sender })
+      let after = await token.balanceOf(instance.address)
+      let delta = after.minus(before)
+      assert.equal(delta.toString(), channelValue.plus(payment).toString())
+    })
+
+    specify('increase channel value', async () => {
+      let channelId = (await createChannel()).channelId
+      let before = (await instance.channels(channelId))[2]
+      await token.approve(instance.address, payment)
+      await instance.deposit(channelId, payment, { from: sender })
+      let after = (await instance.channels(channelId))[2]
+      let delta = after.minus(before)
+      assert.equal(delta.toString(), payment.toString())
+    })
+
+    specify('decrease sender balance', async () => {
+      let channelId = (await createChannel()).channelId
+      let before = await token.balanceOf(sender)
+      await token.approve(instance.address, payment)
+      await instance.deposit(channelId, payment, { from: sender })
+      let after = await token.balanceOf(sender)
+      let actual = before.minus(after)
+      assert.equal(actual.toString(), payment.toString())
+    })
+
+    specify('not if no channel', async () => {
+      await token.approve(instance.address, payment)
+      return assert.isRejected(instance.deposit(WRONG_CHANNEL_ID, payment, { from: sender }))
+    })
+
+    specify('not if settling', async () => {
+      let didOpenEvent = await createChannel(30)
+      await instance.startSettling(didOpenEvent.channelId, { from: sender })
+      await token.approve(instance.address, payment)
+      return assert.isRejected(instance.deposit(didOpenEvent.channelId, payment, { from: sender }))
+    })
+
+    specify('not if receiver', async () => {
+      let channelId = contracts.channelId(sender, receiver)
+      await createChannelRaw(channelId)
+      await token.approve(instance.address, payment)
+      return assert.isRejected(instance.deposit(channelId, payment, { from: receiver }))
+    })
+
+    specify('not if alien', async () => {
+      let channelId = contracts.channelId(sender, receiver)
+      await createChannelRaw(channelId)
+      await token.approve(instance.address, payment)
+      return assert.isRejected(instance.deposit(channelId, payment, { from: alien }))
     })
   })
 })
