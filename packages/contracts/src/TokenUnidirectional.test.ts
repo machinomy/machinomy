@@ -120,7 +120,7 @@ contract('TokenUnidirectional', accounts => {
       let didOpenEvent = await createChannel()
       let signature = await paymentSignature(sender, didOpenEvent.channelId, payment)
       let tx = await gaser.tx('TokenUnidirectional.claim', instance.claim(didOpenEvent.channelId, payment, signature, { from: receiver }))
-      assert.isTrue(contracts.Unidirectional.isDidClaimEvent(tx.logs[0]))
+      assert.isTrue(contracts.TokenUnidirectional.isDidClaimEvent(tx.logs[0]))
 
       let event = tx.logs[0].args as contracts.TokenUnidirectional.DidClaim
       assert.equal(event.channelId, didOpenEvent.channelId)
@@ -212,7 +212,7 @@ contract('TokenUnidirectional', accounts => {
     specify('emit DidStartSettling event', async () => {
       let didOpenEvent = await createChannel()
       let log = await gaser.tx('TokenUnidirectional.startSettling', instance.startSettling(didOpenEvent.channelId, { from: sender }))
-      assert.isTrue(contracts.Unidirectional.isDidStartSettlingEvent(log.logs[0]))
+      assert.isTrue(contracts.TokenUnidirectional.isDidStartSettlingEvent(log.logs[0]))
     })
     specify('set settlingUntil', async () => {
       let settlingPeriod = 3
@@ -248,8 +248,8 @@ contract('TokenUnidirectional', accounts => {
     specify('emit DidSettle event', async () => {
       let didOpenEvent = await createChannel()
       await instance.startSettling(didOpenEvent.channelId, { from: sender })
-      let log = await gaser.tx('Unidirectional.settle', instance.settle(didOpenEvent.channelId))
-      assert.isTrue(contracts.Unidirectional.isDidSettleEvent(log.logs[0]))
+      let log = await gaser.tx('TokenUnidirectional.settle', instance.settle(didOpenEvent.channelId))
+      assert.isTrue(contracts.TokenUnidirectional.isDidSettleEvent(log.logs[0]))
     })
     specify('send money to sender', async () => {
       let didOpenEvent = await createChannel()
@@ -285,9 +285,9 @@ contract('TokenUnidirectional', accounts => {
       let didOpenEvent = await createChannel()
       let channelId = didOpenEvent.channelId
       await token.approve(instance.address, payment)
-      let tx = await gaser.tx('Unidirectional.deposit', instance.deposit(channelId, payment, { from: sender }))
-      assert(contracts.Unidirectional.isDidDepositEvent(tx.logs[0]))
-      let event = tx.logs[0].args as contracts.Unidirectional.DidDeposit
+      let tx = await gaser.tx('TokenUnidirectional.deposit', instance.deposit(channelId, payment, { from: sender }))
+      assert(contracts.TokenUnidirectional.isDidDepositEvent(tx.logs[0]))
+      let event = tx.logs[0].args as contracts.TokenUnidirectional.DidDeposit
       assert.equal(event.channelId, channelId)
     })
 

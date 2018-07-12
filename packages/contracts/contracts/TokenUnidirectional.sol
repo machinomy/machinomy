@@ -15,7 +15,7 @@ contract TokenUnidirectional {
 
         uint256 settlingPeriod; // How many blocks to wait for the receiver to claim her funds, after sender starts settling.
         uint256 settlingUntil; // Starting with this block number, anyone can settle the channel.
-        address tokenContract;
+        address tokenContract; // Address of ERC20 token contract.
     }
 
     mapping (bytes32 => PaymentChannel) public channels;
@@ -26,6 +26,16 @@ contract TokenUnidirectional {
     event DidStartSettling(bytes32 indexed channelId);
     event DidSettle(bytes32 indexed channelId);
 
+    /*** ACTIONS AND CONSTRAINTS ***/
+
+    /// @notice Open a new channel between `msg.sender` and `receiver`, and do an initial deposit to the channel.
+    /// @param channelId Unique identifier of the channel to be created.
+    /// @param receiver Receiver of the funds, counter-party of `msg.sender`.
+    /// @param settlingPeriod Number of blocks to wait for receiver to `claim` her funds after the sender starts settling period (see `startSettling`).
+    /// After that period is over anyone could call `settle`, and move all the channel funds to the sender.
+    /// @param tokenContract Address of ERC20 token contract.
+    /// @param value Initial channel amount.
+    /// @dev Before opening a channel, the sender should `approve` spending the token by TokenUnidirectional contract.
     function open(bytes32 channelId, address receiver, uint256 settlingPeriod, address tokenContract, uint256 value) public {
         require(isAbsent(channelId));
 
@@ -42,6 +52,76 @@ contract TokenUnidirectional {
         });
 
         emit DidOpen(channelId, msg.sender, receiver, value, tokenContract);
+    }
+
+    /// @notice Ensure `origin` address can deposit funds into the channel identified by `channelId`.
+    /// @dev Constraint `deposit` call.
+    /// @param channelId Identifier of the channel.
+    /// @param origin Caller of `deposit` function.
+    function canDeposit(bytes32 channelId, address origin) public view returns(bool) {
+        PaymentChannel storage channel = channels[channelId];
+        bool isSender = channel.sender == origin;
+        return isOpen(channelId) && isSender;
+    }
+
+    /// @notice Add more funds to the contract.
+    /// @param channelId Identifier of the channel.
+    /// @param value Amount to be deposited.
+    function deposit(bytes32 channelId, uint256 value) public payable {
+        require(canDeposit(channelId, msg.sender));
+
+        PaymentChannel storage channel = channels[channelId];
+        StandardToken token = StandardToken(channel.tokenContract);
+        require(token.transferFrom(msg.sender, address(this), value));
+        channel.value = channel.value.add(value);
+
+        emit DidDeposit(channelId, value);
+    }
+
+    /// @notice Ensure `origin` address can start settling the channel identified by `channelId`.
+    /// @dev Constraint `startSettling` call.
+    /// @param channelId Identifier of the channel.
+    /// @param origin Caller of `startSettling` function.
+    function canStartSettling(bytes32 channelId, address origin) public view returns(bool) {
+        PaymentChannel storage channel = channels[channelId];
+        bool isSender = channel.sender == origin;
+        return isOpen(channelId) && isSender;
+    }
+
+    /// @notice Sender initiates settling of the contract.
+    /// @dev Actually set `settlingUntil` field of the PaymentChannel structure.
+    /// @param channelId Identifier of the channel.
+    function startSettling(bytes32 channelId) public {
+        require(canStartSettling(channelId, msg.sender));
+
+        PaymentChannel storage channel = channels[channelId];
+        channel.settlingUntil = block.number + channel.settlingPeriod;
+
+        emit DidStartSettling(channelId);
+    }
+
+    /// @notice Ensure one can settle the channel identified by `channelId`.
+    /// @dev Check if settling period is over by comparing `settlingUntil` to a current block number.
+    /// @param channelId Identifier of the channel.
+    function canSettle(bytes32 channelId) public view returns(bool) {
+        PaymentChannel storage channel = channels[channelId];
+        bool isWaitingOver = block.number >= channel.settlingUntil; // FIXME Maybe opt
+        return isSettling(channelId) && isWaitingOver;
+    }
+
+    /// @notice Move the money to sender, and close the channel.
+    /// After the settling period is over, and receiver has not claimed the funds, anyone could call that.
+    /// @param channelId Identifier of the channel.
+    function settle(bytes32 channelId) public {
+        require(canSettle(channelId));
+
+        PaymentChannel storage channel = channels[channelId];
+        StandardToken token = StandardToken(channel.tokenContract);
+
+        require(token.transfer(channel.sender, channel.value));
+
+        delete channels[channelId];
+        emit DidSettle(channelId);
     }
 
     /// @notice Ensure `origin` address can claim `payment` amount on channel identified by `channelId`.
@@ -83,75 +163,7 @@ contract TokenUnidirectional {
         emit DidClaim(channelId);
     }
 
-    /// @notice Ensure `origin` address can start settling the channel identified by `channelId`.
-    /// @dev Constraint `startSettling` call.
-    /// @param channelId Identifier of the channel.
-    /// @param origin Caller of `startSettling` function.
-    function canStartSettling(bytes32 channelId, address origin) public view returns(bool) {
-        PaymentChannel storage channel = channels[channelId];
-        bool isSender = channel.sender == origin;
-        return isOpen(channelId) && isSender;
-    }
-
-    /// @notice Sender initiates settling of the contract.
-    /// @dev Actually set `settlingUntil` field of the PaymentChannel structure.
-    /// @param channelId Identifier of the channel.
-    function startSettling(bytes32 channelId) public {
-        require(canStartSettling(channelId, msg.sender));
-
-        PaymentChannel storage channel = channels[channelId];
-        channel.settlingUntil = block.number + channel.settlingPeriod;
-
-        emit DidStartSettling(channelId);
-    }
-
-    /// @notice Ensure one can settle the channel identified by `channelId`.
-    /// @dev Check if settling period is over by comparing `settlingUntil` to a current block number.
-    /// @param channelId Identifier of the channel.
-    function canSettle(bytes32 channelId) public view returns(bool) {
-        PaymentChannel storage channel = channels[channelId];
-        bool isWaitingOver = block.number >= channel.settlingUntil;
-        return isSettling(channelId) && isWaitingOver;
-    }
-
-    /// @notice Move the money to sender, and close the channel.
-    /// After the settling period is over, and receiver has not claimed the funds, anyone could call that.
-    /// @param channelId Identifier of the channel.
-    function settle(bytes32 channelId) public {
-        require(canSettle(channelId));
-
-        PaymentChannel storage channel = channels[channelId];
-        StandardToken token = StandardToken(channel.tokenContract);
-
-        require(token.transfer(channel.sender, channel.value));
-
-        delete channels[channelId];
-        emit DidSettle(channelId);
-    }
-
-    /// @notice Ensure `origin` address can deposit money into the channel identified by `channelId`.
-    /// @dev Constraint `deposit` call.
-    /// @param channelId Identifier of the channel.
-    /// @param origin Caller of `deposit` function.
-    function canDeposit(bytes32 channelId, address origin) public view returns(bool) {
-        PaymentChannel storage channel = channels[channelId];
-        bool isSender = channel.sender == origin;
-        return isOpen(channelId) && isSender;
-    }
-
-    /// @notice Add more money to the contract.
-    /// @param channelId Identifier of the channel.
-    /// @param value Amount to be deposited.
-    function deposit(bytes32 channelId, uint256 value) public payable {
-        require(canDeposit(channelId, msg.sender));
-
-        PaymentChannel storage channel = channels[channelId];
-        StandardToken token = StandardToken(channel.tokenContract);
-        require(token.transferFrom(msg.sender, address(this), value));
-        channel.value = channel.value.add(value);
-
-        emit DidDeposit(channelId, value);
-    }
+    /*** CHANNEL STATE ***/
 
     /// @notice Check if the channel is not present.
     /// @param channelId Identifier of the channel.
