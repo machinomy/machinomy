@@ -105,6 +105,30 @@ contract TokenUnidirectional {
         emit DidStartSettling(channelId);
     }
 
+    /// @notice Ensure one can settle the channel identified by `channelId`.
+    /// @dev Check if settling period is over by comparing `settlingUntil` to a current block number.
+    /// @param channelId Identifier of the channel.
+    function canSettle(bytes32 channelId) public view returns(bool) {
+        PaymentChannel storage channel = channels[channelId];
+        bool isWaitingOver = block.number >= channel.settlingUntil;
+        return isSettling(channelId) && isWaitingOver;
+    }
+
+    /// @notice Move the money to sender, and close the channel.
+    /// After the settling period is over, and receiver has not claimed the funds, anyone could call that.
+    /// @param channelId Identifier of the channel.
+    function settle(bytes32 channelId) public {
+        require(canSettle(channelId));
+
+        PaymentChannel storage channel = channels[channelId];
+        StandardToken token = StandardToken(channel.tokenContract);
+
+        require(token.transfer(channel.sender, channel.value));
+
+        delete channels[channelId];
+        emit DidSettle(channelId);
+    }
+
     /// @notice Check if the channel is not present.
     /// @param channelId Identifier of the channel.
     function isAbsent(bytes32 channelId) public view returns(bool) {

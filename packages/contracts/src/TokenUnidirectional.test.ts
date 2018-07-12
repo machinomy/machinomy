@@ -244,4 +244,40 @@ contract('TokenUnidirectional', accounts => {
       return assert.isRejected(instance.startSettling(channelId, { from: sender }))
     })
   })
+
+  describe('.settle', () => {
+    specify('emit DidSettle event', async () => {
+      let didOpenEvent = await createChannel()
+      await instance.startSettling(didOpenEvent.channelId, { from: sender })
+      let log = await gaser.tx('Unidirectional.settle', instance.settle(didOpenEvent.channelId))
+      assert.isTrue(contracts.Unidirectional.isDidSettleEvent(log.logs[0]))
+    })
+    specify('send money to sender', async () => {
+      let didOpenEvent = await createChannel()
+      await instance.startSettling(didOpenEvent.channelId, { from: sender })
+      let before = await token.balanceOf(sender)
+      await instance.settle(didOpenEvent.channelId)
+      let after = await token.balanceOf(sender)
+      let actual = after.minus(before)
+      assert.equal(actual.toString(), channelValue.toString())
+    })
+    specify('remove channel', async () => {
+      let didOpenEvent = await createChannel()
+      let channelId = didOpenEvent.channelId
+      await instance.startSettling(didOpenEvent.channelId, { from: sender })
+      await instance.settle(didOpenEvent.channelId)
+      assert.isTrue(await instance.isAbsent(channelId))
+      assert.isFalse(await instance.isPresent(channelId))
+      assert.isFalse(await instance.isOpen(channelId))
+      assert.isFalse(await instance.isSettling(channelId))
+    })
+    specify('refuse if no channel', async () => {
+      return assert.isRejected(instance.startSettling(WRONG_CHANNEL_ID, { from: sender }))
+    })
+    specify('refuse if still settling', async () => {
+      let didOpenEvent = await createChannel(30)
+      await instance.startSettling(didOpenEvent.channelId, { from: sender })
+      return assert.isRejected(instance.settle(didOpenEvent.channelId, { from: sender }))
+    })
+  })
 })
