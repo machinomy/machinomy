@@ -32,7 +32,7 @@ contract('Unidirectional', accounts => {
       from: sender,
       value: Units.convert(1, 'eth', 'wei')
     }
-    return instance.open(channelId, receiver, new BigNumber.BigNumber(_settlingPeriod), options)
+    return instance.open(channelId, receiver, _settlingPeriod, options)
   }
 
   async function createChannel (settlingPeriod?: number) {

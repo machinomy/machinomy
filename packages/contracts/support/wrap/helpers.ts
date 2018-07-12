@@ -4,15 +4,15 @@ type Mapping = {
 }
 
 const TYPE_MAPPING = [
-  {regex: '^string$', tsType: 'string'},
-  {regex: '^address$', tsType: 'string'},
-  {regex: '^bool$', tsType: 'boolean'},
-  {regex: '^u?int\\d*$', tsType: 'BigNumber.BigNumber'},
-  {regex: '^bytes\\d*$', tsType: 'string'}
+  { regex: '^string$', tsType: 'string' },
+  { regex: '^address$', tsType: 'string' },
+  { regex: '^bool$', tsType: 'boolean' },
+  { regex: '^u?int\\d*$', tsType: 'BigNumber' },
+  { regex: '^bytes\\d*$', tsType: 'string' }
 ]
 
 const INPUT_TYPE_MAPPING = [
-  {regex: '^u?int(8|16|32)?$', tsType: 'number | BigNumber.BigNumber'}
+  { regex: '^u?int(8|16|32|64|128|256)?$', tsType: 'number | BigNumber' }
 ].concat(TYPE_MAPPING)
 
 const ARRAY_BRACES = /\[\d*]$/
