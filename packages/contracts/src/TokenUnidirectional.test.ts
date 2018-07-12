@@ -33,7 +33,7 @@ contract('TokenUnidirectional', accounts => {
 
   before(async () => {
     token = await Token.new()
-    await token.mint(sender, channelValue.mul(10))
+    await token.mint(sender, channelValue.mul(100))
     await token.finishMinting()
     instance = await TokenUnidirectional.deployed()
   })
@@ -206,6 +206,42 @@ contract('TokenUnidirectional', accounts => {
     specify('refuse if wrong signature', async () => {
       let didOpenEvent = await createChannel()
       return assert.isRejected(instance.claim(didOpenEvent.channelId, payment, WRONG_SIGNATURE, { from: receiver }))
+    })
+  })
+
+  describe('.startSettling', () => {
+    specify('emit DidStartSettling event', async () => {
+      let didOpenEvent = await createChannel()
+      let log = await gaser.tx('TokenUnidirectional.startSettling', instance.startSettling(didOpenEvent.channelId, { from: sender }))
+      assert.isTrue(contracts.Unidirectional.isDidStartSettlingEvent(log.logs[0]))
+    })
+    specify('set settlingUntil', async () => {
+      let settlingPeriod = 3
+      let didOpenEvent = await createChannel(settlingPeriod)
+      let channelId = didOpenEvent.channelId
+      let tx = await instance.startSettling(channelId, { from: sender })
+      let channel = await instance.channels(channelId)
+      let expected = tx.receipt.blockNumber + settlingPeriod
+      let actual = channel[4]
+      assert.equal(actual.toString(), expected.toString())
+    })
+    specify('refuse if receiver', async () => {
+      let didOpenEvent = await createChannel()
+      return assert.isRejected(instance.startSettling(didOpenEvent.channelId, { from: receiver }))
+    })
+    specify('refuse if alien', async () => {
+      let didOpenEvent = await createChannel()
+      return assert.isRejected(instance.startSettling(didOpenEvent.channelId, { from: alien }))
+    })
+    specify('refuse if no channel', async () => {
+      return assert.isRejected(instance.startSettling(WRONG_CHANNEL_ID, { from: sender }))
+    })
+    specify('refuse if settling', async () => {
+      let settlingPeriod = 3
+      let didOpenEvent = await createChannel(settlingPeriod)
+      let channelId = didOpenEvent.channelId
+      await instance.startSettling(channelId, { from: sender })
+      return assert.isRejected(instance.startSettling(channelId, { from: sender }))
     })
   })
 })

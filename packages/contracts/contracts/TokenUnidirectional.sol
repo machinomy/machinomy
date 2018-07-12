@@ -83,6 +83,28 @@ contract TokenUnidirectional {
         emit DidClaim(channelId);
     }
 
+    /// @notice Ensure `origin` address can start settling the channel identified by `channelId`.
+    /// @dev Constraint `startSettling` call.
+    /// @param channelId Identifier of the channel.
+    /// @param origin Caller of `startSettling` function.
+    function canStartSettling(bytes32 channelId, address origin) public view returns(bool) {
+        PaymentChannel storage channel = channels[channelId];
+        bool isSender = channel.sender == origin;
+        return isOpen(channelId) && isSender;
+    }
+
+    /// @notice Sender initiates settling of the contract.
+    /// @dev Actually set `settlingUntil` field of the PaymentChannel structure.
+    /// @param channelId Identifier of the channel.
+    function startSettling(bytes32 channelId) public {
+        require(canStartSettling(channelId, msg.sender));
+
+        PaymentChannel storage channel = channels[channelId];
+        channel.settlingUntil = block.number + channel.settlingPeriod;
+
+        emit DidStartSettling(channelId);
+    }
+
     /// @notice Check if the channel is not present.
     /// @param channelId Identifier of the channel.
     function isAbsent(bytes32 channelId) public view returns(bool) {
