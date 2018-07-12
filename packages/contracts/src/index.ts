@@ -1,9 +1,11 @@
 import Unidirectional from './wrappers/Unidirectional'
+import UnidirectionalToken from './wrappers/UnidirectionalToken'
 import * as ethUtil from 'ethereumjs-util'
 import Units from './Units'
 
 export {
   Unidirectional,
+  UnidirectionalToken,
   Units
 }
 

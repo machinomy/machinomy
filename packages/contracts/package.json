@@ -19,7 +19,7 @@
   ],
   "config": {
     "truffleTests": "lib/*.test.js",
-    "wrappedArtifacts": "build/contracts/@(Unidirectional).json"
+    "wrappedArtifacts": "build/contracts/@(Unidirectional|UnidirectionalToken).json"
   },
   "scripts": {
     "build": "yarn support:wrap && tsc --project tsconfig.json && tsc --project tsconfig.migrations.json",

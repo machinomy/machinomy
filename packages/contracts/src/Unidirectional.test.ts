@@ -173,11 +173,7 @@ contract('Unidirectional', accounts => {
     specify('refuse if sender', async () => {
       let didOpenEvent = await createChannel()
       let signature = await paymentSignature(sender, didOpenEvent.channelId, payment)
-      let before = web3.eth.getBalance(sender)
-      await instance.claim(didOpenEvent.channelId, payment, signature, { from: receiver })
-      let after = web3.eth.getBalance(sender)
-      let delta = after.minus(before)
-      assert.equal(delta.toString(), channelValue.minus(payment).toString())
+      return assert.isRejected(instance.claim(didOpenEvent.channelId, payment, signature, { from: sender }))
     })
     specify('refuse if alien', async () => {
       let didOpenEvent = await createChannel()

@@ -12,7 +12,7 @@ module.exports = {
     },
     ropsten: { // from: 0x9a6942bD73680F300940C8222BBe067c3c74d96D
       network_id: 3,
-      provider: new HDWalletProvider(MNEMONIC, "https://ropsten.infura.io/"),
+      provider: () => new HDWalletProvider(MNEMONIC, "https://ropsten.infura.io/"),
       gas: GAS_LIMIT
     },
     kovan: {
@@ -23,7 +23,7 @@ module.exports = {
     },
     mainnet: {
       network_id: 1,
-      provider: new HDWalletProvider(MNEMONIC, "https://mainnet.infura.io/"),
+      provider: () => new HDWalletProvider(MNEMONIC, "https://mainnet.infura.io/"),
       gasPrice: 20000000000,
       gas: GAS_LIMIT
     },
