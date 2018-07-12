@@ -5,7 +5,7 @@ import "openzeppelin-solidity/contracts/ECRecovery.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
 
 /// @title Unidirectional payment channels contract for ERC20 tokens.
-contract UnidirectionalToken {
+contract TokenUnidirectional {
     using SafeMath for uint256;
 
     struct PaymentChannel {

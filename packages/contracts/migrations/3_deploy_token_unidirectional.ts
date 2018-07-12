@@ -1,12 +1,12 @@
 import * as Deployer from 'truffle-deployer'
 
 const ECRecovery = artifacts.require('./ECRecovery.sol')
-const UnidirectionalToken = artifacts.require('./UnidirectionalToken.sol')
+const TokenUnidirectional = artifacts.require('./TokenUnidirectional.sol')
 
 module.exports = function (deployer: Deployer) {
   return deployer.deploy(ECRecovery).then(() => {
-    return deployer.link(ECRecovery, UnidirectionalToken)
+    return deployer.link(ECRecovery, TokenUnidirectional)
   }).then(() => {
-    return deployer.deploy(UnidirectionalToken)
+    return deployer.deploy(TokenUnidirectional)
   })
 }

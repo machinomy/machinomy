@@ -14,13 +14,13 @@ const web3 = (global as any).web3 as Web3
 const assert = chai.assert
 const gaser = new Gaser(web3)
 
-const UnidirectionalToken = artifacts.require<contracts.UnidirectionalToken.Contract>('UnidirectionalToken.sol')
+const TokenUnidirectional = artifacts.require<contracts.TokenUnidirectional.Contract>('TokenUnidirectional.sol')
 const Token = artifacts.require<MintableToken.Contract>('support/MintableToken.sol')
 
 const WRONG_CHANNEL_ID = '0xdeadbeaf'
 const WRONG_SIGNATURE = '0xcafebabe'
 
-contract('UnidirectionalToken', accounts => {
+contract('TokenUnidirectional', accounts => {
   const sender = accounts[0]
   const receiver = accounts[1]
   const alien = accounts[2]
@@ -28,14 +28,14 @@ contract('UnidirectionalToken', accounts => {
   const settlingPeriod = 0
 
   let payment = Units.convert(0.1, 'eth', 'wei')
-  let instance: contracts.UnidirectionalToken.Contract
+  let instance: contracts.TokenUnidirectional.Contract
   let token: MintableToken.Contract
 
   before(async () => {
     token = await Token.new()
     await token.mint(sender, channelValue.mul(10))
     await token.finishMinting()
-    instance = await UnidirectionalToken.deployed()
+    instance = await TokenUnidirectional.deployed()
   })
 
   async function createChannelRaw (channelId: string, _settlingPeriod: number = settlingPeriod) {
@@ -61,9 +61,9 @@ contract('UnidirectionalToken', accounts => {
   describe('.open', () => {
     specify('emit DidOpen event', async () => {
       let channelId = contracts.channelId(sender, receiver)
-      const log = await gaser.tx('UnidirectionalToken.open', createChannelRaw(channelId))
-      assert(contracts.UnidirectionalToken.isDidOpenEvent(log.logs[0]))
-      let event = log.logs[0].args as contracts.UnidirectionalToken.DidOpen
+      const log = await gaser.tx('TokenUnidirectional.open', createChannelRaw(channelId))
+      assert(contracts.TokenUnidirectional.isDidOpenEvent(log.logs[0]))
+      let event = log.logs[0].args as contracts.TokenUnidirectional.DidOpen
       assert.equal(event.channelId, channelId)
       assert.equal(event.sender, sender)
       assert.equal(event.receiver, receiver)
@@ -120,10 +120,10 @@ contract('UnidirectionalToken', accounts => {
     specify('emit DidClaim event', async () => {
       let didOpenEvent = await createChannel()
       let signature = await paymentSignature(sender, didOpenEvent.channelId, payment)
-      let tx = await gaser.tx('UnidirectionalToken.claim', instance.claim(didOpenEvent.channelId, payment, signature, { from: receiver }))
+      let tx = await gaser.tx('TokenUnidirectional.claim', instance.claim(didOpenEvent.channelId, payment, signature, { from: receiver }))
       assert.isTrue(contracts.Unidirectional.isDidClaimEvent(tx.logs[0]))
 
-      let event = tx.logs[0].args as contracts.UnidirectionalToken.DidClaim
+      let event = tx.logs[0].args as contracts.TokenUnidirectional.DidClaim
       assert.equal(event.channelId, didOpenEvent.channelId)
     })
 
