@@ -13,7 +13,7 @@ export interface PaymentJSON {
   r: string
   s: string
   meta: string
-  contractAddress?: string
+  contractAddress: string
   token: string | undefined
   createdAt?: number
   tokenContract?: string
@@ -28,7 +28,7 @@ export default class Payment {
   channelValue: BigNumber.BigNumber
   signature: Signature
   meta: string
-  contractAddress: string | undefined
+  contractAddress: string
   token: string | undefined
   createdAt?: number
   tokenContract?: string
@@ -61,7 +61,8 @@ export class PaymentSerde implements Serde<Payment> {
     'channelValue',
     'v',
     'r',
-    's'
+    's',
+    'contractAddress'
   ]
 
   serialize (obj: Payment): object {
