@@ -1,22 +1,16 @@
 import * as Web3 from 'web3'
 import * as BigNumber from 'bignumber.js'
 import { TransactionResult } from 'truffle-contract'
-import Logger from '@machinomy/logger'
 import ChannelEthContract from './ChannelEthContract'
 import ChannelTokenContract from './ChannelTokenContract'
 import Signature from './Signature'
 import ChannelId from './ChannelId'
 
-const LOG = new Logger('ChannelContract')
-
 export default class ChannelContract {
   channelEthContract: ChannelEthContract
   channelTokenContract: ChannelTokenContract
 
-  private web3: Web3
-
   constructor (web3: Web3) {
-    this.web3 = web3
     this.channelEthContract = new ChannelEthContract(web3)
     this.channelTokenContract = new ChannelTokenContract(web3)
   }
