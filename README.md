@@ -1,7 +1,7 @@
 # Machinomy Monorepo [![Build Status][travis-img]][travis] [![Coverage Status][codecov-img]][codecov] [![Greenkeeper badge](https://badges.greenkeeper.io/machinomy/machinomy.svg)](https://greenkeeper.io/) [![Chat][gitter-img]][gitter]
 
 [travis]: https://travis-ci.org/machinomy/machinomy
-[travis-img]: https://img.shields.io/travis/machinomy/machinomy.svg
+[travis-img]: https://travis-ci.org/machinomy/machinomy.svg?branch=master
 [codecov]: https://codecov.io/gh/machinomy/machinomy
 [codecov-img]: https://codecov.io/gh/machinomy/machinomy/branch/master/graph/badge.svg 
 [gitter]: https://gitter.im/machinomy/machinomy
