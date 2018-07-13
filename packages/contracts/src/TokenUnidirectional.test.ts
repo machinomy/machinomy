@@ -43,7 +43,7 @@ contract('TokenUnidirectional', accounts => {
     }
     let value = Units.convert(1, 'eth', 'wei')
     await token.approve(instance.address, value, { from: sender })
-    return instance.open(channelId, receiver, new BigNumber.BigNumber(_settlingPeriod), token.address, value, options)
+    return instance.open(channelId, receiver, _settlingPeriod, token.address, value, options)
   }
 
   async function createChannel (settlingPeriod?: number) {
@@ -106,6 +106,14 @@ contract('TokenUnidirectional', accounts => {
       let channelId = contracts.channelId(sender, receiver)
       await createChannelRaw(channelId)
       return assert.isRejected(createChannelRaw(channelId))
+    })
+
+    specify('not if not approved', async () => {
+      let channelId = contracts.channelId(sender, receiver)
+      let options = { from: sender }
+      let value = Units.convert(100, 'eth', 'wei')
+      await token.approve(instance.address, 0, options)
+      return assert.isRejected(instance.open(channelId, receiver, settlingPeriod, token.address, value, options))
     })
   })
 
@@ -314,37 +322,49 @@ contract('TokenUnidirectional', accounts => {
     specify('decrease sender balance', async () => {
       let channelId = (await createChannel()).channelId
       let before = await token.balanceOf(sender)
-      await token.approve(instance.address, payment)
-      await instance.deposit(channelId, payment, { from: sender })
+      let options = { from: sender }
+      await token.approve(instance.address, payment, options)
+      await instance.deposit(channelId, payment, options)
       let after = await token.balanceOf(sender)
       let actual = before.minus(after)
       assert.equal(actual.toString(), payment.toString())
     })
 
     specify('not if no channel', async () => {
-      await token.approve(instance.address, payment)
-      return assert.isRejected(instance.deposit(WRONG_CHANNEL_ID, payment, { from: sender }))
+      let options = { from: sender }
+      await token.approve(instance.address, payment, options)
+      return assert.isRejected(instance.deposit(WRONG_CHANNEL_ID, payment, options))
     })
 
     specify('not if settling', async () => {
       let didOpenEvent = await createChannel(30)
-      await instance.startSettling(didOpenEvent.channelId, { from: sender })
-      await token.approve(instance.address, payment)
-      return assert.isRejected(instance.deposit(didOpenEvent.channelId, payment, { from: sender }))
+      let options = { from: sender }
+      await instance.startSettling(didOpenEvent.channelId, options)
+      await token.approve(instance.address, payment, options)
+      return assert.isRejected(instance.deposit(didOpenEvent.channelId, payment, options))
     })
 
     specify('not if receiver', async () => {
       let channelId = contracts.channelId(sender, receiver)
       await createChannelRaw(channelId)
-      await token.approve(instance.address, payment)
+      await token.approve(instance.address, payment, { from: sender })
       return assert.isRejected(instance.deposit(channelId, payment, { from: receiver }))
     })
 
     specify('not if alien', async () => {
       let channelId = contracts.channelId(sender, receiver)
       await createChannelRaw(channelId)
-      await token.approve(instance.address, payment)
+      let options = { from: sender }
+      await token.approve(instance.address, payment, options)
       return assert.isRejected(instance.deposit(channelId, payment, { from: alien }))
+    })
+
+    specify('not if not approved', async () => {
+      let channelId = contracts.channelId(sender, receiver)
+      await createChannelRaw(channelId)
+      let options = { from: sender }
+      await token.approve(instance.address, 0, options)
+      return assert.isRejected(instance.deposit(channelId, payment, options))
     })
   })
 })

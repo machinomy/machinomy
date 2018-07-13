@@ -37,10 +37,10 @@ contract TokenUnidirectional {
     /// @param value Initial channel amount.
     /// @dev Before opening a channel, the sender should `approve` spending the token by TokenUnidirectional contract.
     function open(bytes32 channelId, address receiver, uint256 settlingPeriod, address tokenContract, uint256 value) public {
-        require(isAbsent(channelId));
+        require(isAbsent(channelId), "Channel with the same id is present");
 
         StandardToken token = StandardToken(tokenContract);
-        require(token.transferFrom(msg.sender, address(this), value));
+        require(token.transferFrom(msg.sender, address(this), value), "Unable to transfer token to the contract");
 
         channels[channelId] = PaymentChannel({
             sender: msg.sender,
@@ -68,11 +68,11 @@ contract TokenUnidirectional {
     /// @param channelId Identifier of the channel.
     /// @param value Amount to be deposited.
     function deposit(bytes32 channelId, uint256 value) public payable {
-        require(canDeposit(channelId, msg.sender));
+        require(canDeposit(channelId, msg.sender), "canDeposit returned false");
 
         PaymentChannel storage channel = channels[channelId];
         StandardToken token = StandardToken(channel.tokenContract);
-        require(token.transferFrom(msg.sender, address(this), value));
+        require(token.transferFrom(msg.sender, address(this), value), "Unable to transfer token to the contract");
         channel.value = channel.value.add(value);
 
         emit DidDeposit(channelId, value);
@@ -92,10 +92,10 @@ contract TokenUnidirectional {
     /// @dev Actually set `settlingUntil` field of the PaymentChannel structure.
     /// @param channelId Identifier of the channel.
     function startSettling(bytes32 channelId) public {
-        require(canStartSettling(channelId, msg.sender));
+        require(canStartSettling(channelId, msg.sender), "canStartSettling returned false");
 
         PaymentChannel storage channel = channels[channelId];
-        channel.settlingUntil = block.number + channel.settlingPeriod;
+        channel.settlingUntil = block.number.add(channel.settlingPeriod);
 
         emit DidStartSettling(channelId);
     }
@@ -105,7 +105,7 @@ contract TokenUnidirectional {
     /// @param channelId Identifier of the channel.
     function canSettle(bytes32 channelId) public view returns(bool) {
         PaymentChannel storage channel = channels[channelId];
-        bool isWaitingOver = block.number >= channel.settlingUntil; // FIXME Maybe opt
+        bool isWaitingOver = block.number >= channel.settlingUntil;
         return isSettling(channelId) && isWaitingOver;
     }
 
@@ -113,12 +113,12 @@ contract TokenUnidirectional {
     /// After the settling period is over, and receiver has not claimed the funds, anyone could call that.
     /// @param channelId Identifier of the channel.
     function settle(bytes32 channelId) public {
-        require(canSettle(channelId));
+        require(canSettle(channelId), "canSettle returned false");
 
         PaymentChannel storage channel = channels[channelId];
         StandardToken token = StandardToken(channel.tokenContract);
 
-        require(token.transfer(channel.sender, channel.value));
+        require(token.transfer(channel.sender, channel.value), "Unable to transfer token to channel sender");
 
         delete channels[channelId];
         emit DidSettle(channelId);
@@ -145,17 +145,17 @@ contract TokenUnidirectional {
     /// @param payment Amount claimed.
     /// @param signature Signature for the payment promise.
     function claim(bytes32 channelId, uint256 payment, bytes signature) public {
-        require(canClaim(channelId, payment, msg.sender, signature));
+        require(canClaim(channelId, payment, msg.sender, signature), "canClaim returned false");
 
         PaymentChannel storage channel = channels[channelId];
         StandardToken token = StandardToken(channel.tokenContract);
 
         if (payment >= channel.value) {
-            require(token.transfer(channel.receiver, channel.value));
+            require(token.transfer(channel.receiver, channel.value), "Unable to transfer token to channel receiver");
         } else {
-            require(token.transfer(channel.receiver, payment));
+            require(token.transfer(channel.receiver, payment), "Unable to transfer token to channel receiver");
             uint256 change = channel.value.sub(payment);
-            require(token.transfer(channel.sender, change));
+            require(token.transfer(channel.sender, change), "Unable to transfer token to channel sender");
         }
 
         delete channels[channelId];
