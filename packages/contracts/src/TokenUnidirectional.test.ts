@@ -5,7 +5,7 @@ import * as asPromised from 'chai-as-promised'
 import * as contracts from './index'
 import Units from './Units'
 import Gaser from './support/Gaser'
-import MintableToken from './support/MintableToken'
+import TestToken from './support/TestToken'
 
 chai.use(asPromised)
 
@@ -14,7 +14,7 @@ const assert = chai.assert
 const gaser = new Gaser(web3)
 
 const TokenUnidirectional = artifacts.require<contracts.TokenUnidirectional.Contract>('TokenUnidirectional.sol')
-const Token = artifacts.require<MintableToken.Contract>('support/TestToken.sol')
+const Token = artifacts.require<TestToken.Contract>('support/TestToken.sol')
 
 const WRONG_CHANNEL_ID = '0xdeadbeaf'
 const WRONG_SIGNATURE = '0xcafebabe'
@@ -28,7 +28,7 @@ contract('TokenUnidirectional', accounts => {
 
   let payment = Units.convert(0.1, 'eth', 'wei')
   let instance: contracts.TokenUnidirectional.Contract
-  let token: MintableToken.Contract
+  let token: TestToken.Contract
 
   before(async () => {
     token = await Token.new()
