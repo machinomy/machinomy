@@ -24,6 +24,18 @@ export namespace MintableToken {
       estimateGas (receiver: string, value: BigNumber | number, options?: Web3.CallData): Promise<number>
     }
 
+    block: {
+      (to: string, from: string, options?: Web3.CallData): Promise<truffle.TransactionResult>
+      call (to: string, from: string, options?: Web3.CallData): Promise<void>
+      estimateGas (to: string, from: string, options?: Web3.CallData): Promise<number>
+    }
+
+    unblock: {
+      (to: string, from: string, options?: Web3.CallData): Promise<truffle.TransactionResult>
+      call (to: string, from: string, options?: Web3.CallData): Promise<void>
+      estimateGas (to: string, from: string, options?: Web3.CallData): Promise<number>
+    }
+
     balanceOf: {
       (address: string): Promise<BigNumber>
       call (address: string): Promise<BigNumber>

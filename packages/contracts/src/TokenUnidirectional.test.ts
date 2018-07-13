@@ -14,7 +14,7 @@ const assert = chai.assert
 const gaser = new Gaser(web3)
 
 const TokenUnidirectional = artifacts.require<contracts.TokenUnidirectional.Contract>('TokenUnidirectional.sol')
-const Token = artifacts.require<MintableToken.Contract>('support/MintableToken.sol')
+const Token = artifacts.require<MintableToken.Contract>('support/TestToken.sol')
 
 const WRONG_CHANNEL_ID = '0xdeadbeaf'
 const WRONG_SIGNATURE = '0xcafebabe'
@@ -213,6 +213,21 @@ contract('TokenUnidirectional', accounts => {
     specify('refuse if wrong signature', async () => {
       let didOpenEvent = await createChannel()
       return assert.isRejected(instance.claim(didOpenEvent.channelId, payment, WRONG_SIGNATURE, { from: receiver }))
+    })
+    specify('refuse if can not send token to receiver', async () => {
+      let didOpenEvent = await createChannel()
+      let _payment = channelValue.plus(payment)
+      let signature = await paymentSignature(sender, didOpenEvent.channelId, _payment)
+      let receiverBefore = await token.balanceOf(receiver)
+      let contractBefore = await token.balanceOf(instance.address)
+
+      await token.block(receiver, instance.address)
+      await assert.isRejected(instance.claim(didOpenEvent.channelId, _payment, signature, { from: receiver }))
+
+      let receiverAfter = await token.balanceOf(receiver)
+      let contractAfter = await token.balanceOf(instance.address)
+      assert.equal(receiverAfter.toString(), receiverBefore.toString())
+      assert.equal(contractAfter.toString(), contractBefore.toString())
     })
   })
 
