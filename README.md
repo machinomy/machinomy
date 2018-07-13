@@ -76,6 +76,10 @@ For more advanced documentation go to [doc/](doc/) folder.
 
 Using [yarn](https://yarnpkg.com/lang/en/) is mandatory (**don't use npm!**)
 
+Apply migrations (eg. for PostgreSQL, refer [packages/machinomy/database.json](packages/machinomy/database.json)):
+
+    $ PGUSER=user PGPASSWORD=pass PGHOSTADDR=localhost PGDATABASE=dbname yarn migrate
+
 **Non-Developers:** You are lovely. As a starter, help us spread the word! Tell a friend right now.
 If not enough, developers need flesh-world guidance. It starts with proper documentation and a pinch of fantasy.
 Really anything, whether it is a short post on a use case of IoT micropayments, addition to the documentation (code comments, yay!),
