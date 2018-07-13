@@ -19,7 +19,7 @@ import * as expect from 'expect'
 import Signature from './Signature'
 
 describe('ChannelManagerImpl', () => {
-  const fakeChan = new PaymentChannel('0xcafe', '0xbeef', '123', new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 0, undefined)
+  const fakeChan = new PaymentChannel('0xcafe', '0xbeef', '123', new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 0, '')
 
   const fakeLog = {
     logs: [{
@@ -75,7 +75,7 @@ describe('ChannelManagerImpl', () => {
       closeOnInvalidPayment: true
     } as MachinomyOptions
 
-    channelContract = new ChannelContract(web3)
+    channelContract = new ChannelContract(web3, channelsDao)
     channelManager = new ChannelManager('0xcafe', web3, channelsDao, paymentsDao, tokensDao, channelContract, paymentManager, machOpts)
   })
 
@@ -160,7 +160,7 @@ describe('ChannelManagerImpl', () => {
     })
 
     it('starts settling the contract when the sender is the current account and state is 0', () => {
-      const channel = new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 0, undefined)
+      const channel = new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 0, '')
       channelsDao.firstById = sinon.stub().withArgs(id).resolves(channel)
       channelContract.getState = sinon.stub().resolves(0)
       channelsDao.updateState = sinon.stub().withArgs(id, 1).resolves()
@@ -172,7 +172,7 @@ describe('ChannelManagerImpl', () => {
     })
 
     it('finishes settling the contract when the sender is the current account and state is 1', () => {
-      const channel = new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 1, undefined)
+      const channel = new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 1, '')
       channelsDao.firstById = sinon.stub().withArgs(id).resolves(channel)
       channelContract.getState = sinon.stub().resolves(1)
       channelsDao.updateState = sinon.stub().withArgs(id, 2).resolves()
@@ -184,7 +184,7 @@ describe('ChannelManagerImpl', () => {
     })
 
     it('claims the contract when the sender is not the current account', () => {
-      const channel = new PaymentChannel('0xdead', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 1, undefined)
+      const channel = new PaymentChannel('0xdead', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 1, '')
       channelsDao.firstById = sinon.stub().withArgs(id).resolves(channel)
       paymentsDao.firstMaximum = sinon.stub().withArgs(id).resolves(new Payment({
         channelId: id,
@@ -200,7 +200,7 @@ describe('ChannelManagerImpl', () => {
         }),
         meta: '',
         token: undefined,
-        contractAddress: undefined
+        contractAddress: ''
       }))
       channelContract.claim = sinon.stub().withArgs(channel.receiver, channel, channel.value, 1, '0x01', '0x02')
         .resolves(claimResult)
@@ -213,7 +213,7 @@ describe('ChannelManagerImpl', () => {
     })
 
     it('emits willCloseChannel and didCloseChannel', () => {
-      const channel = new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 0, undefined)
+      const channel = new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 0, '')
       channelsDao.firstById = sinon.stub().withArgs(id).resolves(channel)
       channelContract.getState = sinon.stub().resolves(0)
       channelsDao.updateState = sinon.stub().withArgs(id, 1).resolves()
@@ -230,7 +230,7 @@ describe('ChannelManagerImpl', () => {
     })
 
     it('only allows one call at once', () => {
-      const channel = new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 0, undefined)
+      const channel = new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 0, '')
       channelsDao.firstById = sinon.stub().withArgs(id).resolves(channel)
       channelContract.getState = sinon.stub().resolves(0)
       channelsDao.updateState = sinon.stub().withArgs(id, 1).resolves()
@@ -248,7 +248,7 @@ describe('ChannelManagerImpl', () => {
       let savedChannel: PaymentChannel
 
       function setup (settlingUntil: number) {
-        savedChannel = new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 0, undefined)
+        savedChannel = new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 0, '')
         channelsDao.firstById = sinon.stub().withArgs(id).resolves(null)
         channelContract.channelById = sinon.stub().withArgs(id).resolves([savedChannel.sender, savedChannel.receiver, savedChannel.value, ChannelManager.DEFAULT_SETTLEMENT_PERIOD, new BigNumber.BigNumber(settlingUntil)])
         channelContract.claim = sinon.stub().resolves(claimResult)
@@ -274,7 +274,7 @@ describe('ChannelManagerImpl', () => {
         setup(1)
         await channelManager.closeChannel(id)
         expect((channelsDao.save as sinon.SinonStub).lastCall.args[0])
-          .toEqual(new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 1, undefined))
+          .toEqual(new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 1, ''))
       })
     })
   })
@@ -320,7 +320,7 @@ describe('ChannelManagerImpl', () => {
     let channel: PaymentChannel
 
     beforeEach(() => {
-      channel = new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(10), new BigNumber.BigNumber(2), 0, undefined)
+      channel = new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(10), new BigNumber.BigNumber(2), 0, '')
       channelsDao.firstById = sinon.stub().withArgs(id).resolves(channel)
       deployed.channels = sinon.stub().resolves(['0', '0',
         new BigNumber.BigNumber(8), new BigNumber.BigNumber(0), new BigNumber.BigNumber(0)])
@@ -350,7 +350,7 @@ describe('ChannelManagerImpl', () => {
             s: '0x02'
           }),
           meta,
-          contractAddress: undefined,
+          contractAddress: '',
           token: undefined
         })
       })
@@ -380,7 +380,7 @@ describe('ChannelManagerImpl', () => {
           s: '0x02'
         }),
         meta: '',
-        contractAddress: undefined,
+        contractAddress: '',
         token: undefined
       })
 
@@ -419,7 +419,7 @@ describe('ChannelManagerImpl', () => {
           s: '0x02'
         }),
         meta: '',
-        contractAddress: undefined,
+        contractAddress: '',
         token: ''
       } as Payment
 
