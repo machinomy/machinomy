@@ -222,12 +222,13 @@ contract('TokenUnidirectional', accounts => {
       let contractBefore = await token.balanceOf(instance.address)
 
       await token.block(receiver, instance.address)
-      await assert.isRejected(instance.claim(didOpenEvent.channelId, _payment, signature, { from: receiver }))
+      let r = assert.isRejected(instance.claim(didOpenEvent.channelId, _payment, signature, { from: receiver }))
 
       let receiverAfter = await token.balanceOf(receiver)
       let contractAfter = await token.balanceOf(instance.address)
       assert.equal(receiverAfter.toString(), receiverBefore.toString())
       assert.equal(contractAfter.toString(), contractBefore.toString())
+      return r
     })
     specify('refuse if can not send token to receiver', async () => {
       let didOpenEvent = await createChannel()
@@ -237,13 +238,14 @@ contract('TokenUnidirectional', accounts => {
       let contractBefore = await token.balanceOf(instance.address)
 
       await token.block(receiver, instance.address)
-      await assert.isRejected(instance.claim(didOpenEvent.channelId, payment, signature, { from: receiver }))
+      let r = assert.isRejected(instance.claim(didOpenEvent.channelId, payment, signature, { from: receiver }))
 
       let receiverAfter = await token.balanceOf(receiver)
       let contractAfter = await token.balanceOf(instance.address)
 
       assert.equal(receiverAfter.toString(), receiverBefore.toString())
       assert.equal(contractAfter.toString(), contractBefore.toString())
+      return r
     })
 
     specify('refuse if can not send token to sender', async () => {
@@ -254,13 +256,14 @@ contract('TokenUnidirectional', accounts => {
       let contractBefore = await token.balanceOf(instance.address)
 
       await token.block(sender, instance.address)
-      await assert.isRejected(instance.claim(didOpenEvent.channelId, payment, signature, { from: receiver }))
+      let r = assert.isRejected(instance.claim(didOpenEvent.channelId, payment, signature, { from: receiver }))
 
       let senderAfter = await token.balanceOf(sender)
       let contractAfter = await token.balanceOf(instance.address)
 
       assert.equal(senderAfter.toString(), senderBefore.toString())
       assert.equal(contractAfter.toString(), contractBefore.toString())
+      return r
     })
   })
 
@@ -339,9 +342,10 @@ contract('TokenUnidirectional', accounts => {
       await instance.startSettling(didOpenEvent.channelId, { from: sender })
       let before = await token.balanceOf(sender)
       await token.block(sender, instance.address)
-      await assert.isRejected(instance.settle(didOpenEvent.channelId, { from: sender }))
+      let r = assert.isRejected(instance.settle(didOpenEvent.channelId, { from: sender }))
       let after = await token.balanceOf(sender)
       assert.equal(before.toString(), after.toString())
+      return r
     })
   })
 
