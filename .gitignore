@@ -13,5 +13,6 @@ dist
 lerna-debug.log
 packages/contracts/coverage.json
 packages/contracts/coverage
+packages/contracts/coverageEnv
 packages/machinomy/coverage
 .nyc_output
