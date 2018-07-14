@@ -23,8 +23,8 @@ export default class ChannelContract {
   }
 
   async open (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number | BigNumber.BigNumber, channelId?: ChannelId | string, tokenContract?: string): Promise<TransactionResult> {
-    if (tokenContract) {
-      return this.channelTokenContract.open(sender, receiver, price, settlementPeriod, tokenContract, channelId)
+    if (this.isTokenContractDefined(tokenContract)) {
+      return this.channelTokenContract.open(sender, receiver, price, settlementPeriod, tokenContract!, channelId)
     } else {
       return this.channelEthContract.open(sender, receiver, price, settlementPeriod, channelId)
     }
@@ -32,7 +32,7 @@ export default class ChannelContract {
 
   async claim (receiver: string, channelId: string, value: BigNumber.BigNumber, signature: Signature): Promise<TransactionResult> {
     const tokenContract = (await this.channelsDao.firstById(channelId))!.contractAddress
-    if (tokenContract) {
+    if (this.isTokenContractDefined(tokenContract)) {
       return this.channelTokenContract.claim(receiver, channelId, value, signature)
     } else {
       return this.channelEthContract.claim(receiver, channelId, value, signature)
@@ -40,7 +40,7 @@ export default class ChannelContract {
   }
 
   async deposit (sender: string, channelId: string, value: BigNumber.BigNumber, tokenContract?: string): Promise<TransactionResult> {
-    if (tokenContract) {
+    if (this.isTokenContractDefined(tokenContract)) {
       return this.channelTokenContract.deposit(sender, channelId, value)
     } else {
       return this.channelEthContract.deposit(sender, channelId, value)
@@ -49,7 +49,7 @@ export default class ChannelContract {
 
   async getState (channelId: string): Promise<number> {
     const tokenContract = (await this.channelsDao.firstById(channelId))!.contractAddress
-    if (tokenContract) {
+    if (this.isTokenContractDefined(tokenContract)) {
       return this.channelTokenContract.getState(channelId)
     } else {
       return this.channelEthContract.getState(channelId)
@@ -58,7 +58,7 @@ export default class ChannelContract {
 
   async getSettlementPeriod (channelId: string): Promise<BigNumber.BigNumber> {
     const tokenContract = (await this.channelsDao.firstById(channelId))!.contractAddress
-    if (tokenContract) {
+    if (this.isTokenContractDefined(tokenContract)) {
       return this.channelTokenContract.getSettlementPeriod(channelId)
     } else {
       return this.channelEthContract.getSettlementPeriod(channelId)
@@ -67,7 +67,7 @@ export default class ChannelContract {
 
   async startSettle (account: string, channelId: string): Promise<TransactionResult> {
     const tokenContract = (await this.channelsDao.firstById(channelId))!.contractAddress
-    if (tokenContract) {
+    if (this.isTokenContractDefined(tokenContract)) {
       return this.channelTokenContract.startSettle(account, channelId)
     } else {
       return this.channelEthContract.startSettle(account, channelId)
@@ -76,7 +76,7 @@ export default class ChannelContract {
 
   async finishSettle (account: string, channelId: string): Promise<TransactionResult> {
     const tokenContract = (await this.channelsDao.firstById(channelId))!.contractAddress
-    if (tokenContract) {
+    if (this.isTokenContractDefined(tokenContract)) {
       return this.channelTokenContract.finishSettle(account, channelId)
     } else {
       return this.channelEthContract.finishSettle(account, channelId)
@@ -85,7 +85,7 @@ export default class ChannelContract {
 
   async paymentDigest (channelId: string, value: BigNumber.BigNumber): Promise<string> {
     const tokenContract = (await this.channelsDao.firstById(channelId))!.contractAddress
-    if (tokenContract) {
+    if (this.isTokenContractDefined(tokenContract)) {
       return this.channelTokenContract.paymentDigest(channelId, value, tokenContract)
     } else {
       return this.channelEthContract.paymentDigest(channelId, value)
@@ -94,7 +94,7 @@ export default class ChannelContract {
 
   async canClaim (channelId: string, payment: BigNumber.BigNumber, receiver: string, signature: Signature) {
     const tokenContract = (await this.channelsDao.firstById(channelId))!.contractAddress
-    if (tokenContract) {
+    if (this.isTokenContractDefined(tokenContract)) {
       return this.channelTokenContract.canClaim(channelId, payment, receiver, signature)
     } else {
       return this.channelEthContract.canClaim(channelId, payment, receiver, signature)
@@ -103,7 +103,7 @@ export default class ChannelContract {
 
   async channelById (channelId: string): Promise<ChannelFromContract> {
     const tokenContract = (await this.channelsDao.firstById(channelId))!.contractAddress
-    if (tokenContract) {
+    if (this.isTokenContractDefined(tokenContract)) {
       return this.channelTokenContract.channelById(channelId)
     } else {
       return this.channelEthContract.channelById(channelId)
@@ -112,5 +112,9 @@ export default class ChannelContract {
 
   setChannelsDAO (channelsDao: IChannelsDatabase) {
     this.channelsDao = channelsDao
+  }
+
+  isTokenContractDefined (tokenContract: string | undefined) {
+    return tokenContract && tokenContract.startsWith('0x') && parseInt(tokenContract, 16) !== 0
   }
 }
