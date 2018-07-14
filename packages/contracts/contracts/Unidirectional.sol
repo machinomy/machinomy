@@ -58,7 +58,7 @@ contract Unidirectional {
 
     /// @notice Add more money to the contract.
     /// @param channelId Identifier of the channel.
-    function deposit(bytes32 channelId) public {
+    function deposit(bytes32 channelId) public payable {
         require(canDeposit(channelId, msg.sender));
 
         channels[channelId].value += msg.value;
