@@ -1,5 +1,5 @@
 {
-  "name": "@machinomy/wrapso",
+  "name": "@machinomy/wraptso",
   "version": "0.0.1",
   "description": "Generate TypeScript wrapper class for Solidity smart contract",
   "license": "Apache-2.0",

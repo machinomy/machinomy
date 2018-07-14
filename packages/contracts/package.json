@@ -35,6 +35,7 @@
     "coverage": "solidity-coverage"
   },
   "devDependencies": {
+    "@machinomy/wraptso": "^0.0.x",
     "@machinomy/types-ethereumjs-units": "^0.0.2",
     "@machinomy/types-ethereumjs-util": "^0.0.12",
     "@machinomy/types-truffle": "^0.0.6",
