@@ -1,6 +1,8 @@
 import * as fs from 'fs'
 import { TokenUnidirectional, Unidirectional } from '../../../contracts/lib'
 import ChannelContract from '../ChannelContract'
+import ChannelEthContract from '../ChannelEthContract'
+import ChannelTokenContract from '../ChannelTokenContract'
 import IChannelsDatabase from './IChannelsDatabase'
 import IEngine from './IEngine'
 import IExec from './IExec'
@@ -75,7 +77,9 @@ describe('Migrator', () => {
       contractTokenStub.withArgs(web3.currentProvider).returns({
         deployed: sinon.stub().resolves(Promise.resolve(deployed))
       })
-      channelContract = new ChannelContract(web3, {} as IChannelsDatabase)
+      const channelEthContract = new ChannelEthContract(web3)
+      const channelTokenContract = new ChannelTokenContract(web3)
+      channelContract = new ChannelContract(web3, {} as IChannelsDatabase, channelEthContract, channelTokenContract)
 
       const filename = await support.tmpFileName()
 

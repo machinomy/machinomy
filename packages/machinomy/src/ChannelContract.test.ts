@@ -4,6 +4,8 @@ import * as BigNumber from 'bignumber.js'
 import * as sinon from 'sinon'
 import { Unidirectional } from '@machinomy/contracts'
 import ChannelContract from './ChannelContract'
+import ChannelEthContract from './ChannelEthContract'
+import ChannelTokenContract from './ChannelTokenContract'
 import Signature from './Signature'
 import IChannelsDatabase from './storage/IChannelsDatabase'
 
@@ -33,7 +35,9 @@ describe('ChannelContract', () => {
     contractStub.withArgs(web3.currentProvider).returns({
       deployed: sinon.stub().resolves(Promise.resolve(deployed))
     })
-    contract = new ChannelContract(web3, {} as IChannelsDatabase)
+    const channelEthContract = new ChannelEthContract(web3)
+    const channelTokenContract = new ChannelTokenContract(web3)
+    contract = new ChannelContract(web3, {} as IChannelsDatabase, channelEthContract, channelTokenContract)
   })
 
   afterEach(() => {

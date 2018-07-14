@@ -1,5 +1,7 @@
 import * as sinon from 'sinon'
 import * as BigNumber from 'bignumber.js'
+import ChannelEthContract from './ChannelEthContract'
+import ChannelTokenContract from './ChannelTokenContract'
 import { PaymentChannel } from './PaymentChannel'
 import TokensDatabase from './storage/postgresql/PostgresTokensDatabase'
 import { TransactionResult } from 'truffle-contract'
@@ -75,7 +77,9 @@ describe('ChannelManagerImpl', () => {
       closeOnInvalidPayment: true
     } as MachinomyOptions
 
-    channelContract = new ChannelContract(web3, channelsDao)
+    const channelEthContract = new ChannelEthContract(web3)
+    const channelTokenContract = new ChannelTokenContract(web3)
+    channelContract = new ChannelContract(web3, channelsDao, channelEthContract, channelTokenContract)
     channelManager = new ChannelManager('0xcafe', web3, channelsDao, paymentsDao, tokensDao, channelContract, paymentManager, machOpts)
   })
 

@@ -1,5 +1,7 @@
 import * as Web3 from 'web3'
 import * as expect from 'expect'
+import ChannelEthContract from './ChannelEthContract'
+import ChannelTokenContract from './ChannelTokenContract'
 import Storage from './Storage'
 import IChannelsDatabase from './storage/IChannelsDatabase'
 import EngineNedb from './storage/nedb/EngineNedb'
@@ -30,7 +32,9 @@ describe('Storage', () => {
     contractStub.withArgs(web3.currentProvider).returns({
       deployed: sinon.stub().resolves(Promise.resolve(deployed))
     })
-    channelContract = new ChannelContract(web3, {} as IChannelsDatabase)
+    const channelEthContract = new ChannelEthContract(web3)
+    const channelTokenContract = new ChannelTokenContract(web3)
+    channelContract = new ChannelContract(web3, {} as IChannelsDatabase, channelEthContract, channelTokenContract)
   })
 
   afterEach(() => {

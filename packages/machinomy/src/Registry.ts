@@ -1,5 +1,7 @@
 import * as Web3 from 'web3'
 import { memoize } from 'decko'
+import ChannelEthContract from './ChannelEthContract'
+import ChannelTokenContract from './ChannelTokenContract'
 import Storage from './Storage'
 import MachinomyOptions from './MachinomyOptions'
 import ChannelContract from './ChannelContract'
@@ -23,8 +25,20 @@ export default class Registry {
   }
 
   @memoize
+  async channelEthContract (): Promise<ChannelEthContract> {
+    return new ChannelEthContract(this.web3)
+  }
+
+  @memoize
+  async channelTokenContract (): Promise<ChannelTokenContract> {
+    return new ChannelTokenContract(this.web3)
+  }
+
+  @memoize
   async channelContract (): Promise<ChannelContract> {
-    return new ChannelContract(this.web3, {} as IChannelsDatabase)
+    const channelEthContract = await this.channelEthContract()
+    const channelTokenContract = await this.channelTokenContract()
+    return new ChannelContract(this.web3, {} as IChannelsDatabase, channelEthContract, channelTokenContract)
   }
 
   @memoize

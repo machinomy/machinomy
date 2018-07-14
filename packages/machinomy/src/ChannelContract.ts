@@ -16,9 +16,9 @@ export default class ChannelContract {
   channelTokenContract: ChannelTokenContract
   channelsDao: IChannelsDatabase
 
-  constructor (web3: Web3, channelsDao: IChannelsDatabase) {
-    this.channelEthContract = new ChannelEthContract(web3)
-    this.channelTokenContract = new ChannelTokenContract(web3)
+  constructor (web3: Web3, channelsDao: IChannelsDatabase, channelEthContract: ChannelEthContract, channelTokenContract: ChannelTokenContract) {
+    this.channelEthContract = channelEthContract
+    this.channelTokenContract = channelTokenContract
     this.channelsDao = channelsDao
   }
 
