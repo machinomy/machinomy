@@ -8,6 +8,7 @@ import ChannelManager from './ChannelManager'
 import PaymentManager from './PaymentManager'
 import ChainManager from './ChainManager'
 import Client, { ClientImpl } from './client'
+import IChannelsDatabase from './storage/IChannelsDatabase'
 import { Transport } from './transport'
 
 export default class Registry {
@@ -23,13 +24,16 @@ export default class Registry {
 
   @memoize
   async channelContract (): Promise<ChannelContract> {
-    return new ChannelContract(this.web3)
+    return new ChannelContract(this.web3, {} as IChannelsDatabase)
   }
 
   @memoize
   async storage (): Promise<Storage> {
     let channelContract = await this.channelContract()
-    return Storage.build(this.options.databaseUrl, channelContract)
+    return Storage.build(this.options.databaseUrl, channelContract).then((storage: Storage) => {
+      channelContract.setChannelsDAO(storage.channelsDatabase)
+      return storage
+    })
   }
 
   @memoize

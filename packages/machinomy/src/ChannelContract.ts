@@ -7,6 +7,10 @@ import Signature from './Signature'
 import ChannelId from './ChannelId'
 import IChannelsDatabase from './storage/IChannelsDatabase'
 
+export type Channel = [string, string, BigNumber.BigNumber, BigNumber.BigNumber, BigNumber.BigNumber]
+export type ChannelWithTokenContract = [string, string, BigNumber.BigNumber, BigNumber.BigNumber, BigNumber.BigNumber, string]
+export type ChannelFromContract = Channel | ChannelWithTokenContract
+
 export default class ChannelContract {
   channelEthContract: ChannelEthContract
   channelTokenContract: ChannelTokenContract
@@ -20,7 +24,7 @@ export default class ChannelContract {
 
   async open (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number | BigNumber.BigNumber, channelId?: ChannelId | string, tokenContract?: string): Promise<TransactionResult> {
     if (tokenContract) {
-      return this.channelTokenContract.open(sender, receiver, price, settlementPeriod, channelId)
+      return this.channelTokenContract.open(sender, receiver, price, settlementPeriod, tokenContract, channelId)
     } else {
       return this.channelEthContract.open(sender, receiver, price, settlementPeriod, channelId)
     }
@@ -82,7 +86,7 @@ export default class ChannelContract {
   async paymentDigest (channelId: string, value: BigNumber.BigNumber): Promise<string> {
     const tokenContract = (await this.channelsDao.firstById(channelId))!.contractAddress
     if (tokenContract) {
-      return this.channelTokenContract.paymentDigest(channelId, value)
+      return this.channelTokenContract.paymentDigest(channelId, value, tokenContract)
     } else {
       return this.channelEthContract.paymentDigest(channelId, value)
     }
@@ -97,12 +101,16 @@ export default class ChannelContract {
     }
   }
 
-  async channelById (channelId: string): Promise<[string, string, BigNumber.BigNumber, BigNumber.BigNumber, BigNumber.BigNumber]> {
+  async channelById (channelId: string): Promise<ChannelFromContract> {
     const tokenContract = (await this.channelsDao.firstById(channelId))!.contractAddress
     if (tokenContract) {
       return this.channelTokenContract.channelById(channelId)
     } else {
       return this.channelEthContract.channelById(channelId)
     }
+  }
+
+  setChannelsDAO (channelsDao: IChannelsDatabase) {
+    this.channelsDao = channelsDao
   }
 }
