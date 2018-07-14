@@ -31,9 +31,7 @@ export default class ChannelContract {
   }
 
   async claim (receiver: string, channelId: string, value: BigNumber.BigNumber, signature: Signature): Promise<TransactionResult> {
-    const channel = await this.channelsDao.firstById(channelId)
-    const tokenContract = channel!.contractAddress
-    const contract = this.actualContract(tokenContract)
+    const contract = await this.getContractByChannelId(channelId)
     return contract.claim(receiver, channelId, value, signature)
   }
 
@@ -43,30 +41,22 @@ export default class ChannelContract {
   }
 
   async getState (channelId: string): Promise<number> {
-    const channel = await this.channelsDao.firstById(channelId)
-    const tokenContract = channel!.contractAddress
-    const contract = this.actualContract(tokenContract)
+    const contract = await this.getContractByChannelId(channelId)
     return contract.getState(channelId)
   }
 
   async getSettlementPeriod (channelId: string): Promise<BigNumber.BigNumber> {
-    const channel = await this.channelsDao.firstById(channelId)
-    const tokenContract = channel!.contractAddress
-    const contract = this.actualContract(tokenContract)
+    const contract = await this.getContractByChannelId(channelId)
     return contract.getSettlementPeriod(channelId)
   }
 
   async startSettle (account: string, channelId: string): Promise<TransactionResult> {
-    const channel = await this.channelsDao.firstById(channelId)
-    const tokenContract = channel!.contractAddress
-    const contract = this.actualContract(tokenContract)
+    const contract = await this.getContractByChannelId(channelId)
     return contract.startSettle(account, channelId)
   }
 
   async finishSettle (account: string, channelId: string): Promise<TransactionResult> {
-    const channel = await this.channelsDao.firstById(channelId)
-    const tokenContract = channel!.contractAddress
-    const contract = this.actualContract(tokenContract)
+    const contract = await this.getContractByChannelId(channelId)
     return contract.finishSettle(account, channelId)
   }
 
@@ -81,16 +71,12 @@ export default class ChannelContract {
   }
 
   async canClaim (channelId: string, payment: BigNumber.BigNumber, receiver: string, signature: Signature) {
-    const channel = await this.channelsDao.firstById(channelId)
-    const tokenContract = channel!.contractAddress
-    const contract = this.actualContract(tokenContract)
+    const contract = await this.getContractByChannelId(channelId)
     return contract.canClaim(channelId, payment, receiver, signature)
   }
 
   async channelById (channelId: string): Promise<ChannelFromContract> {
-    const channel = await this.channelsDao.firstById(channelId)
-    const tokenContract = channel!.contractAddress
-    const contract = this.actualContract(tokenContract)
+    const contract = await this.getContractByChannelId(channelId)
     return contract.channelById(channelId)
   }
 
@@ -108,5 +94,12 @@ export default class ChannelContract {
     } else {
       return this.channelEthContract
     }
+  }
+
+  async getContractByChannelId (channelId: string) {
+    const channel = await this.channelsDao.firstById(channelId)
+    const tokenContract = channel!.contractAddress
+    const contract = this.actualContract(tokenContract)
+    return contract
   }
 }
