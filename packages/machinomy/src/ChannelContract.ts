@@ -70,7 +70,7 @@ export default class ChannelContract {
     }
   }
 
-  async canClaim (channelId: string, payment: BigNumber.BigNumber, receiver: string, signature: Signature) {
+  async canClaim (channelId: string, payment: BigNumber.BigNumber, receiver: string, signature: Signature): Promise<boolean> {
     const contract = await this.getContractByChannelId(channelId)
     return contract.canClaim(channelId, payment, receiver, signature)
   }
@@ -84,11 +84,11 @@ export default class ChannelContract {
     this.channelsDao = channelsDao
   }
 
-  isTokenContractDefined (tokenContract: string | undefined) {
-    return tokenContract && tokenContract.startsWith('0x') && parseInt(tokenContract, 16) !== 0
+  isTokenContractDefined (tokenContract: string | undefined): boolean {
+    return tokenContract !== undefined && tokenContract.startsWith('0x') && parseInt(tokenContract, 16) !== 0
   }
 
-  actualContract (tokenContract?: string) {
+  actualContract (tokenContract?: string): ChannelEthContract | ChannelTokenContract {
     if (this.isTokenContractDefined(tokenContract)) {
       return this.channelTokenContract
     } else {
@@ -96,7 +96,7 @@ export default class ChannelContract {
     }
   }
 
-  async getContractByChannelId (channelId: string) {
+  async getContractByChannelId (channelId: string): Promise<ChannelEthContract | ChannelTokenContract> {
     const channel = await this.channelsDao.firstById(channelId)
     const tokenContract = channel!.contractAddress
     const contract = this.actualContract(tokenContract)

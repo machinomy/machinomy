@@ -96,7 +96,7 @@ export default class ChannelTokenContract {
     return deployed.paymentDigest(channelId, value, tokenContract)
   }
 
-  async canClaim (channelId: string, payment: BigNumber.BigNumber, receiver: string, signature: Signature) {
+  async canClaim (channelId: string, payment: BigNumber.BigNumber, receiver: string, signature: Signature): Promise<boolean> {
     const deployed = await this.contract
     return deployed.canClaim(channelId, payment, receiver, signature.toString())
   }
