@@ -80,10 +80,6 @@ export default class ChannelContract {
     return contract.channelById(channelId)
   }
 
-  setChannelsDAO (channelsDao: IChannelsDatabase) {
-    this.channelsDao = channelsDao
-  }
-
   isTokenContractDefined (tokenContract: string | undefined): boolean {
     return tokenContract !== undefined && tokenContract.startsWith('0x') && parseInt(tokenContract, 16) !== 0
   }

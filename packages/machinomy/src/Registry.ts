@@ -2,6 +2,7 @@ import * as Web3 from 'web3'
 import { memoize } from 'decko'
 import ChannelEthContract from './ChannelEthContract'
 import ChannelTokenContract from './ChannelTokenContract'
+import Inflator from './Inflator'
 import Storage from './Storage'
 import MachinomyOptions from './MachinomyOptions'
 import ChannelContract from './ChannelContract'
@@ -25,6 +26,13 @@ export default class Registry {
   }
 
   @memoize
+  async inflator (): Promise<Inflator> {
+    const channelEthContract = await this.channelEthContract()
+    const channelTokenContract = await this.channelTokenContract()
+    return new Inflator(channelEthContract, channelTokenContract)
+  }
+
+  @memoize
   async channelEthContract (): Promise<ChannelEthContract> {
     return new ChannelEthContract(this.web3)
   }
@@ -43,11 +51,9 @@ export default class Registry {
 
   @memoize
   async storage (): Promise<Storage> {
-    let channelContract = await this.channelContract()
-    return Storage.build(this.options.databaseUrl, channelContract).then((storage: Storage) => {
-      channelContract.setChannelsDAO(storage.channelsDatabase)
-      return storage
-    })
+    const channelContract = await this.channelContract()
+    const inflator = await this.inflator()
+    return Storage.build(this.options.databaseUrl, channelContract, inflator)
   }
 
   @memoize

@@ -1,4 +1,6 @@
 import * as sinon from 'sinon'
+import * as Web3 from 'web3'
+import Inflator from './Inflator'
 import * as support from './support'
 import ChannelId from './ChannelId'
 import * as BigNumber from 'bignumber.js'
@@ -21,6 +23,8 @@ import EngineSqlite from './storage/sqlite/EngineSqlite'
 import SqliteChannelsDatabase from './storage/sqlite/SqliteChannelsDatabase'
 import SqlitePaymentsDatabase from './storage/sqlite/SqlitePaymentsDatabase'
 import SqliteTokensDatabase from './storage/sqlite/SqliteTokensDatabase'
+import ChannelEthContract from './ChannelEthContract'
+import ChannelTokenContract from './ChannelTokenContract'
 
 const expect = require('expect')
 
@@ -39,17 +43,17 @@ function buildEngine (filename: string): IEngine {
   }
 }
 
-function buildDatabases (engine: IEngine, channelContract: ChannelContract): [AbstractChannelsDatabase<IEngine>, IPaymentsDatabase, ITokensDatabase] {
+function buildDatabases (engine: IEngine, channelContract: ChannelContract, inflator: Inflator): [AbstractChannelsDatabase<IEngine>, IPaymentsDatabase, ITokensDatabase] {
   if (engine instanceof EngineNedb) {
-    return [new NedbChannelsDatabase(engine, channelContract, null), new NedbPaymentsDatabase(engine, null), new NedbTokensDatabase(engine, null)]
+    return [new NedbChannelsDatabase(engine, channelContract, inflator, null), new NedbPaymentsDatabase(engine, null), new NedbTokensDatabase(engine, null)]
   }
 
   if (engine instanceof EnginePostgres) {
-    return [new PostgresChannelsDatabase(engine, channelContract, null), new PostgresPaymentsDatabase(engine, null), new PostgresTokensDatabase(engine, null)]
+    return [new PostgresChannelsDatabase(engine, channelContract, inflator, null), new PostgresPaymentsDatabase(engine, null), new PostgresTokensDatabase(engine, null)]
   }
 
   if (engine instanceof EngineSqlite) {
-    return [new SqliteChannelsDatabase(engine, channelContract, null), new SqlitePaymentsDatabase(engine, null), new SqliteTokensDatabase(engine, null)]
+    return [new SqliteChannelsDatabase(engine, channelContract, inflator, null), new SqlitePaymentsDatabase(engine, null), new SqliteTokensDatabase(engine, null)]
   }
 
   throw new Error('Invalid engine.')
@@ -76,7 +80,11 @@ describe('storage', () => {
 
       (fakeContract.channelById as sinon.SinonStub).resolves([null, null, '2'])
 
-      const databases = buildDatabases(engine, fakeContract)
+      const channelEthContract = new ChannelEthContract({} as Web3)
+      const channelTokenContract = new ChannelTokenContract({} as Web3)
+      const inflator = new Inflator(channelEthContract, channelTokenContract)
+
+      const databases = buildDatabases(engine, fakeContract, inflator)
       channels = databases[0]
       tokens = databases[2]
     })
