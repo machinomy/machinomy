@@ -10,6 +10,7 @@ const LOG = new Logger('ChannelTokenContract')
 
 const CREATE_CHANNEL_GAS = new BigNumber.BigNumber(300000)
 
+// FIXME MOVE TOKENS SOMEWHERE HERE
 export default class ChannelTokenContract {
   contract: Promise<TokenUnidirectional.Contract>
 
