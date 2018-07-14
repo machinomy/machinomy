@@ -47,7 +47,7 @@ export default abstract class AbstractChannelsDatabase<T extends IEngine> implem
       value,
       doc.spent,
       state === -1 ? 2 : state,
-      doc.contractAddress || undefined
+      doc.contractAddress || ''
     )
   }
 

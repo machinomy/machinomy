@@ -8,7 +8,7 @@ import ChannelId from './ChannelId'
 
 const LOG = new Logger('ChannelTokenContract')
 
-const CREATE_CHANNEL_GAS = 300000
+const CREATE_CHANNEL_GAS = new BigNumber.BigNumber(300000)
 
 export default class ChannelTokenContract {
   contract: Promise<TokenUnidirectional.Contract>
@@ -20,11 +20,11 @@ export default class ChannelTokenContract {
     this.contract = TokenUnidirectional.contract(this.web3.currentProvider).deployed()
   }
 
-  async open (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number | BigNumber.BigNumber, channelId?: ChannelId | string): Promise<TransactionResult> {
+  async open (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number | BigNumber.BigNumber, tokenContract: string, channelId?: ChannelId | string): Promise<TransactionResult> {
     LOG.info(`Creating channel. Value: ${price} / Settlement: ${settlementPeriod}`)
     let _channelId = channelId || ChannelId.random()
     const deployed = await this.contract
-    return deployed.open(_channelId.toString(), receiver, new BigNumber.BigNumber(settlementPeriod), {
+    return deployed.open(_channelId.toString(), receiver, new BigNumber.BigNumber(settlementPeriod), tokenContract, price, {
       from: sender,
       value: price,
       gas: CREATE_CHANNEL_GAS
@@ -41,7 +41,7 @@ export default class ChannelTokenContract {
   async deposit (sender: string, channelId: string, value: BigNumber.BigNumber): Promise<TransactionResult> {
     LOG.info(`Depositing ${value} into channel ${channelId}`)
     const deployed = await this.contract
-    return deployed.deposit(channelId, {
+    return deployed.deposit(channelId, value, {
       from: sender,
       value: value,
       gas: CREATE_CHANNEL_GAS
@@ -90,9 +90,9 @@ export default class ChannelTokenContract {
     return deployed.settle(channelId, { from: account, gas: 400000 })
   }
 
-  async paymentDigest (channelId: string, value: BigNumber.BigNumber): Promise<string> {
+  async paymentDigest (channelId: string, value: BigNumber.BigNumber, tokenContract: string): Promise<string> {
     const deployed = await this.contract
-    return deployed.paymentDigest(channelId, value)
+    return deployed.paymentDigest(channelId, value, tokenContract)
   }
 
   async canClaim (channelId: string, payment: BigNumber.BigNumber, receiver: string, signature: Signature) {
@@ -100,7 +100,7 @@ export default class ChannelTokenContract {
     return deployed.canClaim(channelId, payment, receiver, signature.toString())
   }
 
-  async channelById (channelId: string): Promise<[string, string, BigNumber.BigNumber, BigNumber.BigNumber, BigNumber.BigNumber]> {
+  async channelById (channelId: string): Promise<[string, string, BigNumber.BigNumber, BigNumber.BigNumber, BigNumber.BigNumber, string]> {
     const deployed = await this.contract
     return deployed.channels(channelId)
   }

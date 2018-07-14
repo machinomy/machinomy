@@ -5,6 +5,7 @@ import * as sinon from 'sinon'
 import { Unidirectional } from '@machinomy/contracts'
 import ChannelContract from './ChannelContract'
 import Signature from './Signature'
+import IChannelsDatabase from './storage/IChannelsDatabase'
 
 const expect = require('expect')
 
@@ -32,7 +33,7 @@ describe('ChannelContract', () => {
     contractStub.withArgs(web3.currentProvider).returns({
       deployed: sinon.stub().resolves(Promise.resolve(deployed))
     })
-    contract = new ChannelContract(web3)
+    contract = new ChannelContract(web3, {} as IChannelsDatabase)
   })
 
   afterEach(() => {
