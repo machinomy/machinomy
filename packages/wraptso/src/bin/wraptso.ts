@@ -12,7 +12,7 @@ let args = yargs
   .argv
 
 let pattern = args._[0]
-let templatesDir = path.resolve(__dirname, 'templates')
+let templatesDir = path.resolve(__dirname, '..', 'templates')
 let outputDir = args['output'] // path.resolve(__dirname, '..', '..', 'src', 'wrappers')
 
 let wraptso = new Wraptso(pattern, templatesDir, outputDir)
