@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import * as yargs from 'yargs'
-import * as path from 'path'
 import Wraptso from '../index'
 
 let args = yargs
@@ -12,10 +11,9 @@ let args = yargs
   .argv
 
 let pattern = args._[0]
-let templatesDir = path.resolve(__dirname, '..', 'templates')
 let outputDir = args['output'] // path.resolve(__dirname, '..', '..', 'src', 'wrappers')
 
-let wraptso = new Wraptso(pattern, templatesDir, outputDir)
+let wraptso = new Wraptso(pattern, outputDir)
 wraptso.run().then(() => {
   // Do Nothing
 }).catch(error => {

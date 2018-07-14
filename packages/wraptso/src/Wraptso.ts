@@ -2,15 +2,16 @@ import * as fs from 'fs'
 import ContractTemplate from './ContractTemplate'
 import * as glob from 'glob'
 import * as mkdirp from 'mkdirp'
+import * as path from 'path'
 
 export default class Wraptso {
   templatesDir: string
   outputDir: string
   pattern: string
 
-  constructor (pattern: string, templatesDir: string, outputDir: string) {
+  constructor (pattern: string, outputDir: string) {
     this.pattern = pattern
-    this.templatesDir = templatesDir
+    this.templatesDir = path.join(__dirname, '../templates')
     this.outputDir = outputDir
   }
 
