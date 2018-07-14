@@ -68,7 +68,7 @@ contract TokenUnidirectional {
     /// @notice Add more funds to the contract.
     /// @param channelId Identifier of the channel.
     /// @param value Amount to be deposited.
-    function deposit(bytes32 channelId, uint256 value) public payable {
+    function deposit(bytes32 channelId, uint256 value) public {
         require(canDeposit(channelId, msg.sender), "canDeposit returned false");
 
         PaymentChannel storage channel = channels[channelId];
