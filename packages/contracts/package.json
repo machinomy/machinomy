@@ -22,7 +22,7 @@
     "wrappedArtifacts": "build/contracts/@(Unidirectional|TokenUnidirectional).json"
   },
   "scripts": {
-    "build": "yarn support:wrap && tsc --project tsconfig.json && tsc --project tsconfig.migrations.json",
+    "build": "tsc --project tsconfig.json && tsc --project tsconfig.migrations.json",
     "lint": "yarn lint:solidity && yarn lint:typescript",
     "lint:solidity": "solium -d contracts/",
     "lint:typescript": "tslint --format stylish --project .",
@@ -37,7 +37,7 @@
   "devDependencies": {
     "@machinomy/types-ethereumjs-units": "^0.0.2",
     "@machinomy/types-ethereumjs-util": "^0.0.12",
-    "@machinomy/types-truffle": "^0.0.2",
+    "@machinomy/types-truffle": "^0.0.6",
     "@machinomy/types-truffle-compile": "^0.0.2",
     "@machinomy/types-truffle-config": "^0.0.2",
     "@machinomy/types-truffle-contract-sources": "^0.0.1",
