@@ -1,5 +1,5 @@
 import * as fs from 'fs'
-import { Unidirectional } from '../../../contracts/lib'
+import { TokenUnidirectional, Unidirectional } from '../../../contracts/lib'
 import ChannelContract from '../ChannelContract'
 import IChannelsDatabase from './IChannelsDatabase'
 import IEngine from './IEngine'
@@ -36,6 +36,7 @@ describe('Migrator', () => {
   let web3: Web3
   let deployed: any
   let contractStub: sinon.SinonStub
+  let contractTokenStub: sinon.SinonStub
   let channelContract: ChannelContract
   let runSqlAll: any
 
@@ -68,6 +69,10 @@ describe('Migrator', () => {
       deployed = {} as any
       contractStub = sinon.stub(Unidirectional, 'contract')
       contractStub.withArgs(web3.currentProvider).returns({
+        deployed: sinon.stub().resolves(Promise.resolve(deployed))
+      })
+      contractTokenStub = sinon.stub(TokenUnidirectional, 'contract')
+      contractTokenStub.withArgs(web3.currentProvider).returns({
         deployed: sinon.stub().resolves(Promise.resolve(deployed))
       })
       channelContract = new ChannelContract(web3, {} as IChannelsDatabase)
@@ -108,6 +113,7 @@ describe('Migrator', () => {
   afterEach(() => {
     return new Promise(async (resolve) => {
       contractStub.restore()
+      contractTokenStub.restore()
       if (engine) {
         await engine.close()
       }
