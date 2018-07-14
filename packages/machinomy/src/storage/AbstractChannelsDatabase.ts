@@ -6,7 +6,7 @@ import IEngine from './IEngine'
 import ChannelId from '../ChannelId'
 import IChannelsDatabase from './IChannelsDatabase'
 import Logger from '@machinomy/logger'
-import Inflator from '../Inflator'
+import ChannelInflator from '../ChannelInflator'
 
 const LOG = new Logger('AbstractChannelsDatabase')
 
@@ -17,9 +17,9 @@ export default abstract class AbstractChannelsDatabase<T extends IEngine> implem
 
   contract: ChannelContract
 
-  inflator: Inflator
+  inflator: ChannelInflator
 
-  constructor (engine: T, channelContract: ChannelContract, inflator: Inflator, namespace: string | null) {
+  constructor (engine: T, channelContract: ChannelContract, inflator: ChannelInflator, namespace: string | null) {
     this.kind = namespaced(namespace, 'channel')
     this.engine = engine
     this.contract = channelContract

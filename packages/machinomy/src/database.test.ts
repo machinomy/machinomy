@@ -1,6 +1,6 @@
 import * as sinon from 'sinon'
 import * as Web3 from 'web3'
-import Inflator from './Inflator'
+import ChannelInflator from './ChannelInflator'
 import * as support from './support'
 import ChannelId from './ChannelId'
 import * as BigNumber from 'bignumber.js'
@@ -43,7 +43,7 @@ function buildEngine (filename: string): IEngine {
   }
 }
 
-function buildDatabases (engine: IEngine, channelContract: ChannelContract, inflator: Inflator): [AbstractChannelsDatabase<IEngine>, IPaymentsDatabase, ITokensDatabase] {
+function buildDatabases (engine: IEngine, channelContract: ChannelContract, inflator: ChannelInflator): [AbstractChannelsDatabase<IEngine>, IPaymentsDatabase, ITokensDatabase] {
   if (engine instanceof EngineNedb) {
     return [new NedbChannelsDatabase(engine, channelContract, inflator, null), new NedbPaymentsDatabase(engine, null), new NedbTokensDatabase(engine, null)]
   }
@@ -82,7 +82,7 @@ describe('storage', () => {
 
       const channelEthContract = new ChannelEthContract({} as Web3)
       const channelTokenContract = new ChannelTokenContract({} as Web3)
-      const inflator = new Inflator(channelEthContract, channelTokenContract)
+      const inflator = new ChannelInflator(channelEthContract, channelTokenContract)
 
       const databases = buildDatabases(engine, fakeContract, inflator)
       channels = databases[0]

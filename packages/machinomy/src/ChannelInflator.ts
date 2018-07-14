@@ -2,7 +2,7 @@ import ChannelEthContract from './ChannelEthContract'
 import ChannelTokenContract from './ChannelTokenContract'
 import { PaymentChannel, PaymentChannelJSON } from './PaymentChannel'
 
-export default class Inflator {
+export default class ChannelInflator {
   channelEthContract: ChannelEthContract
   channelTokenContract: ChannelTokenContract
 

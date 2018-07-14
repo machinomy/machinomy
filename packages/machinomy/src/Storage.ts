@@ -1,4 +1,4 @@
-import Inflator from './Inflator'
+import ChannelInflator from './ChannelInflator'
 import IMigrator from './storage/IMigrator'
 import ITokensDatabase from './storage/ITokensDatabase'
 import IPaymentsDatabase from './storage/IPaymentsDatabase'
@@ -17,7 +17,7 @@ export interface Storage {
 }
 
 export namespace Storage {
-  export function build (databaseUrl: string, channelContract: ChannelContract, inflator: Inflator): Promise<Storage> {
+  export function build (databaseUrl: string, channelContract: ChannelContract, inflator: ChannelInflator): Promise<Storage> {
     const splits = databaseUrl.split('://')
     const protocol = splits[0]
     const namespace = 'shared' // TODO Namespace
@@ -34,7 +34,7 @@ export namespace Storage {
     }
   }
 
-  async function buildNedb (databaseUrl: string, channelContract: ChannelContract, inflator: Inflator, namespace: string): Promise<Storage> {
+  async function buildNedb (databaseUrl: string, channelContract: ChannelContract, inflator: ChannelInflator, namespace: string): Promise<Storage> {
     let EngineNedb = (await import('./storage/nedb/EngineNedb')).default
     let NedbTokensDatabase = (await import('./storage/nedb/NedbTokensDatabase')).default
     let NedbPaymentsDatabase = (await import('./storage/nedb/NedbPaymentsDatabase')).default
@@ -50,7 +50,7 @@ export namespace Storage {
     }
   }
 
-  async function buildSqlite (databaseUrl: string, channelContract: ChannelContract, inflator: Inflator, namespace: string): Promise<Storage> {
+  async function buildSqlite (databaseUrl: string, channelContract: ChannelContract, inflator: ChannelInflator, namespace: string): Promise<Storage> {
     let EngineSqlite = (await import('./storage/sqlite/EngineSqlite')).default
     let SqliteTokensDatabase = (await import('./storage/sqlite/SqliteTokensDatabase')).default
     let SqlitePaymentsDatabase = (await import('./storage/sqlite/SqlitePaymentsDatabase')).default
@@ -66,7 +66,7 @@ export namespace Storage {
     }
   }
 
-  async function buildPostgres (databaseUrl: string, channelContract: ChannelContract, inflator: Inflator, namespace: string): Promise<Storage> {
+  async function buildPostgres (databaseUrl: string, channelContract: ChannelContract, inflator: ChannelInflator, namespace: string): Promise<Storage> {
     let EnginePostgres = (await import('./storage/postgresql/EnginePostgres')).default
     let PostgresTokensDatabase = (await import('./storage/postgresql/PostgresTokensDatabase')).default
     let PostgresPaymentsDatabase = (await import('./storage/postgresql/PostgresPaymentsDatabase')).default

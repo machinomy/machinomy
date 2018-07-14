@@ -3,7 +3,7 @@ import { TokenUnidirectional, Unidirectional } from '../../../contracts/lib'
 import ChannelContract from '../ChannelContract'
 import ChannelEthContract from '../ChannelEthContract'
 import ChannelTokenContract from '../ChannelTokenContract'
-import Inflator from '../Inflator'
+import ChannelInflator from '../ChannelInflator'
 import IChannelsDatabase from './IChannelsDatabase'
 import IEngine from './IEngine'
 import IExec from './IExec'
@@ -84,7 +84,7 @@ describe('Migrator', () => {
 
       const filename = await support.tmpFileName()
 
-      const inflator = new Inflator(channelEthContract, channelTokenContract)
+      const inflator = new ChannelInflator(channelEthContract, channelTokenContract)
       storage = await Storage.build(process.env.DB_URL!, channelContract, inflator)
       let dbMigrateConfig: DBMigrate.InstanceOptions = Migrator.generateConfigObject(process.env.DB_URL!)
       switch (process.env.DB_URL!.split('://')[0]) {
