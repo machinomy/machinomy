@@ -1,12 +1,9 @@
-import { token } from 'morgan'
 import * as Web3 from 'web3'
 import * as BigNumber from 'bignumber.js'
 import { TransactionResult } from 'truffle-contract'
 import Logger from '@machinomy/logger'
 import * as contracts from '@machinomy/contracts'
-import StandardToken from '@machinomy/contracts/src/wrappers/StandardToken'
 import Signature from './Signature'
-import { TokenUnidirectional } from '@machinomy/contracts'
 import ChannelId from './ChannelId'
 
 const LOG = new Logger('ChannelTokenContract')
@@ -15,19 +12,19 @@ const CREATE_CHANNEL_GAS = new BigNumber.BigNumber(300000)
 
 // FIXME MOVE TOKENS SOMEWHERE HERE
 export default class ChannelTokenContract {
-  unidirectionalContract: Promise<TokenUnidirectional.Contract>
+  unidirectionalContract: Promise<contracts.TokenUnidirectional.Contract>
 
   private web3: Web3
 
   constructor (web3: Web3) {
     this.web3 = web3
-    this.unidirectionalContract = TokenUnidirectional.contract(this.web3.currentProvider).deployed()
+    this.unidirectionalContract = contracts.TokenUnidirectional.contract(this.web3.currentProvider).deployed()
   }
 
   async open (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number | BigNumber.BigNumber, tokenContract: string, channelId?: ChannelId | string): Promise<TransactionResult> {
     LOG.info(`Creating channel. Value: ${price} / Settlement: ${settlementPeriod}`)
     let _channelId = channelId || ChannelId.random()
-    const standardTokenContract = StandardToken.contract(this.web3.currentProvider).at(tokenContract)
+    const standardTokenContract = contracts.StandardToken.contract(this.web3.currentProvider).at(tokenContract)
     const deployedTokenUnidirectional = await this.unidirectionalContract
     const deployedStandardTokenContract = await standardTokenContract
 
@@ -54,7 +51,7 @@ export default class ChannelTokenContract {
 
   async deposit (sender: string, channelId: string, value: BigNumber.BigNumber, tokenContract: string): Promise<TransactionResult> {
     LOG.info(`Depositing ${value} into channel ${channelId}`)
-    const standardTokenContract = StandardToken.contract(this.web3.currentProvider).at(tokenContract)
+    const standardTokenContract = contracts.StandardToken.contract(this.web3.currentProvider).at(tokenContract)
     const deployedTokenUnidirectional = await this.unidirectionalContract
     const deployedStandardTokenContract = await standardTokenContract
     const channel = await this.channelById(channelId)
