@@ -2,7 +2,7 @@ import * as Web3 from 'web3'
 import * as uuid from 'uuid'
 import * as BigNumber from 'bignumber.js'
 import * as sinon from 'sinon'
-import { Unidirectional } from '@machinomy/contracts'
+import { Unidirectional, TokenUnidirectional } from '@machinomy/contracts'
 import ChannelContract from './ChannelContract'
 import ChannelEthContract from './ChannelEthContract'
 import ChannelTokenContract from './ChannelTokenContract'
@@ -18,7 +18,9 @@ describe('ChannelContract', () => {
 
   let web3: Web3
   let deployed: any
+  let deployedToken: any
   let contractStub: sinon.SinonStub
+  let tokenContractStub: sinon.SinonStub
   let uuidStub: sinon.SinonStub
   let contract: ChannelContract
 
@@ -28,11 +30,17 @@ describe('ChannelContract', () => {
     } as Web3
 
     deployed = {} as any
+    deployedToken = {} as any
 
     uuidStub = sinon.stub(uuid, 'v4').returns('0e29e61f-256b-40b2-a628-0f8181a1b5ff')
 
     contractStub = sinon.stub(Unidirectional, 'contract')
     contractStub.withArgs(web3.currentProvider).returns({
+      deployed: sinon.stub().resolves(Promise.resolve(deployed))
+    })
+
+    tokenContractStub = sinon.stub(TokenUnidirectional, 'contract')
+    tokenContractStub.withArgs(web3.currentProvider).returns({
       deployed: sinon.stub().resolves(Promise.resolve(deployed))
     })
     const channelEthContract = new ChannelEthContract(web3)
@@ -57,6 +65,18 @@ describe('ChannelContract', () => {
         })).toBe(true)
       })
     })
+
+    it('opens a channel for tokens with the correct id, sender, receiver, settlement period, tokenContract, price, and gas params', () => {
+      deployedToken.open = sinon.stub()
+      let settlementPeriod = new BigNumber.BigNumber(1234)
+      return contract.channelTokenContract.open('send', 'recv', new BigNumber.BigNumber(10), settlementPeriod, '0x1234', ID).then(() => {
+        expect(deployedToken.open.calledWith(ID, 'recv', settlementPeriod, '0x1234', {
+          from: 'send',
+          value: new BigNumber.BigNumber(10),
+          gas: 300000
+        })).toBe(true)
+      })
+    })
   })
 
   describe('#claim', () => {
@@ -75,6 +95,17 @@ describe('ChannelContract', () => {
       deployed.deposit = sinon.stub()
       return contract.deposit('send', ID, new BigNumber.BigNumber(10)).then(() => {
         expect(deployed.deposit.calledWith(ID, {
+          from: 'send',
+          value: new BigNumber.BigNumber(10),
+          gas: 300000
+        })).toBe(true)
+      })
+    })
+
+    it('deposits tokens into the channel', () => {
+      deployedToken.deposit = sinon.stub()
+      return contract.channelTokenContract.deposit('send', ID, new BigNumber.BigNumber(10), '0x1234').then(() => {
+        expect(deployedToken.deposit.calledWith(ID, {
           from: 'send',
           value: new BigNumber.BigNumber(10),
           gas: 300000
