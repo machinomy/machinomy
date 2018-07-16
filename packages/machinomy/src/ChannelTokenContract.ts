@@ -54,11 +54,22 @@ export default class ChannelTokenContract {
 
   async deposit (sender: string, channelId: string, value: BigNumber.BigNumber): Promise<TransactionResult> {
     LOG.info(`Depositing ${value} into channel ${channelId}`)
-    const deployed = await this.unidirectionalContract
-    return deployed.deposit(channelId, value, {
-      from: sender,
-      gas: CREATE_CHANNEL_GAS
-    })
+    const deployedTokenUnidirectional = await this.unidirectionalContract
+    const deployedStandardTokenContract = await this.standardTokenContract
+    const channel = await this.channelById(channelId)
+    const receiver = channel[1]
+    const approveTx = await deployedStandardTokenContract.approve(receiver, value, { from: sender })
+    if (contracts.StandardToken.isApprovalEvent(approveTx.logs[0])) {
+      return deployedTokenUnidirectional.deposit(channelId, value, {
+        from: sender,
+        gas: CREATE_CHANNEL_GAS
+      })
+    } else {
+      const errorMessage = `Deposit operation. Can not approve tokens hold from sender ${sender} to receiver ${receiver}. Value: ${value}`
+      LOG.error(errorMessage)
+      return Promise.reject(errorMessage)
+    }
+
   }
 
   async getState (channelId: string): Promise<number> {
