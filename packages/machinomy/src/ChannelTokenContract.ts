@@ -1,3 +1,4 @@
+import { token } from 'morgan'
 import * as Web3 from 'web3'
 import * as BigNumber from 'bignumber.js'
 import { TransactionResult } from 'truffle-contract'
@@ -15,21 +16,20 @@ const CREATE_CHANNEL_GAS = new BigNumber.BigNumber(300000)
 // FIXME MOVE TOKENS SOMEWHERE HERE
 export default class ChannelTokenContract {
   unidirectionalContract: Promise<TokenUnidirectional.Contract>
-  standardTokenContract: Promise<StandardToken.Contract>
 
   private web3: Web3
 
   constructor (web3: Web3) {
     this.web3 = web3
     this.unidirectionalContract = TokenUnidirectional.contract(this.web3.currentProvider).deployed()
-    this.standardTokenContract = StandardToken.contract(this.web3.currentProvider).deployed()
   }
 
   async open (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number | BigNumber.BigNumber, tokenContract: string, channelId?: ChannelId | string): Promise<TransactionResult> {
     LOG.info(`Creating channel. Value: ${price} / Settlement: ${settlementPeriod}`)
     let _channelId = channelId || ChannelId.random()
+    const standardTokenContract = StandardToken.contract(this.web3.currentProvider).at(tokenContract)
     const deployedTokenUnidirectional = await this.unidirectionalContract
-    const deployedStandardTokenContract = await this.standardTokenContract
+    const deployedStandardTokenContract = await standardTokenContract
 
     const approveTx = await deployedStandardTokenContract.approve(receiver, price, { from: sender })
     if (contracts.StandardToken.isApprovalEvent(approveTx.logs[0])) {
@@ -52,10 +52,11 @@ export default class ChannelTokenContract {
     return deployed.claim(channelId, value, signature.toString(), { from: receiver })
   }
 
-  async deposit (sender: string, channelId: string, value: BigNumber.BigNumber): Promise<TransactionResult> {
+  async deposit (sender: string, channelId: string, value: BigNumber.BigNumber, tokenContract: string): Promise<TransactionResult> {
     LOG.info(`Depositing ${value} into channel ${channelId}`)
+    const standardTokenContract = StandardToken.contract(this.web3.currentProvider).at(tokenContract)
     const deployedTokenUnidirectional = await this.unidirectionalContract
-    const deployedStandardTokenContract = await this.standardTokenContract
+    const deployedStandardTokenContract = await standardTokenContract
     const channel = await this.channelById(channelId)
     const receiver = channel[1]
     const approveTx = await deployedStandardTokenContract.approve(receiver, value, { from: sender })

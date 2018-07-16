@@ -36,8 +36,11 @@ export default class ChannelContract {
   }
 
   async deposit (sender: string, channelId: string, value: BigNumber.BigNumber, tokenContract?: string): Promise<TransactionResult> {
-    const contract = this.actualContract(tokenContract)
-    return contract.deposit(sender, channelId, value)
+    if (this.isTokenContractDefined(tokenContract)) {
+      return this.channelTokenContract.deposit(sender, channelId, value, tokenContract!)
+    } else {
+      return this.channelEthContract.deposit(sender, channelId, value)
+    }
   }
 
   async getState (channelId: string): Promise<number> {
@@ -84,18 +87,10 @@ export default class ChannelContract {
     return tokenContract !== undefined && tokenContract.startsWith('0x') && parseInt(tokenContract, 16) !== 0
   }
 
-  actualContract (tokenContract?: string): ChannelEthContract | ChannelTokenContract {
-    if (this.isTokenContractDefined(tokenContract)) {
-      return this.channelTokenContract
-    } else {
-      return this.channelEthContract
-    }
-  }
-
   async getContractByChannelId (channelId: string): Promise<ChannelEthContract | ChannelTokenContract> {
     const channel = await this.channelsDao.firstById(channelId)
     const tokenContract = channel!.contractAddress
-    const contract = this.actualContract(tokenContract)
+    const contract = this.isTokenContractDefined(tokenContract) ? this.channelTokenContract : this.channelEthContract
     return contract
   }
 }
