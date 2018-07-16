@@ -3,6 +3,7 @@ import * as uuid from 'uuid'
 import * as BigNumber from 'bignumber.js'
 import * as sinon from 'sinon'
 import { Unidirectional, TokenUnidirectional } from '@machinomy/contracts'
+import * as contracts from '../../contracts/lib'
 import ChannelContract from './ChannelContract'
 import ChannelEthContract from './ChannelEthContract'
 import ChannelTokenContract from './ChannelTokenContract'
@@ -69,12 +70,14 @@ describe('ChannelContract', () => {
     it('tokens: opens a channel with the correct id, sender, receiver, settlement period, tokenContract, price, and gas params', () => {
       deployedToken.open = sinon.stub()
       let settlementPeriod = new BigNumber.BigNumber(1234)
-      return contract.channelTokenContract.open('send', 'recv', new BigNumber.BigNumber(10), settlementPeriod, '0x1234', ID).then(() => {
+      return contract.channelTokenContract.open('send', 'recv', new BigNumber.BigNumber(10), settlementPeriod, '0x1234', ID).then(transactionResult => {
         expect(deployedToken.open.calledWith(ID, 'recv', settlementPeriod, '0x1234', {
           from: 'send',
           value: new BigNumber.BigNumber(10),
           gas: 300000
         })).toBe(true)
+
+        expect(contracts.StandardToken.isApprovalEvent(transactionResult.logs[0])).toBe(true)
       })
     })
   })
@@ -111,14 +114,15 @@ describe('ChannelContract', () => {
       })
     })
 
-    it('eth: deposits tokens into the channel', () => {
+    it('tokens: deposits tokens into the channel', () => {
       deployedToken.deposit = sinon.stub()
-      return contract.channelTokenContract.deposit('send', ID, new BigNumber.BigNumber(10), '0x1234').then(() => {
+      return contract.channelTokenContract.deposit('send', ID, new BigNumber.BigNumber(10), '0x1234').then(transactionResult => {
         expect(deployedToken.deposit.calledWith(ID, {
           from: 'send',
           value: new BigNumber.BigNumber(10),
           gas: 300000
         })).toBe(true)
+        expect(contracts.StandardToken.isApprovalEvent(transactionResult.logs[0])).toBe(true)
       })
     })
   })
