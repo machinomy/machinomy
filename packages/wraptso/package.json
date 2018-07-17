@@ -1,0 +1,45 @@
+{
+  "name": "@machinomy/wraptso",
+  "version": "0.0.7",
+  "description": "Generate TypeScript wrapper class for Solidity smart contract",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/machinomy/machinomy#readme",
+  "bugs": {
+    "url": "https://github.com/machinomy/machinomy/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/machinomy/machinomy.git"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "wraptso": "dist/bin/wraptso.js"
+  },
+  "files": [
+    "dist/",
+    "templates/"
+  ],
+  "scripts": {
+    "prepublish": "yarn build",
+    "preinstall": "yarn build",
+    "build": "tsc --project tsconfig.json",
+    "test": "exit 0",
+    "coverage": "exit 0",
+    "lint": "tslint --format stylish --project ."
+  },
+  "dependencies": {
+    "glob": "^7.1.2",
+    "handlebars": "^4.0.11",
+    "mkdirp": "^0.5.1",
+    "web3": "^0.20.x",
+    "yargs": "^12.0.1"
+  },
+  "devDependencies": {
+    "@machinomy/types-web3": "^0.0.12",
+    "@types/glob": "^5.0.35",
+    "@types/handlebars": "^4.0.38",
+    "@types/mkdirp": "^0.5.2",
+    "@types/yargs": "^11.1.0"
+  }
+}

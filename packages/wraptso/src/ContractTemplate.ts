@@ -20,7 +20,7 @@ export default class ContractTemplate {
   handlebars: typeof Handlebars
   templatesDir: string
   outputDir: string
-  private _template?: Handlebars<Context>
+  private _template?: Handlebars.TemplateDelegate<Context>
 
   constructor (templatesDir: string, outputDir: string) {
     this.handlebars = Handlebars.create()
