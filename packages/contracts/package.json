@@ -1,6 +1,6 @@
 {
   "name": "@machinomy/contracts",
-  "version": "4.0.16",
+  "version": "4.0.17",
   "description": "Machinomy contracts managed by Truffle",
   "license": "Apache-2.0",
   "homepage": "https://github.com/machinomy/machinomy-contracts#readme",
