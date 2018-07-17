@@ -2,8 +2,7 @@ import * as Web3 from 'web3'
 import * as uuid from 'uuid'
 import * as BigNumber from 'bignumber.js'
 import * as sinon from 'sinon'
-import { Unidirectional, TokenUnidirectional } from '@machinomy/contracts'
-import * as contracts from '../../contracts/lib'
+import * as contracts from '@machinomy/contracts'
 import ChannelContract from './ChannelContract'
 import ChannelEthContract from './ChannelEthContract'
 import ChannelTokenContract from './ChannelTokenContract'
@@ -35,12 +34,12 @@ describe('ChannelContract', () => {
 
     uuidStub = sinon.stub(uuid, 'v4').returns('0e29e61f-256b-40b2-a628-0f8181a1b5ff')
 
-    contractStub = sinon.stub(Unidirectional, 'contract')
+    contractStub = sinon.stub(contracts.Unidirectional, 'contract')
     contractStub.withArgs(web3.currentProvider).returns({
       deployed: sinon.stub().resolves(Promise.resolve(deployed))
     })
 
-    tokenContractStub = sinon.stub(TokenUnidirectional, 'contract')
+    tokenContractStub = sinon.stub(contracts.TokenUnidirectional, 'contract')
     tokenContractStub.withArgs(web3.currentProvider).returns({
       deployed: sinon.stub().resolves(Promise.resolve(deployed))
     })
