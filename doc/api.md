@@ -64,7 +64,7 @@ import { Payment } from 'machinomy'
 | `value`           | `BigNumber` | Total amount to be paid. Remember, single payment in Unidirectional channel represents the total redeemable amount. |
 | `signature`       | `Signature` | Signature of the payment by the sender.                      |
 | `meta`            | `string`    | Optional free-form data to accompany the payment.            |
-| `contractAddress` | `string`    | Ethereum address of the contract that manages the payments.  |
+| `tokenContract`   | `string`    | Token contract address.                                      |
 | `createdAt`       | `number`    | When the payment was created, as unix timestamp.             |
 | `token`           | `string`    | Unique identifier of the payment.                            |
 
@@ -168,23 +168,24 @@ Here come functions related to channels. Basic `PaymentChannel` structure is des
 | `value`           | `BigNumber` | Amount of funds deposited to the channel by the sender.      |
 | `spent`           | `BigNumber` | Amount of funds spent on the channel, that is redeemable by the receiver. |
 | `state`           | `number`    | State of the channel: `0` - open, `1` - settling, `2` - closed or non-existing. |
-| `contractAddress` | `string`    | Ethereum address of the contract that manages the channel.   |
+| `tokenContract`   | `string`    | Token contract address.                                      |
 
 ### Open
 
 Opens a channel. It is a lower level function. One probably would not ever need to invoke the function. `buy` or `payment` both open a channel for you, if it is not present yet.
 
 ```typescript
-machinomy.open (receiver, value, channelId?): Promise<PaymentChannel>
+machinomy.open (receiver, value, channelId?, tokenContract?): Promise<PaymentChannel>
 ```
 
 Parameters:
 
-| Argument     | Type                 | Description                               |
-| ------------ | -------------------- | ----------------------------------------- |
-| `receiver`   | `string`             | Ethereum address of the channel receiver. |
-| `value`      | `BigNumber | number` | Amount of initial deposit to the channel. |
-| `channelId?` | `string`             | Proposed identifier of the channel.       |
+| Argument         | Type                 | Description                               |
+| ------------     | -------------------- | ----------------------------------------- |
+| `receiver`       | `string`             | Ethereum address of the channel receiver. |
+| `value`          | `BigNumber | number` | Amount of initial deposit to the channel. |
+| `channelId?`     | `string`             | Proposed identifier of the channel.       |
+| `tokenContract?` | `string`             | Token contract address.                   |
 
 ### Deposit
 
