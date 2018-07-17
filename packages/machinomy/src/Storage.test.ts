@@ -1,6 +1,10 @@
 import * as Web3 from 'web3'
 import * as expect from 'expect'
+import ChannelEthContract from './ChannelEthContract'
+import ChannelTokenContract from './ChannelTokenContract'
+import ChannelInflator from './ChannelInflator'
 import Storage from './Storage'
+import IChannelsDatabase from './storage/IChannelsDatabase'
 import EngineNedb from './storage/nedb/EngineNedb'
 import NedbChannelsDatabase from './storage/nedb/NedbChannelsDatabase'
 import NedbTokensDatabase from './storage/nedb/NedbTokensDatabase'
@@ -18,6 +22,9 @@ describe('Storage', () => {
   let deployed: any
   let contractStub: sinon.SinonStub
   let channelContract: ChannelContract
+  let channelEthContract: ChannelEthContract
+  let channelTokenContract: ChannelTokenContract
+  let inflator: ChannelInflator
 
   beforeEach(() => {
     web3 = {
@@ -29,7 +36,10 @@ describe('Storage', () => {
     contractStub.withArgs(web3.currentProvider).returns({
       deployed: sinon.stub().resolves(Promise.resolve(deployed))
     })
-    channelContract = new ChannelContract(web3)
+    channelEthContract = new ChannelEthContract(web3)
+    channelTokenContract = new ChannelTokenContract(web3)
+    channelContract = new ChannelContract(web3, {} as IChannelsDatabase, channelEthContract, channelTokenContract)
+    inflator = new ChannelInflator(channelEthContract, channelTokenContract)
   })
 
   afterEach(() => {
@@ -37,10 +47,10 @@ describe('Storage', () => {
   })
 
   context('for Nedb', async () => {
-    let url = 'nedb://'
+    const url = 'nedb://'
 
     specify('provide Nedb databases', async () => {
-      let storage = await Storage.build(url, channelContract)
+      const storage = await Storage.build(url, channelContract, inflator)
       expect(storage.engine instanceof EngineNedb).toBeTruthy()
       expect(storage.channelsDatabase instanceof NedbChannelsDatabase).toBeTruthy()
       expect(storage.tokensDatabase instanceof NedbTokensDatabase).toBeTruthy()
@@ -49,10 +59,10 @@ describe('Storage', () => {
   })
 
   context('for Postgresql', async () => {
-    let url = 'postgresql://'
+    const url = 'postgresql://'
 
     specify('provide Postgresql databases', async () => {
-      let storage = await Storage.build(url, channelContract)
+      const storage = await Storage.build(url, channelContract, inflator)
       expect(storage.engine instanceof EnginePostgres).toBeTruthy()
       expect(storage.channelsDatabase instanceof PostgresChannelsDatabase).toBeTruthy()
       expect(storage.tokensDatabase instanceof PostgresTokensDatabase).toBeTruthy()

@@ -1,3 +1,4 @@
+import ChannelInflator from './ChannelInflator'
 import IMigrator from './storage/IMigrator'
 import ITokensDatabase from './storage/ITokensDatabase'
 import IPaymentsDatabase from './storage/IPaymentsDatabase'
@@ -16,24 +17,24 @@ export interface Storage {
 }
 
 export namespace Storage {
-  export function build (databaseUrl: string, channelContract: ChannelContract): Promise<Storage> {
+  export function build (databaseUrl: string, channelContract: ChannelContract, inflator: ChannelInflator): Promise<Storage> {
     const splits = databaseUrl.split('://')
     const protocol = splits[0]
     const namespace = 'shared' // TODO Namespace
 
     switch (protocol) {
       case 'nedb':
-        return buildNedb(splits[1], channelContract, namespace)
+        return buildNedb(splits[1], channelContract, inflator, namespace)
       case 'postgresql':
-        return buildPostgres(databaseUrl, channelContract, namespace)
+        return buildPostgres(databaseUrl, channelContract, inflator, namespace)
       case 'sqlite':
-        return buildSqlite(databaseUrl, channelContract, namespace)
+        return buildSqlite(databaseUrl, channelContract, inflator, namespace)
       default:
         throw new Error(`Unsupported database protocol: ${protocol}`)
     }
   }
 
-  async function buildNedb (databaseUrl: string, channelContract: ChannelContract, namespace: string): Promise<Storage> {
+  async function buildNedb (databaseUrl: string, channelContract: ChannelContract, inflator: ChannelInflator, namespace: string): Promise<Storage> {
     let EngineNedb = (await import('./storage/nedb/EngineNedb')).default
     let NedbTokensDatabase = (await import('./storage/nedb/NedbTokensDatabase')).default
     let NedbPaymentsDatabase = (await import('./storage/nedb/NedbPaymentsDatabase')).default
@@ -44,12 +45,12 @@ export namespace Storage {
       engine: engine,
       tokensDatabase: new NedbTokensDatabase(engine, namespace),
       paymentsDatabase: new NedbPaymentsDatabase(engine, namespace),
-      channelsDatabase: new NedbChannelsDatabase(engine, channelContract, namespace),
+      channelsDatabase: new NedbChannelsDatabase(engine, channelContract, inflator, namespace),
       migrator: undefined
     }
   }
 
-  async function buildSqlite (databaseUrl: string, channelContract: ChannelContract, namespace: string): Promise<Storage> {
+  async function buildSqlite (databaseUrl: string, channelContract: ChannelContract, inflator: ChannelInflator, namespace: string): Promise<Storage> {
     let EngineSqlite = (await import('./storage/sqlite/EngineSqlite')).default
     let SqliteTokensDatabase = (await import('./storage/sqlite/SqliteTokensDatabase')).default
     let SqlitePaymentsDatabase = (await import('./storage/sqlite/SqlitePaymentsDatabase')).default
@@ -60,12 +61,12 @@ export namespace Storage {
       engine: engine,
       tokensDatabase: new SqliteTokensDatabase(engine, namespace),
       paymentsDatabase: new SqlitePaymentsDatabase(engine, namespace),
-      channelsDatabase: new SqliteChannelsDatabase(engine, channelContract, namespace),
+      channelsDatabase: new SqliteChannelsDatabase(engine, channelContract, inflator, namespace),
       migrator: new Migrator(engine, databaseUrl, resolvePath('migrations/sqlite/'))
     }
   }
 
-  async function buildPostgres (databaseUrl: string, channelContract: ChannelContract, namespace: string): Promise<Storage> {
+  async function buildPostgres (databaseUrl: string, channelContract: ChannelContract, inflator: ChannelInflator, namespace: string): Promise<Storage> {
     let EnginePostgres = (await import('./storage/postgresql/EnginePostgres')).default
     let PostgresTokensDatabase = (await import('./storage/postgresql/PostgresTokensDatabase')).default
     let PostgresPaymentsDatabase = (await import('./storage/postgresql/PostgresPaymentsDatabase')).default
@@ -77,7 +78,7 @@ export namespace Storage {
       engine: engine,
       tokensDatabase: new PostgresTokensDatabase(engine, namespace),
       paymentsDatabase: new PostgresPaymentsDatabase(engine, namespace),
-      channelsDatabase: new PostgresChannelsDatabase(engine, channelContract, namespace),
+      channelsDatabase: new PostgresChannelsDatabase(engine, channelContract, inflator, namespace),
       migrator: new Migrator(engine, databaseUrl, resolvePath('migrations/postgresql/'))
     }
   }

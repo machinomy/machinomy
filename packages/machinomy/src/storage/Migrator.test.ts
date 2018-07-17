@@ -1,6 +1,10 @@
 import * as fs from 'fs'
-import { Unidirectional } from '../../../contracts/lib'
+import { TokenUnidirectional, Unidirectional } from '../../../contracts/lib'
 import ChannelContract from '../ChannelContract'
+import ChannelEthContract from '../ChannelEthContract'
+import ChannelTokenContract from '../ChannelTokenContract'
+import ChannelInflator from '../ChannelInflator'
+import IChannelsDatabase from './IChannelsDatabase'
 import IEngine from './IEngine'
 import IExec from './IExec'
 import Migrator from './Migrator'
@@ -35,6 +39,7 @@ describe('Migrator', () => {
   let web3: Web3
   let deployed: any
   let contractStub: sinon.SinonStub
+  let contractTokenStub: sinon.SinonStub
   let channelContract: ChannelContract
   let runSqlAll: any
 
@@ -69,11 +74,18 @@ describe('Migrator', () => {
       contractStub.withArgs(web3.currentProvider).returns({
         deployed: sinon.stub().resolves(Promise.resolve(deployed))
       })
-      channelContract = new ChannelContract(web3)
+      contractTokenStub = sinon.stub(TokenUnidirectional, 'contract')
+      contractTokenStub.withArgs(web3.currentProvider).returns({
+        deployed: sinon.stub().resolves(Promise.resolve(deployed))
+      })
+      const channelEthContract = new ChannelEthContract(web3)
+      const channelTokenContract = new ChannelTokenContract(web3)
+      channelContract = new ChannelContract(web3, {} as IChannelsDatabase, channelEthContract, channelTokenContract)
 
       const filename = await support.tmpFileName()
 
-      storage = await Storage.build(process.env.DB_URL!, channelContract)
+      const inflator = new ChannelInflator(channelEthContract, channelTokenContract)
+      storage = await Storage.build(process.env.DB_URL!, channelContract, inflator)
       let dbMigrateConfig: DBMigrate.InstanceOptions = Migrator.generateConfigObject(process.env.DB_URL!)
       switch (process.env.DB_URL!.split('://')[0]) {
         case 'sqlite': {
@@ -107,6 +119,7 @@ describe('Migrator', () => {
   afterEach(() => {
     return new Promise(async (resolve) => {
       contractStub.restore()
+      contractTokenStub.restore()
       if (engine) {
         await engine.close()
       }

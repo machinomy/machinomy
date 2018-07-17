@@ -1,5 +1,8 @@
 import * as Web3 from 'web3'
 import { memoize } from 'decko'
+import ChannelEthContract from './ChannelEthContract'
+import ChannelTokenContract from './ChannelTokenContract'
+import ChannelInflator from './ChannelInflator'
 import Storage from './Storage'
 import MachinomyOptions from './MachinomyOptions'
 import ChannelContract from './ChannelContract'
@@ -8,6 +11,7 @@ import ChannelManager from './ChannelManager'
 import PaymentManager from './PaymentManager'
 import ChainManager from './ChainManager'
 import Client, { ClientImpl } from './client'
+import IChannelsDatabase from './storage/IChannelsDatabase'
 import { Transport } from './transport'
 
 export default class Registry {
@@ -22,14 +26,34 @@ export default class Registry {
   }
 
   @memoize
+  async inflator (): Promise<ChannelInflator> {
+    const channelEthContract = await this.channelEthContract()
+    const channelTokenContract = await this.channelTokenContract()
+    return new ChannelInflator(channelEthContract, channelTokenContract)
+  }
+
+  @memoize
+  async channelEthContract (): Promise<ChannelEthContract> {
+    return new ChannelEthContract(this.web3)
+  }
+
+  @memoize
+  async channelTokenContract (): Promise<ChannelTokenContract> {
+    return new ChannelTokenContract(this.web3)
+  }
+
+  @memoize
   async channelContract (): Promise<ChannelContract> {
-    return new ChannelContract(this.web3)
+    const channelEthContract = await this.channelEthContract()
+    const channelTokenContract = await this.channelTokenContract()
+    return new ChannelContract(this.web3, {} as IChannelsDatabase, channelEthContract, channelTokenContract)
   }
 
   @memoize
   async storage (): Promise<Storage> {
-    let channelContract = await this.channelContract()
-    return Storage.build(this.options.databaseUrl, channelContract)
+    const channelContract = await this.channelContract()
+    const inflator = await this.inflator()
+    return Storage.build(this.options.databaseUrl, channelContract, inflator)
   }
 
   @memoize

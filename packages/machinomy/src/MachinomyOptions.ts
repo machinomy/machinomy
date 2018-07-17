@@ -5,7 +5,7 @@ import { MigrateOption } from './MigrateOption'
  * Params for Machinomy. Currently Machinomy supports nedb and postgresql as a database engine.
  * Nedb is a default engine.
  */
-export default interface MachinomyOptions {
+export interface MachinomyOptions {
   databaseUrl: string
   minimumChannelAmount?: number | BigNumber.BigNumber
   minimumSettlementPeriod?: number
@@ -13,3 +13,14 @@ export default interface MachinomyOptions {
   closeOnInvalidPayment?: boolean
   migrate?: MigrateOption
 }
+
+export namespace MachinomyOptions {
+  export function defaults (options?: MachinomyOptions): MachinomyOptions {
+    let defaultOptions = {
+      databaseUrl: 'nedb://machinomy'
+    }
+    return Object.assign({}, defaultOptions, options)
+  }
+}
+
+export default MachinomyOptions

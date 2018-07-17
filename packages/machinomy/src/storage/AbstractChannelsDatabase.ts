@@ -6,6 +6,7 @@ import IEngine from './IEngine'
 import ChannelId from '../ChannelId'
 import IChannelsDatabase from './IChannelsDatabase'
 import Logger from '@machinomy/logger'
+import ChannelInflator from '../ChannelInflator'
 
 const LOG = new Logger('AbstractChannelsDatabase')
 
@@ -16,10 +17,13 @@ export default abstract class AbstractChannelsDatabase<T extends IEngine> implem
 
   contract: ChannelContract
 
-  constructor (engine: T, channelContract: ChannelContract, namespace: string | null) {
+  inflator: ChannelInflator
+
+  constructor (engine: T, channelContract: ChannelContract, inflator: ChannelInflator, namespace: string | null) {
     this.kind = namespaced(namespace, 'channel')
     this.engine = engine
     this.contract = channelContract
+    this.inflator = inflator
   }
 
   inflatePaymentChannels (channels: Array<PaymentChannelJSON>): Promise<Array<PaymentChannel>> {
@@ -34,21 +38,9 @@ export default abstract class AbstractChannelsDatabase<T extends IEngine> implem
   async inflatePaymentChannel (json: PaymentChannelJSON): Promise<PaymentChannel | null> {
     if (!json) {
       return Promise.resolve(null)
+    } else {
+      return this.inflator.inflate(json)
     }
-
-    const state = await this.contract.getState(json.channelId)
-    const value = (await this.contract.channelById(json.channelId))[2]
-
-    const doc = PaymentChannel.fromDocument(json)
-    return new PaymentChannel(
-      doc.sender,
-      doc.receiver,
-      doc.channelId,
-      value,
-      doc.spent,
-      state === -1 ? 2 : state,
-      doc.contractAddress || undefined
-    )
   }
 
   filterByState (state: number, channels: PaymentChannel[]): PaymentChannel[] {

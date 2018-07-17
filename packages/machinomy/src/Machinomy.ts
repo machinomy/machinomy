@@ -33,9 +33,10 @@ export default class Machinomy {
   private readonly account: string
   private readonly registry: Registry
 
-  constructor (account: string, web3: Web3, options: MachinomyOptions) {
+  constructor (account: string, web3: Web3, options?: MachinomyOptions) {
     this.account = account
-    this.registry = new Registry(account, web3, options)
+    let _options = MachinomyOptions.defaults(options)
+    this.registry = new Registry(account, web3, _options)
   }
 
   /**
