@@ -24,7 +24,8 @@
     "prepublish": "yarn build",
     "build": "tsc --project tsconfig.json",
     "test": "exit 0",
-    "coverage": "exit 0"
+    "coverage": "exit 0",
+    "lint": "tslint --format stylish --project ."
   },
   "dependencies": {
     "glob": "^7.1.2",
