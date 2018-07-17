@@ -91,8 +91,7 @@ export default class Machinomy {
       receiver: req.receiver,
       price: req.price,
       gateway: req.gateway,
-      meta: req.meta,
-      contractAddress: req.contractAddress
+      meta: req.meta
     })
   }
 
@@ -108,11 +107,11 @@ export default class Machinomy {
    * @param channelId - Channel id.
    * @param value - Size of deposit in Wei.
    */
-  async deposit (channelId: string, value: BigNumber.BigNumber | number, tokenContract?: string): Promise<TransactionResult> {
+  async deposit (channelId: string, value: BigNumber.BigNumber | number): Promise<TransactionResult> {
     await this.checkMigrationsState()
     const _value = new BigNumber.BigNumber(value)
     let channelManager = await this.registry.channelManager()
-    return channelManager.deposit(channelId, _value, tokenContract)
+    return channelManager.deposit(channelId, _value)
   }
 
   async open (receiver: string, value: BigNumber.BigNumber | number, channelId?: ChannelId | string, tokenContract?: string): Promise<PaymentChannel> {

@@ -49,7 +49,7 @@ describe('PaymentManager', () => {
         expect(pmt.channelValue).toEqual(new BigNumber.BigNumber(100))
         expect(pmt.signature.isEqual(expSig)).toBe(true)
         expect(pmt.meta).toBe('meta')
-        expect(pmt.contractAddress).toBe('0xcabdab')
+        expect(pmt.tokenContract).toBe('0xcabdab')
         expect(pmt.token).toBe(undefined)
       })
     })

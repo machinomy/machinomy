@@ -8,7 +8,7 @@ import { PaymentChannel } from './PaymentChannel'
 export default interface IChannelManager extends EventEmitter {
   openChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber, channelId?: ChannelId | string, tokenContract?: string): Promise<PaymentChannel>
   closeChannel (channelId: string | ChannelId): Promise<TransactionResult>
-  deposit (channelId: string, value: BigNumber.BigNumber, tokenContract?: string): Promise<TransactionResult>
+  deposit (channelId: string, value: BigNumber.BigNumber): Promise<TransactionResult>
   nextPayment (channelId: string | ChannelId, amount: BigNumber.BigNumber, meta: string): Promise<Payment>
   spendChannel (payment: Payment): Promise<Payment>
   acceptPayment (payment: Payment): Promise<string>

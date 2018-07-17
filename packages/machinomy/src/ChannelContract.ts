@@ -65,7 +65,7 @@ export default class ChannelContract {
 
   async paymentDigest (channelId: string, value: BigNumber.BigNumber): Promise<string> {
     const channel = await this.channelsDao.firstById(channelId)
-    const tokenContract = channel!.contractAddress
+    const tokenContract = channel!.tokenContract
     if (this.isTokenContractDefined(tokenContract)) {
       return this.channelTokenContract.paymentDigest(channelId, value, tokenContract)
     } else {
@@ -89,7 +89,7 @@ export default class ChannelContract {
 
   async getContractByChannelId (channelId: string): Promise<ChannelEthContract | ChannelTokenContract> {
     const channel = await this.channelsDao.firstById(channelId)
-    const tokenContract = channel!.contractAddress
+    const tokenContract = channel!.tokenContract
     const contract = this.isTokenContractDefined(tokenContract) ? this.channelTokenContract : this.channelEthContract
     return contract
   }

@@ -88,8 +88,8 @@ export class Transport {
      * @return {Promise<string>}
      */
   requestToken (uri: string, payment: Payment, opts: RequestTokenOpts = {}): Promise<string> {
-    if (!payment.contractAddress) {
-      delete payment.contractAddress
+    if (!payment.tokenContract) {
+      delete payment.tokenContract
     }
     let options = {
       method: 'POST',
@@ -115,23 +115,23 @@ export class PaymentRequired {
   price: BigNumber.BigNumber
   gateway: string
   meta: string
-  contractAddress?: string
+  tokenContract?: string
 
-  constructor (receiver: string, price: BigNumber.BigNumber, gateway: string, meta: string, contractAddress?: string) {
+  constructor (receiver: string, price: BigNumber.BigNumber, gateway: string, meta: string, tokenContract?: string) {
     this.receiver = receiver
     this.price = price
     this.gateway = gateway
     this.meta = meta
-    this.contractAddress = contractAddress
+    this.tokenContract = tokenContract
   }
 
   static parse = function (headers: any): PaymentRequired {
     let receiver = headers['paywall-address']
     let price = new BigNumber.BigNumber(headers['paywall-price'])
     let gateway = headers['paywall-gateway']
-    let contractAddress = headers['paywall-token-address']
+    let tokenContract = headers['paywall-token-contract']
     let meta = headers['paywall-meta']
-    return new PaymentRequired(receiver, price, gateway, meta, contractAddress)
+    return new PaymentRequired(receiver, price, gateway, meta, tokenContract)
   }
 }
 

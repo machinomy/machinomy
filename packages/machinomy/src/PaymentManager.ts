@@ -32,7 +32,7 @@ export default class PaymentManager {
       channelValue: channel.value,
       signature,
       meta,
-      contractAddress: channel.contractAddress,
+      tokenContract: channel.tokenContract,
       token: undefined
     })
   }
