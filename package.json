@@ -11,9 +11,7 @@
     ],
     "nohoist": [
       "**/openzeppelin-solidity",
-      "**/openzeppelin-solidity/**",
-      "**/wraptso",
-      "**/wraptso/**"
+      "**/openzeppelin-solidity/**"
     ]
   },
   "scripts": {
