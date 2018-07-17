@@ -60,7 +60,7 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
     return this.mutex.synchronizeOn(channelId.toString(), () => this.internalCloseChannel(channelId))
   }
 
-  deposit (channelId: string, value: BigNumber.BigNumber, tokenContract?: string): Promise<TransactionResult> {
+  deposit (channelId: string, value: BigNumber.BigNumber): Promise<TransactionResult> {
     return this.mutex.synchronizeOn(channelId, async () => {
       const channel = await this.channelById(channelId)
 
@@ -68,7 +68,7 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
         throw new Error('No payment channel found.')
       }
 
-      const res = await this.channelContract.deposit(this.account, channelId, value, tokenContract)
+      const res = await this.channelContract.deposit(this.account, channelId, value, channel.tokenContract)
       await this.channelsDao.deposit(channelId, value)
       return res
     })

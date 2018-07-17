@@ -23,7 +23,7 @@ describe('Payment', () => {
           s: '0x3'
         }),
         token: undefined,
-        contractAddress: ''
+        tokenContract: ''
       })
       let paymentChannel = PaymentChannel.fromPayment(payment)
       expect(paymentChannel.channelId).toBe(payment.channelId)

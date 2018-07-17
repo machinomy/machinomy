@@ -204,7 +204,7 @@ describe('ChannelManagerImpl', () => {
         }),
         meta: '',
         token: undefined,
-        contractAddress: ''
+        tokenContract: ''
       }))
       channelContract.claim = sinon.stub().withArgs(channel.receiver, channel, channel.value, 1, '0x01', '0x02')
         .resolves(claimResult)
@@ -354,7 +354,7 @@ describe('ChannelManagerImpl', () => {
             s: '0x02'
           }),
           meta,
-          contractAddress: '',
+          tokenContract: '',
           token: undefined
         })
       })
@@ -384,7 +384,7 @@ describe('ChannelManagerImpl', () => {
           s: '0x02'
         }),
         meta: '',
-        contractAddress: '',
+        tokenContract: '',
         token: undefined
       })
 
@@ -398,7 +398,7 @@ describe('ChannelManagerImpl', () => {
           value: new BigNumber.BigNumber(10),
           spent: new BigNumber.BigNumber(10),
           state: undefined,
-          contractAddress: undefined
+          tokenContract: undefined
         }))
       })
     })

@@ -12,7 +12,7 @@ export default class ChannelInflator {
   }
 
   async inflate (paymentChannelJSON: PaymentChannelJSON): Promise<PaymentChannel> {
-    const tokenContract = paymentChannelJSON.contractAddress
+    const tokenContract = paymentChannelJSON.tokenContract
     const contract = this.actualContract(tokenContract)
     const state = await contract.getState(paymentChannelJSON.channelId)
     const channel = await contract.channelById(paymentChannelJSON.channelId)
@@ -25,7 +25,7 @@ export default class ChannelInflator {
       value,
       paymentChannelJSON.spent,
       state === -1 ? 2 : state,
-      paymentChannelJSON.contractAddress
+      paymentChannelJSON.tokenContract
     )
   }
 

@@ -68,7 +68,7 @@ describe('transport', () => {
           s: '0x3'
         }),
         token: undefined,
-        contractAddress: ''
+        tokenContract: ''
       })
 
       let randomToken = randomInteger().toString()

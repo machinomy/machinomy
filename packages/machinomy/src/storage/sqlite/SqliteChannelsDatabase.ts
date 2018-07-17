@@ -7,7 +7,7 @@ import SqliteDatastore from './SqliteDatastore'
 
 async function createTable (client: SqliteDatastore) {
   await client.run('CREATE TABLE IF NOT EXISTS channel (sender TEXT, receiver TEXT, "channelId" TEXT, value TEXT,' +
-    ' spent TEXT, state TEXT, "contractAddress" TEXT, kind TEXT)')
+    ' spent TEXT, state TEXT, "tokenContract" TEXT, kind TEXT)')
 }
 
 export default class SqliteChannelsDatabase extends AbstractChannelsDatabase<EngineSqlite> {
@@ -15,8 +15,8 @@ export default class SqliteChannelsDatabase extends AbstractChannelsDatabase<Eng
     return this.engine.exec(async client => {
       await createTable(client)
       await client.run(
-        'INSERT INTO channel("channelId", kind, sender, receiver, value, spent, state, "contractAddress") ' +
-        'VALUES ($channelId, $kind, $sender, $receiver, $value, $spent, $state, $contractAddress)',
+        'INSERT INTO channel("channelId", kind, sender, receiver, value, spent, state, "tokenContract") ' +
+        'VALUES ($channelId, $kind, $sender, $receiver, $value, $spent, $state, $tokenContract)',
         {
           $channelId: paymentChannel.channelId,
           $kind: this.kind,
@@ -25,7 +25,7 @@ export default class SqliteChannelsDatabase extends AbstractChannelsDatabase<Eng
           $value: paymentChannel.value.toString(),
           $spent: paymentChannel.spent.toString(),
           $state: paymentChannel.state,
-          $contractAddress: paymentChannel.contractAddress
+          $tokenContract: paymentChannel.tokenContract
         })
     })
   }
@@ -34,7 +34,7 @@ export default class SqliteChannelsDatabase extends AbstractChannelsDatabase<Eng
     return this.engine.exec(async client => {
       await createTable(client)
       let raw = await client.get<PaymentChannelJSON>(
-        'SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
+        'SELECT "channelId", kind, sender, receiver, value, spent, state, "tokenContract" FROM channel ' +
         'WHERE "channelId" = $channelId LIMIT 1',
         {
           $channelId: channelId.toString()
@@ -78,7 +78,7 @@ export default class SqliteChannelsDatabase extends AbstractChannelsDatabase<Eng
     return this.engine.exec(async client => {
       await createTable(client)
 
-      let raw = await client.all<PaymentChannelJSON>('SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel')
+      let raw = await client.all<PaymentChannelJSON>('SELECT "channelId", kind, sender, receiver, value, spent, state, "tokenContract" FROM channel')
       return this.inflatePaymentChannels(raw)
     })
   }
@@ -87,7 +87,7 @@ export default class SqliteChannelsDatabase extends AbstractChannelsDatabase<Eng
     return this.engine.exec(async client => {
       await createTable(client)
 
-      let raw = await client.all<PaymentChannelJSON>('SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
+      let raw = await client.all<PaymentChannelJSON>('SELECT "channelId", kind, sender, receiver, value, spent, state, "tokenContract" FROM channel ' +
         'WHERE state = 0')
       let channels = await this.inflatePaymentChannels(raw)
       return this.filterByState(0, channels)
@@ -97,7 +97,7 @@ export default class SqliteChannelsDatabase extends AbstractChannelsDatabase<Eng
   async findUsable (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel | null> {
     return this.engine.exec(async client => {
       await createTable(client)
-      let raw = await client.get<PaymentChannelJSON>('SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
+      let raw = await client.get<PaymentChannelJSON>('SELECT "channelId", kind, sender, receiver, value, spent, state, "tokenContract" FROM channel ' +
         'WHERE sender = $sender AND receiver = $receiver AND value >= spent + $amount AND state = 0',
         {
           $sender: sender,
@@ -119,7 +119,7 @@ export default class SqliteChannelsDatabase extends AbstractChannelsDatabase<Eng
   async findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>> {
     return this.engine.exec(async client => {
       await createTable(client)
-      let rows = await client.all<PaymentChannelJSON>('SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
+      let rows = await client.all<PaymentChannelJSON>('SELECT "channelId", kind, sender, receiver, value, spent, state, "tokenContract" FROM channel ' +
         'WHERE sender = $sender AND receiver = $receiver',
         {
           $sender: sender,
@@ -132,7 +132,7 @@ export default class SqliteChannelsDatabase extends AbstractChannelsDatabase<Eng
   async findBySenderReceiverChannelId (sender: string, receiver: string, channelId: ChannelId | string): Promise<PaymentChannel | null> {
     return this.engine.exec(async client => {
       await createTable(client)
-      let row = await client.get<PaymentChannelJSON>('SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
+      let row = await client.get<PaymentChannelJSON>('SELECT "channelId", kind, sender, receiver, value, spent, state, "tokenContract" FROM channel ' +
         'WHERE sender = $sender AND receiver = $receiver AND "channelId" = $channelId LIMIT 1',
         {
           $sender: sender,

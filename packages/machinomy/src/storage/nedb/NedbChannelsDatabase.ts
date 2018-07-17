@@ -18,7 +18,7 @@ export default class NedbChannelsDatabase extends AbstractChannelsDatabase<Engin
       spent: paymentChannel.spent.toString(),
       channelId: paymentChannel.channelId,
       state: paymentChannel.state,
-      contractAddress: paymentChannel.contractAddress
+      tokenContract: paymentChannel.tokenContract
     }
 
     await this.engine.exec(client => {

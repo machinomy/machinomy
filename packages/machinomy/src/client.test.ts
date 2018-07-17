@@ -45,7 +45,7 @@ describe('ClientImpl', () => {
           expect(res.price).toEqual(new BigNumber.BigNumber(1000))
           expect(res.gateway).toBe('http://honkhost:8080/machinomy')
           expect(res.meta).toBe('hello')
-          expect(res.contractAddress).toBe('0xbeef')
+          expect(res.tokenContract).toBe('0xbeef')
         })
       }))
     })

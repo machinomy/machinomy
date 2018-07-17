@@ -7,7 +7,7 @@ import AbstractChannelsDatabase from '../AbstractChannelsDatabase'
 export default class PostgresChannelsDatabase extends AbstractChannelsDatabase<EnginePostgres> {
   save (paymentChannel: PaymentChannel): Promise<void> {
     return this.engine.exec((client: any) => client.query(
-      'INSERT INTO channel("channelId", kind, sender, receiver, value, spent, state, "contractAddress") ' +
+      'INSERT INTO channel("channelId", kind, sender, receiver, value, spent, state, "tokenContract") ' +
       'VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
       [
         paymentChannel.channelId,
@@ -17,14 +17,14 @@ export default class PostgresChannelsDatabase extends AbstractChannelsDatabase<E
         paymentChannel.value.toString(),
         paymentChannel.spent.toString(),
         paymentChannel.state,
-        paymentChannel.contractAddress
+        paymentChannel.tokenContract
       ]
     ))
   }
 
   firstById (channelId: ChannelId | string): Promise<PaymentChannel | null> {
     return this.engine.exec((client: any) => client.query(
-      'SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
+      'SELECT "channelId", kind, sender, receiver, value, spent, state, "tokenContract" FROM channel ' +
       'WHERE "channelId" = $1 LIMIT 1',
       [
         channelId.toString()
@@ -64,13 +64,13 @@ export default class PostgresChannelsDatabase extends AbstractChannelsDatabase<E
 
   all (): Promise<Array<PaymentChannel>> {
     return this.engine.exec((client: any) => client.query(
-      'SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel'
+      'SELECT "channelId", kind, sender, receiver, value, spent, state, "tokenContract" FROM channel'
     )).then((res: any) => this.inflatePaymentChannels(res.rows))
   }
 
   allOpen (): Promise<PaymentChannel[]> {
     return this.engine.exec((client: any) => client.query(
-      'SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
+      'SELECT "channelId", kind, sender, receiver, value, spent, state, "tokenContract" FROM channel ' +
       'WHERE state = 0'
     )).then((res: any) => this.inflatePaymentChannels(res.rows))
       .then((chans: PaymentChannel[]) => this.filterByState(0, chans))
@@ -78,7 +78,7 @@ export default class PostgresChannelsDatabase extends AbstractChannelsDatabase<E
 
   findUsable (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel | null> {
     return this.engine.exec((client: any) => client.query(
-      'SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
+      'SELECT "channelId", kind, sender, receiver, value, spent, state, "tokenContract" FROM channel ' +
       'WHERE sender = $1 AND receiver = $2 AND value >= spent + $3 AND state = 0',
       [
         sender,
@@ -91,7 +91,7 @@ export default class PostgresChannelsDatabase extends AbstractChannelsDatabase<E
 
   findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>> {
     return this.engine.exec((client: any) => client.query(
-      'SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
+      'SELECT "channelId", kind, sender, receiver, value, spent, state, "tokenContract" FROM channel ' +
       'WHERE sender = $1 AND receiver = $2',
       [
         sender,
@@ -102,7 +102,7 @@ export default class PostgresChannelsDatabase extends AbstractChannelsDatabase<E
 
   findBySenderReceiverChannelId (sender: string, receiver: string, channelId: ChannelId | string): Promise<PaymentChannel | null> {
     return this.engine.exec((client: any) => client.query(
-      'SELECT "channelId", kind, sender, receiver, value, spent, state, "contractAddress" FROM channel ' +
+      'SELECT "channelId", kind, sender, receiver, value, spent, state, "tokenContract" FROM channel ' +
       'WHERE sender = $1 AND receiver = $2 AND "channelId" = $3 LIMIT 1',
       [
         sender,

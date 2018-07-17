@@ -1,10 +1,10 @@
 # Machinomy API
 
-Machinomy is a library for ETH and ERC20 micropayments. The libarry could be freely embedded into your software both in browser and server environments.
+Machinomy is a library for ETH and ERC20 micropayments. The library could be freely embedded into your software both in browser and server environments.
 
 The library implements unidirectional payment channel pattern. It works like a bar tab. A sender opens a channel and deposits the funds there. Over time she sends promised payments to a receiver. A promised payment is a signed data structure that the receiver could redeem at the smart contract.
 
-## Initialisation
+## Initialization
 
 Work with Machinomy starts with constructor.
 
@@ -39,7 +39,7 @@ The functions related to payments operate on ancillary interfaces for parameters
 `BuyOptions`:
 
 ```typescript
-import { BuyOptions } from 'machinomy'
+import { BuyOptions } from 'machinomy'
 ```
 
 | Field      | Type                 | Description                                       |
@@ -64,7 +64,7 @@ import { Payment } from 'machinomy'
 | `value`           | `BigNumber` | Total amount to be paid. Remember, single payment in Unidirectional channel represents the total redeemable amount. |
 | `signature`       | `Signature` | Signature of the payment by the sender.                      |
 | `meta`            | `string`    | Optional free-form data to accompany the payment.            |
-| `contractAddress` | `string`    | Ethereum address of the contract that manages the payments.  |
+| `tokenContract`   | `string`    | Token contract address.                                      |
 | `createdAt`       | `number`    | When the payment was created, as unix timestamp.             |
 | `token`           | `string`    | Unique identifier of the payment.                            |
 
@@ -82,7 +82,7 @@ import { BuyResult } from 'machinomy'
 `NextPaymentResult`:
 
 ```typescript
-import { NextPaymentResult } from 'machiomy'
+import { NextPaymentResult } from 'machinomy'
 ```
 
 | Field     | Type     | Description         |
@@ -168,23 +168,24 @@ Here come functions related to channels. Basic `PaymentChannel` structure is des
 | `value`           | `BigNumber` | Amount of funds deposited to the channel by the sender.      |
 | `spent`           | `BigNumber` | Amount of funds spent on the channel, that is redeemable by the receiver. |
 | `state`           | `number`    | State of the channel: `0` - open, `1` - settling, `2` - closed or non-existing. |
-| `contractAddress` | `string`    | Ethereum address of the contract that manages the channel.   |
+| `tokenContract`   | `string`    | Token contract address.                                      |
 
 ### Open
 
 Opens a channel. It is a lower level function. One probably would not ever need to invoke the function. `buy` or `payment` both open a channel for you, if it is not present yet.
 
 ```typescript
-machinomy.open (receiver, value, channelId?): Promise<PaymentChannel>
+machinomy.open (receiver, value, channelId?, tokenContract?): Promise<PaymentChannel>
 ```
 
 Parameters:
 
-| Argument     | Type                 | Description                               |
-| ------------ | -------------------- | ----------------------------------------- |
-| `receiver`   | `string`             | Ethereum address of the channel receiver. |
-| `value`      | `BigNumber | number` | Amount of initial deposit to the channel. |
-| `channelId?` | `string`             | Proposed identifier of the channel.       |
+| Argument         | Type                 | Description                               |
+| ------------     | -------------------- | ----------------------------------------- |
+| `receiver`       | `string`             | Ethereum address of the channel receiver. |
+| `value`          | `BigNumber | number` | Amount of initial deposit to the channel. |
+| `channelId?`     | `string`             | Proposed identifier of the channel.       |
+| `tokenContract?` | `string`             | Token contract address.                   |
 
 ### Deposit
 

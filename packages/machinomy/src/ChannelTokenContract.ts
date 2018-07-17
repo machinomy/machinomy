@@ -2,8 +2,8 @@ import * as Web3 from 'web3'
 import * as BigNumber from 'bignumber.js'
 import { TransactionResult } from 'truffle-contract'
 import Logger from '@machinomy/logger'
+import * as contracts from '@machinomy/contracts'
 import Signature from './Signature'
-import { TokenUnidirectional } from '@machinomy/contracts'
 import ChannelId from './ChannelId'
 
 const LOG = new Logger('ChannelTokenContract')
@@ -12,24 +12,34 @@ const CREATE_CHANNEL_GAS = new BigNumber.BigNumber(300000)
 
 // FIXME MOVE TOKENS SOMEWHERE HERE
 export default class ChannelTokenContract {
-  contract: Promise<TokenUnidirectional.Contract>
+  contract: Promise<contracts.TokenUnidirectional.Contract>
 
   private web3: Web3
 
   constructor (web3: Web3) {
     this.web3 = web3
-    this.contract = TokenUnidirectional.contract(this.web3.currentProvider).deployed()
+    this.contract = contracts.TokenUnidirectional.contract(this.web3.currentProvider).deployed()
   }
 
   async open (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number | BigNumber.BigNumber, tokenContract: string, channelId?: ChannelId | string): Promise<TransactionResult> {
     LOG.info(`Creating channel. Value: ${price} / Settlement: ${settlementPeriod}`)
     let _channelId = channelId || ChannelId.random()
-    const deployed = await this.contract
-    return deployed.open(_channelId.toString(), receiver, new BigNumber.BigNumber(settlementPeriod), tokenContract, price, {
-      from: sender,
-      value: price,
-      gas: CREATE_CHANNEL_GAS
-    })
+    const standardTokenContract = contracts.StandardToken.contract(this.web3.currentProvider).at(tokenContract)
+    const deployedTokenUnidirectional = await this.contract
+    const deployedStandardTokenContract = await standardTokenContract
+
+    const approveTx = await deployedStandardTokenContract.approve(receiver, price, { from: sender })
+    if (contracts.StandardToken.isApprovalEvent(approveTx.logs[0])) {
+      return deployedTokenUnidirectional.open(_channelId.toString(), receiver, new BigNumber.BigNumber(settlementPeriod), tokenContract, price, {
+        from: sender,
+        gas: CREATE_CHANNEL_GAS
+      })
+    } else {
+      const errorMessage = `Opening channel. Can not approve tokens hold from sender ${sender} to receiver ${receiver}. Value: ${price}`
+      LOG.error(errorMessage)
+      return Promise.reject(errorMessage)
+    }
+
   }
 
   async claim (receiver: string, channelId: string, value: BigNumber.BigNumber, signature: Signature): Promise<TransactionResult> {
@@ -39,14 +49,25 @@ export default class ChannelTokenContract {
     return deployed.claim(channelId, value, signature.toString(), { from: receiver })
   }
 
-  async deposit (sender: string, channelId: string, value: BigNumber.BigNumber): Promise<TransactionResult> {
+  async deposit (sender: string, channelId: string, value: BigNumber.BigNumber, tokenContract: string): Promise<TransactionResult> {
     LOG.info(`Depositing ${value} into channel ${channelId}`)
-    const deployed = await this.contract
-    return deployed.deposit(channelId, value, {
-      from: sender,
-      value: value,
-      gas: CREATE_CHANNEL_GAS
-    })
+    const standardTokenContract = contracts.StandardToken.contract(this.web3.currentProvider).at(tokenContract)
+    const deployedTokenUnidirectional = await this.contract
+    const deployedStandardTokenContract = await standardTokenContract
+    const channel = await this.channelById(channelId)
+    const receiver = channel[1]
+    const approveTx = await deployedStandardTokenContract.approve(receiver, value, { from: sender })
+    if (contracts.StandardToken.isApprovalEvent(approveTx.logs[0])) {
+      return deployedTokenUnidirectional.deposit(channelId, value, {
+        from: sender,
+        gas: CREATE_CHANNEL_GAS
+      })
+    } else {
+      const errorMessage = `Deposit operation. Can not approve tokens hold from sender ${sender} to receiver ${receiver}. Value: ${value}`
+      LOG.error(errorMessage)
+      return Promise.reject(errorMessage)
+    }
+
   }
 
   async getState (channelId: string): Promise<number> {
