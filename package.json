@@ -15,7 +15,7 @@
     ]
   },
   "scripts": {
-    "build": "wsrun build $PKG --fast-exit -r --serial",
+    "build": "PATH=\"$PATH:./node_modules/.bin\" wsrun build $PKG --fast-exit -r --serial",
     "lint": "wsrun lint $PKG",
     "test": "wsrun test $PKG",
     "coverage": "wsrun coverage $PKG",
