@@ -108,18 +108,18 @@ export default class Machinomy {
    * @param channelId - Channel id.
    * @param value - Size of deposit in Wei.
    */
-  async deposit (channelId: string, value: BigNumber.BigNumber | number): Promise<TransactionResult> {
+  async deposit (channelId: string, value: BigNumber.BigNumber | number, tokenContract?: string): Promise<TransactionResult> {
     await this.checkMigrationsState()
     const _value = new BigNumber.BigNumber(value)
     let channelManager = await this.registry.channelManager()
-    return channelManager.deposit(channelId, _value)
+    return channelManager.deposit(channelId, _value, tokenContract)
   }
 
-  async open (receiver: string, value: BigNumber.BigNumber | number, channelId?: ChannelId | string): Promise<PaymentChannel> {
+  async open (receiver: string, value: BigNumber.BigNumber | number, channelId?: ChannelId | string, tokenContract?: string): Promise<PaymentChannel> {
     await this.checkMigrationsState()
     const _value = new BigNumber.BigNumber(value)
     let channelManager = await this.registry.channelManager()
-    return channelManager.openChannel(this.account, receiver, new BigNumber.BigNumber(0), _value, channelId)
+    return channelManager.openChannel(this.account, receiver, new BigNumber.BigNumber(0), _value, channelId, tokenContract)
   }
 
   /**
