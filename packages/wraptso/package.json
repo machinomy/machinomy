@@ -22,7 +22,9 @@
   ],
   "scripts": {
     "prepublish": "yarn build",
-    "build": "tsc --project tsconfig.json"
+    "build": "tsc --project tsconfig.json",
+    "test": "exit 0",
+    "coverage": "exit 0"
   },
   "dependencies": {
     "glob": "^7.1.2",
