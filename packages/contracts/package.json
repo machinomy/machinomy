@@ -35,7 +35,6 @@
     "coverage": "solidity-coverage"
   },
   "devDependencies": {
-    "@machinomy/wraptso": "^0.0.4",
     "@machinomy/types-ethereumjs-units": "^0.0.2",
     "@machinomy/types-ethereumjs-util": "^0.0.12",
     "@machinomy/types-truffle": "^0.0.6",
@@ -44,6 +43,7 @@
     "@machinomy/types-truffle-contract-sources": "^0.0.1",
     "@machinomy/types-truffle-deployer": "^0.0.3",
     "@machinomy/types-truffle-resolver": "^0.0.1",
+    "@machinomy/wraptso": "^0.0.4",
     "@types/bignumber.js": "^4.0.2",
     "@types/chai": "^4.1.3",
     "@types/chai-as-promised": "^7.1.0",
