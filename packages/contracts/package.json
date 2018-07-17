@@ -26,7 +26,7 @@
     "lint": "yarn lint:solidity && yarn lint:typescript",
     "lint:solidity": "solium -d contracts/",
     "lint:typescript": "tslint --format stylish --project .",
-    "support:wrap": "yarn truffle:compile && ./node_modules/.bin/wraptso $npm_package_config_wrappedArtifacts --output ./src/wrappers",
+    "support:wrap": "yarn truffle:compile && wraptso $npm_package_config_wrappedArtifacts --output ./src/wrappers",
     "support:build": "tsc --project support/tsconfig.json",
     "truffle:compile": "truffle compile",
     "truffle:test": "run-with-testrpc 'truffle test $npm_package_config_truffleTests'",
