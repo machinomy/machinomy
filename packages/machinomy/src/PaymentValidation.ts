@@ -27,14 +27,17 @@ export default class PaymentValidation {
   }
 
   async isValid (): Promise<boolean> {
-    return this.isValidChannelValue() &&
-      this.isValidChannelId() &&
-      this.isValidPaymentValue() &&
-      this.isGreaterThanPrevious() &&
-      this.isValidSender() &&
-      this.isPositive() &&
-      this.canClaim() &&
+    const conditions = await Promise.all([
+      this.isValidChannelValue(),
+      this.isValidChannelId(),
+      this.isValidPaymentValue(),
+      this.isGreaterThanPrevious(),
+      this.isValidSender(),
+      this.isPositive(),
+      this.canClaim(),
       this.isAboveMinSettlementPeriod()
+    ])
+    return conditions.every(a => a)
   }
 
   private async isValidChannelValue (): Promise<boolean> {
