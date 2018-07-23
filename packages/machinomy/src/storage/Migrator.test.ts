@@ -64,67 +64,58 @@ describe('Migrator', () => {
   }
 
   beforeEach(async () => {
-    return new Promise(async (resolve) => {
-      web3 = {
-        currentProvider: {}
-      } as Web3
+    web3 = {
+      currentProvider: {}
+    } as Web3
 
-      deployed = {} as any
-      contractStub = sinon.stub(Unidirectional, 'contract')
-      contractStub.withArgs(web3.currentProvider).returns({
-        deployed: sinon.stub().resolves(Promise.resolve(deployed))
-      })
-      contractTokenStub = sinon.stub(TokenUnidirectional, 'contract')
-      contractTokenStub.withArgs(web3.currentProvider).returns({
-        deployed: sinon.stub().resolves(Promise.resolve(deployed))
-      })
-      const channelEthContract = new ChannelEthContract(web3)
-      const channelTokenContract = new ChannelTokenContract(web3)
-      channelContract = new ChannelContract(web3, {} as IChannelsDatabase, channelEthContract, channelTokenContract)
-
-      const filename = await support.tmpFileName()
-
-      const inflator = new ChannelInflator(channelEthContract, channelTokenContract)
-      storage = await Storage.build(process.env.DB_URL!, channelContract, inflator)
-      let dbMigrateConfig: DBMigrate.InstanceOptions = Migrator.generateConfigObject(process.env.DB_URL!)
-      switch (process.env.DB_URL!.split('://')[0]) {
-        case 'sqlite': {
-          engine = new EngineSqlite(filename)
-          break
-        }
-        case 'postgresql': {
-          engine = new EnginePostgres(process.env.DB_URL!)
-          break
-        }
-        default:
-          return resolve()
-      }
-      // tslint:disable-next-line:no-floating-promises
-      engine.connect().then(() =>
-        engine.exec(async (client: any) => {
-          if (process.env.DB_URL!.split('://')[0] === 'sqlite') {
-            runSqlAll = client.all.bind(client)
-            await runSqlAll('CREATE TABLE migrations(id INTEGER, name TEXT, run_on TEXT)')
-          } else if (process.env.DB_URL!.split('://')[0] === 'postgresql') {
-            runSqlAll = client.query.bind(client)
-          }
-          dbmigrate = DBMigrate.getInstance(true, dbMigrateConfig)
-          await dbmigrate.up()
-          resolve()
-        })
-      )
+    deployed = {} as any
+    contractStub = sinon.stub(Unidirectional, 'contract')
+    contractStub.withArgs(web3.currentProvider).returns({
+      deployed: sinon.stub().resolves(Promise.resolve(deployed))
     })
+    contractTokenStub = sinon.stub(TokenUnidirectional, 'contract')
+    contractTokenStub.withArgs(web3.currentProvider).returns({
+      deployed: sinon.stub().resolves(Promise.resolve(deployed))
+    })
+    const channelEthContract = new ChannelEthContract(web3)
+    const channelTokenContract = new ChannelTokenContract(web3)
+    channelContract = new ChannelContract(web3, {} as IChannelsDatabase, channelEthContract, channelTokenContract)
+
+    const filename = await support.tmpFileName()
+    const inflator = new ChannelInflator(channelEthContract, channelTokenContract)
+    storage = await Storage.build(process.env.DB_URL!, channelContract, inflator)
+    let dbMigrateConfig: DBMigrate.InstanceOptions = Migrator.generateConfigObject(process.env.DB_URL!)
+    switch (process.env.DB_URL!.split('://')[0]) {
+      case 'sqlite': {
+        engine = new EngineSqlite(filename)
+        break
+      }
+      case 'postgresql': {
+        engine = new EnginePostgres(process.env.DB_URL!)
+        break
+      }
+    }
+    if (engine) {
+      await engine.connect()
+      await engine.exec(async (client: any) => {
+        if (process.env.DB_URL!.split('://')[0] === 'sqlite') {
+          runSqlAll = client.all.bind(client)
+          await runSqlAll('CREATE TABLE migrations(id INTEGER, name TEXT, run_on TEXT)')
+        } else if (process.env.DB_URL!.split('://')[0] === 'postgresql') {
+          runSqlAll = client.query.bind(client)
+        }
+        dbmigrate = DBMigrate.getInstance(true, dbMigrateConfig)
+        await dbmigrate.up()
+      })
+    }
   })
 
-  afterEach(() => {
-    return new Promise(async (resolve) => {
-      contractStub.restore()
-      contractTokenStub.restore()
-      if (engine) {
-        await engine.close()
-      }
-      resolve()
-    })
+  afterEach(async () => {
+    contractStub.restore()
+    contractTokenStub.restore()
+    if (engine) {
+      await engine.close()
+    }
   })
 
   it('all migrations already synced', async () => {
