@@ -1,7 +1,6 @@
 node_modules/
 .env
 yarn-error.log
-build/
 **/*.d.ts
 **/*.js
 **/*.js.map

@@ -13742,8 +13742,8 @@
       "links": {
         "ECRecovery": "0x51d42f547b9eda9cf804dd40f6a8a10e138601ab"
       },
-      "address": "0x2787f5a4edf66b453e14537c46e0918220b644d7",
-      "transactionHash": "0x8aadfa998d00c7db1bfffb901def03735e0024cc82772c9838c37a4d065ef418"
+      "address": "0x8ffdea290f4dcdc553841a432e56aa26c91ab777",
+      "transactionHash": "0x180cc9c131e839ff1e124068f07479f030103b03992a3bfbba734e69df0cd582"
     },
     "4": {
       "events": {},
@@ -13755,5 +13755,5 @@
     }
   },
   "schemaVersion": "2.0.0",
-  "updatedAt": "2018-07-12T13:32:45.573Z"
+  "updatedAt": "2018-07-23T12:37:25.997Z"
 }
