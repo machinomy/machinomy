@@ -18,6 +18,22 @@ export interface PaymentJSON {
   tokenContract?: string
 }
 
+export interface SerializedPayment {
+  channelId: string
+  value: string
+  sender: string
+  receiver: string
+  price: string
+  channelValue: string
+  v: number
+  r: string
+  s: string
+  token?: string
+  meta: string
+  createdAt?: number
+  tokenContract?: string
+}
+
 export default class Payment {
   channelId: string
   sender: string
@@ -61,7 +77,7 @@ export class PaymentSerde implements Serde<Payment> {
     's'
   ]
 
-  serialize (obj: Payment): object {
+  serialize (obj: Payment): SerializedPayment {
     const sig = obj.signature.toParts()
 
     return {
