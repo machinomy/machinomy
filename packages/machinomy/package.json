@@ -36,7 +36,7 @@
     "examples/"
   ],
   "dependencies": {
-    "@machinomy/contracts": "^4.0.17",
+    "@machinomy/contracts": "^4.1.x",
     "@machinomy/logger": "^0.0.5",
     "@machinomy/types-bn": "^0.0.3",
     "@machinomy/types-truffle-contract": "^0.0.3",
