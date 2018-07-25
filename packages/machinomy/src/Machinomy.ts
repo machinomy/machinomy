@@ -16,7 +16,7 @@ import BuyOptions from './BuyOptions'
 import NextPaymentResult from './NextPaymentResult'
 import BuyResult from './BuyResult'
 import { memoize } from 'decko'
-const isNode = require('browser-or-node')
+const jsEnv = require('browser-or-node')
 
 /**
  * Machinomy is a library for micropayments in Ether over HTTP.
@@ -209,7 +209,7 @@ export default class Machinomy {
 
   @memoize
   private async checkMigrationsState (): Promise<void> {
-    if (isNode) {
+    if (jsEnv.isNode) {
       const storage = await this.registry.storage()
       if (storage.migrator && !storage.migrator.isLatest()) {
         if (this.registry.options.migrate === undefined || this.registry.options.migrate === MigrateOption.Silent) {
