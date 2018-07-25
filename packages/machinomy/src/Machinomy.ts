@@ -16,6 +16,7 @@ import BuyOptions from './BuyOptions'
 import NextPaymentResult from './NextPaymentResult'
 import BuyResult from './BuyResult'
 import { memoize } from 'decko'
+const isNode = require('browser-or-node')
 
 /**
  * Machinomy is a library for micropayments in Ether over HTTP.
@@ -208,13 +209,15 @@ export default class Machinomy {
 
   @memoize
   private async checkMigrationsState (): Promise<void> {
-    const storage = await this.registry.storage()
-    if (storage.migrator && !storage.migrator.isLatest()) {
-      if (this.registry.options.migrate === undefined || this.registry.options.migrate === MigrateOption.Silent) {
-        // tslint:disable-next-line:no-floating-promises
-        return storage.migrator.sync()
-      } else {
-        throw new Error('There are non-applied db-migrations!')
+    if (isNode) {
+      const storage = await this.registry.storage()
+      if (storage.migrator && !storage.migrator.isLatest()) {
+        if (this.registry.options.migrate === undefined || this.registry.options.migrate === MigrateOption.Silent) {
+          // tslint:disable-next-line:no-floating-promises
+          return storage.migrator.sync()
+        } else {
+          throw new Error('There are non-applied db-migrations!')
+        }
       }
     }
   }
