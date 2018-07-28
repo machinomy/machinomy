@@ -36,7 +36,7 @@ describe('ClientImpl', () => {
             'paywall-price': '1000',
             'paywall-gateway': 'http://honkhost:8080/machinomy',
             'paywall-meta': 'hello',
-            'paywall-token-address': '0xbeef'
+            'paywall-token-contract': '0xbeef'
           }
         })
 

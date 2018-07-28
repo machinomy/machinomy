@@ -50,6 +50,7 @@ describe('ChannelContract', () => {
 
   afterEach(() => {
     contractStub.restore()
+    tokenContractStub.restore()
     uuidStub.restore()
   })
 
