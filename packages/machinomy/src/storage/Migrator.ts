@@ -2,7 +2,6 @@ import IEngine from './IEngine'
 import IMigrator from './IMigrator'
 import * as fs from 'fs'
 import { ConnectionString } from 'connection-string'
-import * as DBMigrate from 'db-migrate'
 
 const LENGTH_OF_MIGRATION_NAME = 14
 
@@ -10,11 +9,12 @@ export default class Migrator implements IMigrator {
   engine: IEngine
   migrationsPath: string
   dbmigrate: any
+  DBMigrate: any
+  dbMigrateConfig: any
 
   constructor (engine: IEngine, connectionString: string, migrationsPath: string) {
     this.engine = engine
-    const dbMigrateConfig = Migrator.generateConfigObject(connectionString)
-    this.dbmigrate = DBMigrate.getInstance(true, dbMigrateConfig)
+    this.dbMigrateConfig = Migrator.generateConfigObject(connectionString)
     this.migrationsPath = migrationsPath
     if (this.migrationsPath.endsWith('/') !== true) {
       this.migrationsPath += '/'
@@ -26,7 +26,7 @@ export default class Migrator implements IMigrator {
     driversMap.set('postgresql', 'pg')
     driversMap.set('sqlite', 'sqlite3')
     const connectionObject = new ConnectionString(connectionUrl)
-    let result: DBMigrate.InstanceOptions = {}
+    let result = {}
     switch (process.env.DB_URL!.split('://')[0]) {
       case 'sqlite': {
         result = {
@@ -66,10 +66,12 @@ export default class Migrator implements IMigrator {
   }
 
   async isLatest (): Promise<boolean> {
+    await this.ensureDBMigrateInit()
     return this.dbmigrate.check()
   }
 
   async sync (n?: string): Promise<void> {
+    await this.ensureDBMigrateInit()
     if (n !== undefined) {
       this.dbmigrate.sync(n)
     } else {
@@ -90,5 +92,15 @@ export default class Migrator implements IMigrator {
     }
     result.sort()
     return result
+  }
+
+  async ensureDBMigrateInit (): Promise<void> {
+    try {
+      this.DBMigrate = await import('db-migrate')
+      // tslint:disable-next-line:no-empty
+    } catch (error) {
+    } finally {
+      this.dbmigrate = this.DBMigrate.getInstance(true, this.dbMigrateConfig)
+    }
   }
 }
