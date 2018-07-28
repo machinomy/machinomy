@@ -2,8 +2,10 @@ import IEngine from './IEngine'
 import IMigrator from './IMigrator'
 import * as fs from 'fs'
 import { ConnectionString } from 'connection-string'
+import Logger from '@machinomy/logger'
 
 const LENGTH_OF_MIGRATION_NAME = 14
+const log = new Logger('Migrator')
 
 export default class Migrator implements IMigrator {
   engine: IEngine
@@ -11,6 +13,7 @@ export default class Migrator implements IMigrator {
   dbmigrate: any
   DBMigrate: any
   dbMigrateConfig: any
+  dbmigrateImportFailure: boolean
 
   constructor (engine: IEngine, connectionString: string, migrationsPath: string) {
     this.engine = engine
@@ -19,6 +22,7 @@ export default class Migrator implements IMigrator {
     if (this.migrationsPath.endsWith('/') !== true) {
       this.migrationsPath += '/'
     }
+    this.dbmigrateImportFailure = false
   }
 
   static generateConfigObject (connectionUrl: string) {
@@ -67,17 +71,27 @@ export default class Migrator implements IMigrator {
 
   async isLatest (): Promise<boolean> {
     await this.ensureDBMigrateInit()
-    return this.dbmigrate.check()
+    if (this.dbmigrateImportFailure) {
+      log.warn('db-migrate wasn\'t imported correctly! Migrator does not work now. It\'s OK if you are using Machinomy in browser or against NeDB.')
+      return true
+    } else {
+      return this.dbmigrate.check()
+    }
   }
 
   async sync (n?: string): Promise<void> {
     await this.ensureDBMigrateInit()
-    if (n !== undefined) {
-      this.dbmigrate.sync(n)
+    if (this.dbmigrateImportFailure) {
+      log.warn('db-migrate wasn\'t imported correctly! Migrator does not work now. It\'s OK if you are using Machinomy in browser or against NeDB.')
+      return
     } else {
-      const migrationsInFolder = await this.retrieveInFolderMigrationList()
-      const lastMigrationInFolderName = migrationsInFolder[migrationsInFolder.length - 1].substring(0, LENGTH_OF_MIGRATION_NAME)
-      this.dbmigrate.sync(lastMigrationInFolderName)
+      if (n !== undefined) {
+        this.dbmigrate.sync(n)
+      } else {
+        const migrationsInFolder = await this.retrieveInFolderMigrationList()
+        const lastMigrationInFolderName = migrationsInFolder[migrationsInFolder.length - 1].substring(0, LENGTH_OF_MIGRATION_NAME)
+        this.dbmigrate.sync(lastMigrationInFolderName)
+      }
     }
   }
 
@@ -99,6 +113,7 @@ export default class Migrator implements IMigrator {
       this.DBMigrate = await import('db-migrate')
       // tslint:disable-next-line:no-empty
     } catch (error) {
+      this.dbmigrateImportFailure = true
     } finally {
       this.dbmigrate = this.DBMigrate.getInstance(true, this.dbMigrateConfig)
     }
