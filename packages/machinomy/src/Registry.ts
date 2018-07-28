@@ -53,7 +53,9 @@ export default class Registry {
   async storage (): Promise<Storage> {
     const channelContract = await this.channelContract()
     const inflator = await this.inflator()
-    return Storage.build(this.options.databaseUrl, channelContract, inflator)
+    const result = await Storage.build(this.options.databaseUrl, channelContract, inflator)
+    channelContract.channelsDao = result.channelsDatabase
+    return result
   }
 
   @memoize
