@@ -1,5 +1,4 @@
 import { PaymentChannel, PaymentChannelJSON } from '../PaymentChannel'
-import ChannelContract from '../ChannelContract'
 import * as BigNumber from 'bignumber.js'
 import { namespaced } from '../util/namespaced'
 import IEngine from './IEngine'
@@ -15,14 +14,11 @@ export default abstract class AbstractChannelsDatabase<T extends IEngine> implem
 
   kind: string
 
-  contract: ChannelContract
-
   inflator: ChannelInflator
 
-  constructor (engine: T, channelContract: ChannelContract, inflator: ChannelInflator, namespace: string | null) {
+  constructor (engine: T, inflator: ChannelInflator, namespace: string | null) {
     this.kind = namespaced(namespace, 'channel')
     this.engine = engine
-    this.contract = channelContract
     this.inflator = inflator
   }
 

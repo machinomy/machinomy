@@ -43,17 +43,17 @@ function buildEngine (filename: string): IEngine {
   }
 }
 
-function buildDatabases (engine: IEngine, channelContract: ChannelContract, inflator: ChannelInflator): [AbstractChannelsDatabase<IEngine>, IPaymentsDatabase, ITokensDatabase] {
+function buildDatabases (engine: IEngine, inflator: ChannelInflator): [AbstractChannelsDatabase<IEngine>, IPaymentsDatabase, ITokensDatabase] {
   if (engine instanceof EngineNedb) {
-    return [new NedbChannelsDatabase(engine, channelContract, inflator, null), new NedbPaymentsDatabase(engine, null), new NedbTokensDatabase(engine, null)]
+    return [new NedbChannelsDatabase(engine, inflator, null), new NedbPaymentsDatabase(engine, null), new NedbTokensDatabase(engine, null)]
   }
 
   if (engine instanceof EnginePostgres) {
-    return [new PostgresChannelsDatabase(engine, channelContract, inflator, null), new PostgresPaymentsDatabase(engine, null), new PostgresTokensDatabase(engine, null)]
+    return [new PostgresChannelsDatabase(engine, inflator, null), new PostgresPaymentsDatabase(engine, null), new PostgresTokensDatabase(engine, null)]
   }
 
   if (engine instanceof EngineSqlite) {
-    return [new SqliteChannelsDatabase(engine, channelContract, inflator, null), new SqlitePaymentsDatabase(engine, null), new SqliteTokensDatabase(engine, null)]
+    return [new SqliteChannelsDatabase(engine, inflator, null), new SqlitePaymentsDatabase(engine, null), new SqliteTokensDatabase(engine, null)]
   }
 
   throw new Error('Invalid engine.')
@@ -84,7 +84,7 @@ describe('storage', () => {
       const channelTokenContract = new ChannelTokenContract({} as Web3)
       const inflator = new ChannelInflator(channelEthContract, channelTokenContract)
 
-      const databases = buildDatabases(engine, fakeContract, inflator)
+      const databases = buildDatabases(engine, inflator)
       channels = databases[0]
       tokens = databases[2]
     })
@@ -103,7 +103,6 @@ describe('storage', () => {
       it('updates the state value', async () => {
         const id = ChannelId.random().toString()
 
-        sinon.stub(channels.contract, 'getState').resolves(2)
         await channels.save(new PaymentChannel('sender', 'receiver', id, new BigNumber.BigNumber(69), new BigNumber.BigNumber(8), 0, ''))
         await channels.updateState(id, 2)
         let chan = await channels.firstById(id)
@@ -154,12 +153,6 @@ describe('storage', () => {
 
     describe('#saveOrUpdate', () => {
       it('save new PaymentChannel', () => {
-        const gs = channels.contract.getState as sinon.SinonStub
-        const cb = channels.contract.channelById as sinon.SinonStub
-
-        gs.resolves(0)
-        cb.resolves([null, null, '10'])
-
         const channelId = ChannelId.random()
         const hexChannelId = channelId.toString()
         const paymentChannel = new PaymentChannel('sender', 'receiver', hexChannelId, new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 0, '')
@@ -192,10 +185,6 @@ describe('storage', () => {
 
     describe('#deposit', () => {
       it('updates the channel value to the sum of the old value and new', () => {
-        const cb = channels.contract.channelById as sinon.SinonStub
-
-        cb.resolves([null, null, '15'])
-
         const channelId = ChannelId.random()
         const hexChannelId = channelId.toString()
         const newValue = new BigNumber.BigNumber(15)
@@ -295,12 +284,6 @@ describe('storage', () => {
           new PaymentChannel('othersender', 'receiver', ChannelId.random().toString(), new BigNumber.BigNumber(11), new BigNumber.BigNumber(0), 0, ''),
           new PaymentChannel('othersender', 'receiver', ChannelId.random().toString(), new BigNumber.BigNumber(11), new BigNumber.BigNumber(0), 2, '')
         ]
-
-        const cb = channels.contract.channelById as sinon.SinonStub
-
-        instances.forEach((chan: PaymentChannel) => {
-          cb.withArgs(chan.channelId).resolves([null, null, chan.value.toString()])
-        })
 
         await Promise.all(instances.map(chan => channels.save(chan)))
         let channel = await channels.findUsable('sender', 'receiver', new BigNumber.BigNumber(2))

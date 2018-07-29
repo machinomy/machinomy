@@ -79,11 +79,10 @@ describe('Migrator', () => {
     })
     const channelEthContract = new ChannelEthContract(web3)
     const channelTokenContract = new ChannelTokenContract(web3)
-    channelContract = new ChannelContract(web3, {} as IChannelsDatabase, channelEthContract, channelTokenContract)
 
     const filename = await support.tmpFileName()
     const inflator = new ChannelInflator(channelEthContract, channelTokenContract)
-    storage = await Storage.build(process.env.DB_URL!, channelContract, inflator)
+    storage = await Storage.build(process.env.DB_URL!, inflator)
     let dbMigrateConfig: DBMigrate.InstanceOptions = Migrator.generateConfigObject(process.env.DB_URL!)
     switch (process.env.DB_URL!.split('://')[0]) {
       case 'sqlite': {
