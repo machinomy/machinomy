@@ -3,6 +3,11 @@
   "version": "0.0.5",
   "description": "Machinomy Logger",
   "license": "Apache-2.0",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/"
+  ],
   "homepage": "https://github.com/machinomy/machinomy#readme",
   "bugs": {
     "url": "https://github.com/machinomy/machinomy/issues"
