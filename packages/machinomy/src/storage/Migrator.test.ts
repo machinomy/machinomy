@@ -4,7 +4,6 @@ import ChannelContract from '../ChannelContract'
 import ChannelEthContract from '../ChannelEthContract'
 import ChannelTokenContract from '../ChannelTokenContract'
 import ChannelInflator from '../ChannelInflator'
-import IChannelsDatabase from './IChannelsDatabase'
 import IEngine from './IEngine'
 import IExec from './IExec'
 import Migrator from './Migrator'
@@ -40,7 +39,6 @@ describe('Migrator', () => {
   let deployed: any
   let contractStub: sinon.SinonStub
   let contractTokenStub: sinon.SinonStub
-  let channelContract: ChannelContract
   let runSqlAll: any
 
   function retrieveUpMigrationList (): Promise<string[]> {
