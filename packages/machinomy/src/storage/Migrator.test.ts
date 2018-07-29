@@ -1,6 +1,5 @@
 import * as fs from 'fs'
 import { TokenUnidirectional, Unidirectional } from '../../../contracts/lib'
-import ChannelContract from '../ChannelContract'
 import ChannelEthContract from '../ChannelEthContract'
 import ChannelTokenContract from '../ChannelTokenContract'
 import ChannelInflator from '../ChannelInflator'
