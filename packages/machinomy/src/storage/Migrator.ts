@@ -7,7 +7,7 @@ import Logger from '@machinomy/logger'
 const LENGTH_OF_MIGRATION_NAME = 14
 const log = new Logger('Migrator')
 
-function generateConfigObject (connectionUrl: string) {
+export function generateConfigObject (connectionUrl: string) {
   const driversMap = new Map<string, string>()
   driversMap.set('postgresql', 'pg')
   driversMap.set('sqlite', 'sqlite3')
