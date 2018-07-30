@@ -7,6 +7,50 @@ import Logger from '@machinomy/logger'
 const LENGTH_OF_MIGRATION_NAME = 14
 const log = new Logger('Migrator')
 
+function generateConfigObject (connectionUrl: string) {
+  const driversMap = new Map<string, string>()
+  driversMap.set('postgresql', 'pg')
+  driversMap.set('sqlite', 'sqlite3')
+  const connectionObject = new ConnectionString(connectionUrl)
+  let result = {}
+  switch (process.env.DB_URL!.split('://')[0]) {
+    case 'sqlite': {
+      result = {
+        cmdOptions: {
+          'migrations-dir': './migrations/sqlite'
+        },
+        config: {
+          defaultEnv: 'defaultSqlite',
+          defaultSqlite: {
+            driver: `${driversMap.get(connectionObject.protocol!)}`,
+            filename: `${connectionObject.hostname}`
+          }
+        }
+      }
+      break
+    }
+    case 'postgresql': {
+      result = {
+        cmdOptions: {
+          'migrations-dir': './migrations/postgresql'
+        },
+        config: {
+          defaultEnv: 'defaultPg',
+          defaultPg: {
+            driver: `${driversMap.get(connectionObject.protocol!)}`,
+            user: `${connectionObject.user}`,
+            password: `${connectionObject.password}`,
+            host: `${connectionObject.hostname}`,
+            database: `${connectionObject.segments![0]}`
+          }
+        }
+      }
+      break
+    }
+  }
+  return result
+}
+
 export default class Migrator implements IMigrator {
   engine: IEngine
   migrationsPath: string
@@ -17,56 +61,12 @@ export default class Migrator implements IMigrator {
 
   constructor (engine: IEngine, connectionString: string, migrationsPath: string) {
     this.engine = engine
-    this.dbMigrateConfig = Migrator.generateConfigObject(connectionString)
+    this.dbMigrateConfig = generateConfigObject(connectionString)
     this.migrationsPath = migrationsPath
     if (this.migrationsPath.endsWith('/') !== true) {
       this.migrationsPath += '/'
     }
     this.dbmigrateImportFailure = false
-  }
-
-  static generateConfigObject (connectionUrl: string) {
-    const driversMap = new Map<string, string>()
-    driversMap.set('postgresql', 'pg')
-    driversMap.set('sqlite', 'sqlite3')
-    const connectionObject = new ConnectionString(connectionUrl)
-    let result = {}
-    switch (process.env.DB_URL!.split('://')[0]) {
-      case 'sqlite': {
-        result = {
-          cmdOptions: {
-            'migrations-dir': './migrations/sqlite'
-          },
-          config: {
-            defaultEnv: 'defaultSqlite',
-            defaultSqlite: {
-              driver: `${driversMap.get(connectionObject.protocol!)}`,
-              filename: `${connectionObject.hostname}`
-            }
-          }
-        }
-        break
-      }
-      case 'postgresql': {
-        result = {
-          cmdOptions: {
-            'migrations-dir': './migrations/postgresql'
-          },
-          config: {
-            defaultEnv: 'defaultPg',
-            defaultPg: {
-              driver: `${driversMap.get(connectionObject.protocol!)}`,
-              user: `${connectionObject.user}`,
-              password: `${connectionObject.password}`,
-              host: `${connectionObject.hostname}`,
-              database: `${connectionObject.segments![0]}`
-            }
-          }
-        }
-        break
-      }
-    }
-    return result
   }
 
   async isLatest (): Promise<boolean> {
@@ -111,7 +111,6 @@ export default class Migrator implements IMigrator {
   async ensureDBMigrateInit (): Promise<void> {
     try {
       this.DBMigrate = await import('db-migrate')
-      // tslint:disable-next-line:no-empty
     } catch (error) {
       this.dbmigrateImportFailure = true
     } finally {
