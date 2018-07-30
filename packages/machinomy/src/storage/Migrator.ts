@@ -5,15 +5,16 @@ import Logger from '@machinomy/logger'
 import * as files from '../util/files'
 
 const LENGTH_OF_MIGRATION_NAME = 14
+const DRIVERS = new Map<string, string>()
+  .set('postgresql', 'pg')
+  .set('sqlite', 'sqlite3')
+
 const log = new Logger('Migrator')
 
 export function generateConfigObject (connectionUrl: string) {
-  const driversMap = new Map<string, string>()
-  driversMap.set('postgresql', 'pg')
-  driversMap.set('sqlite', 'sqlite3')
   const connectionObject = new ConnectionString(connectionUrl)
   let result = {}
-  switch (process.env.DB_URL!.split('://')[0]) {
+  switch (connectionObject.protocol) {
     case 'sqlite': {
       result = {
         cmdOptions: {
@@ -22,7 +23,7 @@ export function generateConfigObject (connectionUrl: string) {
         config: {
           defaultEnv: 'defaultSqlite',
           defaultSqlite: {
-            driver: `${driversMap.get(connectionObject.protocol!)}`,
+            driver: `${DRIVERS.get(connectionObject.protocol)}`,
             filename: `${connectionObject.hostname}`
           }
         }
@@ -37,7 +38,7 @@ export function generateConfigObject (connectionUrl: string) {
         config: {
           defaultEnv: 'defaultPg',
           defaultPg: {
-            driver: `${driversMap.get(connectionObject.protocol!)}`,
+            driver: `${DRIVERS.get(connectionObject.protocol!)}`,
             user: `${connectionObject.user}`,
             password: `${connectionObject.password}`,
             host: `${connectionObject.hostname}`,
