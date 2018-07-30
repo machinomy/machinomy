@@ -1,8 +1,8 @@
 import IEngine from './IEngine'
 import IMigrator from './IMigrator'
-import * as fs from 'fs'
 import { ConnectionString } from 'connection-string'
 import Logger from '@machinomy/logger'
+import * as files from '../util/files'
 
 const LENGTH_OF_MIGRATION_NAME = 14
 const log = new Logger('Migrator')
@@ -97,9 +97,10 @@ export default class Migrator implements IMigrator {
 
   async retrieveInFolderMigrationList (): Promise<string[]> {
     let result: string[] = []
-    const listOfFiles: string[] = fs.readdirSync(this.migrationsPath)
+    const listOfFiles: string[] = await files.readdir(this.migrationsPath)
     for (let filename of listOfFiles) {
-      const isDir = fs.statSync(this.migrationsPath + filename).isDirectory()
+      let stat = await files.stat(this.migrationsPath + filename)
+      const isDir = stat.isDirectory()
       if (!isDir) {
         result.push(filename.slice(0, -3))
       }
