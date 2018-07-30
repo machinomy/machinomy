@@ -5,51 +5,51 @@ import Logger from '@machinomy/logger'
 import * as files from '../util/files'
 
 const LENGTH_OF_MIGRATION_NAME = 14
-const DRIVERS = new Map<string, string>()
-  .set('postgresql', 'pg')
-  .set('sqlite', 'sqlite3')
+const log = new Logger('migrator')
 
-const log = new Logger('Migrator')
-
-export function generateConfigObject (connectionUrl: string) {
-  const connectionObject = new ConnectionString(connectionUrl)
-  let result = {}
-  switch (connectionObject.protocol) {
-    case 'sqlite': {
-      result = {
-        cmdOptions: {
-          'migrations-dir': './migrations/sqlite'
-        },
-        config: {
-          defaultEnv: 'defaultSqlite',
-          defaultSqlite: {
-            driver: `${DRIVERS.get(connectionObject.protocol)}`,
-            filename: `${connectionObject.hostname}`
-          }
-        }
+export function sqliteMigrationConfig (c: ConnectionString) {
+  return {
+    cmdOptions: {
+      'migrations-dir': './migrations/sqlite'
+    },
+    config: {
+      defaultEnv: 'defaultSqlite',
+      defaultSqlite: {
+        driver: 'sqlite3',
+        filename: `${c.hostname}`
       }
-      break
-    }
-    case 'postgresql': {
-      result = {
-        cmdOptions: {
-          'migrations-dir': './migrations/postgresql'
-        },
-        config: {
-          defaultEnv: 'defaultPg',
-          defaultPg: {
-            driver: `${DRIVERS.get(connectionObject.protocol!)}`,
-            user: `${connectionObject.user}`,
-            password: `${connectionObject.password}`,
-            host: `${connectionObject.hostname}`,
-            database: `${connectionObject.segments![0]}`
-          }
-        }
-      }
-      break
     }
   }
-  return result
+}
+
+export function postgresqlMigrationConfig (c: ConnectionString) {
+  return {
+    cmdOptions: {
+      'migrations-dir': './migrations/postgresql'
+    },
+    config: {
+      defaultEnv: 'defaultPg',
+      defaultPg: {
+        driver: 'pg',
+        user: `${c.user}`,
+        password: `${c.password}`,
+        host: `${c.hostname}`,
+        database: `${c.segments![0]}`
+      }
+    }
+  }
+}
+
+export function migrationConfig (connectionUrl: string) {
+  const c = new ConnectionString(connectionUrl)
+  switch (c.protocol) {
+    case 'sqlite':
+      return sqliteMigrationConfig(c)
+    case 'postgresql':
+      return postgresqlMigrationConfig(c)
+    default:
+      throw new Error(`Database protocol '${c.protocol}' is not supported`)
+  }
 }
 
 export default class Migrator implements IMigrator {
@@ -62,7 +62,7 @@ export default class Migrator implements IMigrator {
 
   constructor (engine: IEngine, connectionString: string, migrationsPath: string) {
     this.engine = engine
-    this.dbMigrateConfig = generateConfigObject(connectionString)
+    this.dbMigrateConfig = migrationConfig(connectionString)
     this.migrationsPath = migrationsPath
     if (this.migrationsPath.endsWith('/') !== true) {
       this.migrationsPath += '/'

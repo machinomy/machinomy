@@ -5,7 +5,7 @@ import ChannelTokenContract from '../ChannelTokenContract'
 import ChannelInflator from '../ChannelInflator'
 import IEngine from './IEngine'
 import IExec from './IExec'
-import Migrator, { generateConfigObject } from './Migrator'
+import { migrationConfig } from './Migrator'
 import EnginePostgres from './postgresql/EnginePostgres'
 import EngineSqlite from './sqlite/EngineSqlite'
 import Storage from '../Storage'
@@ -80,7 +80,7 @@ describe('Migrator', () => {
     const filename = await support.tmpFileName()
     const inflator = new ChannelInflator(channelEthContract, channelTokenContract)
     storage = await Storage.build(process.env.DB_URL!, inflator)
-    let dbMigrateConfig: DBMigrate.InstanceOptions = generateConfigObject(process.env.DB_URL!)
+    let dbMigrateConfig: DBMigrate.InstanceOptions = migrationConfig(process.env.DB_URL!)
     switch (process.env.DB_URL!.split('://')[0]) {
       case 'sqlite': {
         engine = new EngineSqlite(filename)

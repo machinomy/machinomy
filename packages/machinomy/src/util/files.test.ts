@@ -16,7 +16,7 @@ describe('readdir', () => {
     assert.isTrue(list.includes(path.basename(__filename)))
   })
   specify('error if absent', async () => {
-    await assert.isRejected(files.readdir(ABSENT_DIR))
+    return assert.isRejected(files.readdir(ABSENT_DIR))
   })
 })
 
@@ -27,6 +27,6 @@ describe('stats', () => {
     assert.deepEqual(actual, expected)
   })
   specify('error if absent', async () => {
-    await assert.isRejected(files.stat(ABSENT_DIR))
+    return assert.isRejected(files.stat(ABSENT_DIR))
   })
 })
