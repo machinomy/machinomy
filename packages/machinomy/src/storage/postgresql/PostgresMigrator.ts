@@ -1,6 +1,6 @@
 import { ConnectionString } from 'connection-string'
 import Logger from '@machinomy/logger'
-import IMigrations from '../IMigrations'
+import IMigrator from '../IMigrator'
 import IEngine from '../IEngine'
 import * as files from '../../util/files'
 
@@ -52,7 +52,7 @@ export function migrationConfig (connectionUrl: string) {
   }
 }
 
-export default class PostgresMigrator implements IMigrations {
+export default class PostgresMigrator implements IMigrator {
   engine: IEngine
   migrationsPath: string
   dbmigrate: any

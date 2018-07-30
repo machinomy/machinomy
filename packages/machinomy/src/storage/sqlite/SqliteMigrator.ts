@@ -1,7 +1,7 @@
 import { ConnectionString } from 'connection-string'
 import Logger from '@machinomy/logger'
 import * as files from '../../util/files'
-import IMigrations from '../IMigrations'
+import IMigrator from '../IMigrator'
 import IEngine from '../IEngine'
 
 const LENGTH_OF_MIGRATION_NAME = 14
@@ -52,7 +52,7 @@ export function migrationConfig (connectionUrl: string) {
   }
 }
 
-export default class Migrator implements IMigrations {
+export default class Migrator implements IMigrator {
   engine: IEngine
   migrationsPath: string
   dbmigrate: any
