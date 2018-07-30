@@ -90,7 +90,7 @@ export default class ChannelContract {
   async getContractByChannelId (channelId: string): Promise<ChannelEthContract | ChannelTokenContract> {
     const channel = await this.channelsDao.firstById(channelId)
     if (!channel) {
-      throw Error('getContractByChannelId: Channel is undefined')
+      throw new Error('getContractByChannelId: Channel is undefined')
     }
     const tokenContract = channel.tokenContract
     const contract = this.isTokenContractDefined(tokenContract) ? this.channelTokenContract : this.channelEthContract
