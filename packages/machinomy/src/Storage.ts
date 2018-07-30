@@ -54,7 +54,6 @@ async function buildPostgres (databaseUrl: string, inflator: ChannelInflator, na
   let PostgresChannelsDatabase = (await import('./storage/postgresql/PostgresChannelsDatabase')).default
 
   let engine = new EnginePostgres(databaseUrl)
-
   return {
     engine: engine,
     tokensDatabase: new PostgresTokensDatabase(engine, namespace),
