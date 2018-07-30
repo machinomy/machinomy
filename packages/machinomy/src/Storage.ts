@@ -12,7 +12,7 @@ export interface Storage {
   tokensDatabase: ITokensDatabase,
   paymentsDatabase: IPaymentsDatabase,
   channelsDatabase: IChannelsDatabase,
-  migrator: IMigrator | undefined
+  migrator: IMigrator
 }
 
 async function buildNedb (databaseUrl: string, inflator: ChannelInflator, namespace: string): Promise<Storage> {
@@ -20,6 +20,7 @@ async function buildNedb (databaseUrl: string, inflator: ChannelInflator, namesp
   let NedbTokensDatabase = (await import('./storage/nedb/NedbTokensDatabase')).default
   let NedbPaymentsDatabase = (await import('./storage/nedb/NedbPaymentsDatabase')).default
   let NedbChannelsDatabase = (await import('./storage/nedb/NedbChannelsDatabase')).default
+  let NedbMigrator = (await import('./storage/nedb/NedbMigrator')).default
 
   let engine = new EngineNedb(databaseUrl, false)
   return {
@@ -27,7 +28,7 @@ async function buildNedb (databaseUrl: string, inflator: ChannelInflator, namesp
     tokensDatabase: new NedbTokensDatabase(engine, namespace),
     paymentsDatabase: new NedbPaymentsDatabase(engine, namespace),
     channelsDatabase: new NedbChannelsDatabase(engine, inflator, namespace),
-    migrator: undefined
+    migrator: new NedbMigrator()
   }
 }
 
