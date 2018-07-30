@@ -1,5 +1,5 @@
 import ChannelInflator from './ChannelInflator'
-import IMigrator from './storage/IMigrator'
+import IMigrations from './storage/IMigrations'
 import ITokensDatabase from './storage/ITokensDatabase'
 import IPaymentsDatabase from './storage/IPaymentsDatabase'
 import IChannelsDatabase from './storage/IChannelsDatabase'
@@ -11,7 +11,7 @@ export interface Storage {
   tokensDatabase: ITokensDatabase,
   paymentsDatabase: IPaymentsDatabase,
   channelsDatabase: IChannelsDatabase,
-  migrator: IMigrator
+  migrator: IMigrations
 }
 
 async function buildNedb (databaseUrl: string, inflator: ChannelInflator, namespace: string): Promise<Storage> {
