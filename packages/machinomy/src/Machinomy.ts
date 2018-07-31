@@ -211,7 +211,16 @@ export default class Machinomy {
   private async checkMigrationsState (): Promise<void> {
     if (jsEnv.isNode) {
       const storage = await this.registry.storage()
-      if (storage.migrator && !storage.migrator.isLatest()) {
+      let isLatest = true
+      try {
+        isLatest = await storage.migrator.isLatest()
+      } catch (e) {
+        console.error('isLatest')
+        console.error(e)
+      }
+
+      const needMigration = !isLatest
+      if (needMigration) {
         if (this.registry.options.migrate === undefined || this.registry.options.migrate === MigrateOption.Silent) {
           // tslint:disable-next-line:no-floating-promises
           return storage.migrator.sync()

@@ -4,7 +4,7 @@ import ITokensDatabase from './storage/ITokensDatabase'
 import IPaymentsDatabase from './storage/IPaymentsDatabase'
 import IChannelsDatabase from './storage/IChannelsDatabase'
 import IEngine from './storage/IEngine'
-import { resolve as resolvePath } from 'path'
+import Logger from "@machinomy/logger";
 
 export interface Storage {
   engine: IEngine,
@@ -36,7 +36,8 @@ async function buildSqlite (databaseUrl: string, inflator: ChannelInflator, name
   let SqliteTokensDatabase = (await import('./storage/sqlite/SqliteTokensDatabase')).default
   let SqlitePaymentsDatabase = (await import('./storage/sqlite/SqlitePaymentsDatabase')).default
   let SqliteChannelsDatabase = (await import('./storage/sqlite/SqliteChannelsDatabase')).default
-  let SqliteMigrator = (await import('./storage/sqlite/SqliteMigrator')).default
+  let Migrator = (await import('./storage/Migrator')).default
+  let migrationsConfig = (await import('./storage/sqlite/migrationsConfig')).default
 
   let engine = new EngineSqlite(databaseUrl)
   return {
@@ -44,7 +45,7 @@ async function buildSqlite (databaseUrl: string, inflator: ChannelInflator, name
     tokensDatabase: new SqliteTokensDatabase(engine, namespace),
     paymentsDatabase: new SqlitePaymentsDatabase(engine, namespace),
     channelsDatabase: new SqliteChannelsDatabase(engine, inflator, namespace),
-    migrator: new SqliteMigrator(engine, databaseUrl, resolvePath('migrations/sqlite/'))
+    migrator: new Migrator(engine, migrationsConfig(databaseUrl))
   }
 }
 
@@ -53,7 +54,8 @@ async function buildPostgres (databaseUrl: string, inflator: ChannelInflator, na
   let PostgresTokensDatabase = (await import('./storage/postgresql/PostgresTokensDatabase')).default
   let PostgresPaymentsDatabase = (await import('./storage/postgresql/PostgresPaymentsDatabase')).default
   let PostgresChannelsDatabase = (await import('./storage/postgresql/PostgresChannelsDatabase')).default
-  let PostgresMigrator = (await import('./storage/postgresql/PostgresMigrator')).default
+  let Migrator = (await import('./storage/Migrator')).default
+  let migrationsConfig = (await import('./storage/postgresql/migrationsConfig')).default
 
   let engine = new EnginePostgres(databaseUrl)
   return {
@@ -61,9 +63,11 @@ async function buildPostgres (databaseUrl: string, inflator: ChannelInflator, na
     tokensDatabase: new PostgresTokensDatabase(engine, namespace),
     paymentsDatabase: new PostgresPaymentsDatabase(engine, namespace),
     channelsDatabase: new PostgresChannelsDatabase(engine, inflator, namespace),
-    migrator: new PostgresMigrator(engine, databaseUrl, resolvePath('migrations/postgresql/'))
+    migrator: new Migrator(engine, migrationsConfig(databaseUrl))
   }
 }
+
+const log = new Logger('storage')
 
 export namespace Storage {
   export function build (databaseUrl: string, inflator: ChannelInflator): Promise<Storage> {
@@ -71,12 +75,17 @@ export namespace Storage {
     const protocol = splits[0]
     const namespace = 'shared' // TODO Namespace
 
+    log.info('Found protocol %s', protocol)
+
     switch (protocol) {
       case 'nedb':
+        log.info('Use nedb database')
         return buildNedb(splits[1], inflator, namespace)
       case 'postgresql':
+        log.info('Use postgresql database')
         return buildPostgres(databaseUrl, inflator, namespace)
       case 'sqlite':
+        log.info('Use sqlite database')
         return buildSqlite(databaseUrl, inflator, namespace)
       default:
         throw new Error(`Unsupported database protocol: ${protocol}`)

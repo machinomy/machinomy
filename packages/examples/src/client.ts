@@ -38,7 +38,7 @@ async function main (): Promise<string> {
   /**
    * Create machinomy instance that provides API for accepting payments.
    */
-  let machinomy = new Machinomy(sender, web3, { databaseUrl: 'nedb://./client' })
+  let machinomy = new Machinomy(sender, web3, { databaseUrl: 'sqlite://./client' })
 
   let response = await fetcher.fetch(TARGET)
   let headers = response.headers

@@ -1,11 +1,10 @@
 import IEngine from './IEngine'
 import IMigrator from './IMigrator'
 import { ConnectionString } from 'connection-string'
+import * as DBMigrate from 'db-migrate'
 import Logger from '@machinomy/logger'
 import * as files from '../util/files'
-
-const LENGTH_OF_MIGRATION_NAME = 14
-const log = new Logger('migrator')
+import Indexed from '../util/Indexed'
 
 export function sqliteMigrationConfig (c: ConnectionString) {
   return {
@@ -52,71 +51,38 @@ export function migrationConfig (connectionUrl: string) {
   }
 }
 
+const log = new Logger('migrator')
+
+async function lastMigrationNumber (migrationsPath: string): Promise<string | undefined> {
+  let allFiles = await files.readdir(migrationsPath)
+  let migrations = allFiles.reduce((acc, filename) => {
+    let match = filename.match(/^(\d+)[\w-]+\.js$/)
+    return match ? acc.concat([match[1]]) : acc
+  }, [] as Array<string>).sort()
+  return migrations[migrations.length - 1]
+}
+
 export default class Migrator implements IMigrator {
   engine: IEngine
+  dbmigrate: DBMigrate.DBMigrate
   migrationsPath: string
-  dbmigrate: any
-  DBMigrate: any
-  dbMigrateConfig: any
-  dbmigrateImportFailure: boolean
 
-  constructor (engine: IEngine, connectionString: string, migrationsPath: string) {
+  constructor (engine: IEngine, migrationConfig: DBMigrate.InstanceOptions) {
     this.engine = engine
-    this.dbMigrateConfig = migrationConfig(connectionString)
-    this.migrationsPath = migrationsPath
-    if (this.migrationsPath.endsWith('/') !== true) {
-      this.migrationsPath += '/'
-    }
-    this.dbmigrateImportFailure = false
+    log.debug('migrator config %o', migrationConfig)
+    this.migrationsPath = (migrationConfig.cmdOptions as Indexed<string>)['migrations-dir']
+    this.dbmigrate = DBMigrate.getInstance(true, migrationConfig)
   }
 
   async isLatest (): Promise<boolean> {
-    await this.ensureDBMigrateInit()
-    if (this.dbmigrateImportFailure) {
-      log.warn('db-migrate wasn\'t imported correctly! Migrator does not work now. It\'s OK if you are using Machinomy in browser or against NeDB.')
-      return true
-    } else {
-      return this.dbmigrate.check()
-    }
+    let r = await this.dbmigrate.check()
+    r ? log.info('Latest migration is applied') : log.info('Have migrations to be applied')
+    return this.dbmigrate.check()
   }
 
   async sync (n?: string): Promise<void> {
-    await this.ensureDBMigrateInit()
-    if (this.dbmigrateImportFailure) {
-      log.warn('db-migrate wasn\'t imported correctly! Migrator does not work now. It\'s OK if you are using Machinomy in browser or against NeDB.')
-      return
-    } else {
-      if (n !== undefined) {
-        this.dbmigrate.sync(n)
-      } else {
-        const migrationsInFolder = await this.retrieveInFolderMigrationList()
-        const lastMigrationInFolderName = migrationsInFolder[migrationsInFolder.length - 1].substring(0, LENGTH_OF_MIGRATION_NAME)
-        this.dbmigrate.sync(lastMigrationInFolderName)
-      }
-    }
-  }
-
-  async retrieveInFolderMigrationList (): Promise<string[]> {
-    let result: string[] = []
-    const listOfFiles: string[] = await files.readdir(this.migrationsPath)
-    for (let filename of listOfFiles) {
-      let stat = await files.stat(this.migrationsPath + filename)
-      const isDir = stat.isDirectory()
-      if (!isDir) {
-        result.push(filename.slice(0, -3))
-      }
-    }
-    result.sort()
-    return result
-  }
-
-  async ensureDBMigrateInit (): Promise<void> {
-    try {
-      this.DBMigrate = await import('db-migrate')
-    } catch (error) {
-      this.dbmigrateImportFailure = true
-    } finally {
-      this.dbmigrate = this.DBMigrate.getInstance(true, this.dbMigrateConfig)
-    }
+    let destination = n ? n : await lastMigrationNumber(this.migrationsPath)
+    log.info('Syncing migrations till %s', destination)
+    return this.dbmigrate.sync(destination)
   }
 }
