@@ -4,7 +4,7 @@ export default function migrationsConfig (connectionUrl: string) {
   let c = new ConnectionString(connectionUrl)
   return {
     cmdOptions: {
-      'migrations-dir': './packages/machinomy/migrations/postgresql'
+      'migrations-dir': './packages/machinomy/lib/storage/postgresql/migrations/'
     },
     config: {
       defaultEnv: 'defaultPg',

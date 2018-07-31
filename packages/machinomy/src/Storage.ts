@@ -4,7 +4,7 @@ import ITokensDatabase from './storage/ITokensDatabase'
 import IPaymentsDatabase from './storage/IPaymentsDatabase'
 import IChannelsDatabase from './storage/IChannelsDatabase'
 import IEngine from './storage/IEngine'
-import Logger from "@machinomy/logger";
+import Logger from '@machinomy/logger'
 
 export interface Storage {
   engine: IEngine,

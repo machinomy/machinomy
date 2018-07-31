@@ -10,16 +10,17 @@ export default function removeColumn (db: Base, tableName: string, columnName: s
     if (err) {
       cb(err, null)
     } else {
-      const sqlNamesWithTypes = rows.filter(row => row.name !== columnName)
-        .map(row => `${row.name} ${row.type}`)
-        .join(', ')
+      try {
+        const sqlNamesWithTypes = rows.filter(row => row.name !== columnName)
+          .map(row => `${row.name} ${row.type}`)
+          .join(', ')
 
-      const sqlNames = rows.filter(row => row.name !== columnName)
-        .map(row => row.name)
-        .join(', ')
+        const sqlNames = rows.filter(row => row.name !== columnName)
+          .map(row => row.name)
+          .join(', ')
 
-      const removeColumnSql =
-        `
+        const removeColumnSql =
+          `
         CREATE TEMPORARY TABLE ${tableName + '_backup'}(${sqlNamesWithTypes});
         INSERT INTO ${tableName + '_backup'} SELECT ${sqlNames} FROM ${tableName};
         DROP TABLE ${tableName};
@@ -27,8 +28,11 @@ export default function removeColumn (db: Base, tableName: string, columnName: s
         INSERT INTO ${tableName} SELECT ${sqlNames} FROM ${tableName + '_backup'};
         DROP TABLE ${tableName + '_backup'};
        `
-      await db.runSql(removeColumnSql)
-      cb(null, null)
+        db.runSql(removeColumnSql)
+        cb(null, null)
+      } catch (e) {
+        cb(e, null)
+      }
     }
   })
 }
