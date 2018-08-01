@@ -4,25 +4,26 @@ import SqlMigrator from '../SqlMigrator'
 
 export function migrationsConfig (connectionUrl: string) {
   let c = new ConnectionString(connectionUrl)
-  let segments = c.segments || []
-  let filename = c.hostname + '/' + segments.join('/')
   return {
     cmdOptions: {
-      'migrations-dir': './packages/machinomy/lib/storage/sqlite/migrations/'
+      'migrations-dir': './packages/machinomy/lib/storage/postgresql/migrations/'
     },
     config: {
-      defaultEnv: 'defaultSqlite',
-      defaultSqlite: {
-        driver: 'sqlite3',
-        filename: filename
+      defaultEnv: 'defaultPg',
+      defaultPg: {
+        driver: 'pg',
+        user: `${c.user}`,
+        password: `${c.password}`,
+        host: `${c.hostname}`,
+        database: `${c.segments![0]}`
       }
     }
   }
 }
 
-const log = new Logger('migrator:sqlite')
+const log = new Logger('migrator:postgresql')
 
-export default class SqliteMigrator extends SqlMigrator {
+export default class PostgresqlMigrator extends SqlMigrator {
   constructor (databaseUrl: string) {
     super(log, migrationsConfig(databaseUrl))
   }

@@ -7,13 +7,13 @@ use(asPromised)
 const migrator = new NedbMigrator()
 
 describe('NedbMigrator', () => {
-  context('isLatest', () => {
+  describe('.isLatest', () => {
     specify('return true', async () => {
       assert.isTrue(await migrator.isLatest())
     })
   })
 
-  context('sync', () => {
+  describe('.sync', () => {
     specify('resolve Promise', async () => {
       return assert.isFulfilled(migrator.sync())
     })
