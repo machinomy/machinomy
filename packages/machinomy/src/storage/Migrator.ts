@@ -35,7 +35,7 @@ export default class Migrator implements IMigrator {
       case 'sqlite': {
         result = {
           cmdOptions: {
-            'migrations-dir': './migrations/sqlite'
+            'migrations-dir': __dirname + '/../../migrations/sqlite'
           },
           config: {
             defaultEnv: 'defaultSqlite',
@@ -50,7 +50,7 @@ export default class Migrator implements IMigrator {
       case 'postgresql': {
         result = {
           cmdOptions: {
-            'migrations-dir': './migrations/postgresql'
+            'migrations-dir': __dirname + '/../../migrations/postgresql'
           },
           config: {
             defaultEnv: 'defaultPg',

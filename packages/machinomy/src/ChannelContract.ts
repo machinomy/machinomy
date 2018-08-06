@@ -1,3 +1,4 @@
+import Logger from '@machinomy/logger'
 import * as Web3 from 'web3'
 import * as BigNumber from 'bignumber.js'
 import { TransactionResult } from 'truffle-contract'
@@ -10,6 +11,8 @@ import IChannelsDatabase from './storage/IChannelsDatabase'
 export type Channel = [string, string, BigNumber.BigNumber, BigNumber.BigNumber, BigNumber.BigNumber]
 export type ChannelWithTokenContract = [string, string, BigNumber.BigNumber, BigNumber.BigNumber, BigNumber.BigNumber, string]
 export type ChannelFromContract = Channel | ChannelWithTokenContract
+
+const LOG = new Logger('ChannelContract')
 
 export default class ChannelContract {
   channelEthContract: ChannelEthContract
@@ -88,12 +91,14 @@ export default class ChannelContract {
   }
 
   async getContractByChannelId (channelId: string): Promise<ChannelEthContract | ChannelTokenContract> {
+    let contract: ChannelEthContract | ChannelTokenContract = this.channelEthContract
     const channel = await this.channelsDao.firstById(channelId)
     if (!channel) {
-      throw Error('getContractByChannelId: Channel is undefined')
+      LOG.info(`getContractByChannelId(): Channel ${channelId} is undefined`)
+    } else {
+      const tokenContract = channel!.tokenContract
+      contract = this.isTokenContractDefined(tokenContract) ? this.channelTokenContract : this.channelEthContract
     }
-    const tokenContract = channel.tokenContract
-    const contract = this.isTokenContractDefined(tokenContract) ? this.channelTokenContract : this.channelEthContract
     return contract
   }
 }
