@@ -7,7 +7,7 @@ import * as env from './env'
 declare var web3: Web3 | undefined
 
 const BASE_DIR = '.machinomy'
-const COFNGIRATION_FILE = 'config.json'
+const CONFIGURATION_FILE = 'config.json'
 const DATABASE_FILE = 'storage.db'
 export const VERSION = '0.0.3'
 export const PROTOCOL = 'machinomy/' + VERSION
@@ -36,7 +36,7 @@ export const baseDirPath = (): string => {
 }
 
 export const configFilePath = (): string => {
-  return path.join(baseDirPath(), COFNGIRATION_FILE)
+  return path.join(baseDirPath(), CONFIGURATION_FILE)
 }
 
 const databaseFilePath = (): string => {
