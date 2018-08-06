@@ -96,6 +96,7 @@ export default class ChannelContract {
     if (!channel) {
       LOG.info(`getContractByChannelId(): Channel ${channelId} is undefined`)
     } else {
+      // tslint:disable-next-line:no-unnecessary-type-assertion
       const tokenContract = channel!.tokenContract
       contract = this.isTokenContractDefined(tokenContract) ? this.channelTokenContract : this.channelEthContract
     }
