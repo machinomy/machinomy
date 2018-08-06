@@ -17,10 +17,10 @@ import * as DBMigrate from 'db-migrate'
 
 async function retrieveInFolderMigrationList (): Promise<string[]> {
   let result: string[] = []
-  let pathToRead = `${__dirname}/../../migrations/${process.env.DB_URL!.split('://')[0]}`
+  let pathToRead = `${__dirname}/../../migrations/${process.env.DATABASE_URL!.split('://')[0]}`
   const listOfFiles: string[] = fs.readdirSync(pathToRead)
   for (let filename of listOfFiles) {
-    let pathToStat = `${__dirname}/../../migrations/${process.env.DB_URL!.split('://')[0]}/${filename}`
+    let pathToStat = `${__dirname}/../../migrations/${process.env.DATABASE_URL!.split('://')[0]}/${filename}`
     const isDir = fs.statSync(pathToStat).isDirectory()
     if (!isDir) {
       result.push(filename.slice(0, -3))
@@ -45,7 +45,7 @@ describe('Migrator', () => {
     return engine.exec((client: any) => {
       return runSqlAll('SELECT name FROM migrations ORDER BY name ASC')
     }).then((res: any) => {
-      switch (process.env.DB_URL!.split('://')[0]) {
+      switch (process.env.DATABASE_URL!.split('://')[0]) {
         case 'postgresql': {
           res = res.rows
           break
@@ -79,25 +79,25 @@ describe('Migrator', () => {
 
     const filename = await support.tmpFileName()
     const inflator = new ChannelInflator(channelEthContract, channelTokenContract)
-    storage = await Storage.build(process.env.DB_URL!, inflator)
-    let dbMigrateConfig: DBMigrate.InstanceOptions = Migrator.generateConfigObject(process.env.DB_URL!)
-    switch (process.env.DB_URL!.split('://')[0]) {
+    storage = await Storage.build(process.env.DATABASE_URL!, inflator)
+    let dbMigrateConfig: DBMigrate.InstanceOptions = Migrator.generateConfigObject(process.env.DATABASE_URL!)
+    switch (process.env.DATABASE_URL!.split('://')[0]) {
       case 'sqlite': {
         engine = new EngineSqlite(filename)
         break
       }
       case 'postgresql': {
-        engine = new EnginePostgres(process.env.DB_URL!)
+        engine = new EnginePostgres(process.env.DATABASE_URL!)
         break
       }
     }
     if (engine) {
       await engine.connect()
       await engine.exec(async (client: any) => {
-        if (process.env.DB_URL!.split('://')[0] === 'sqlite') {
+        if (process.env.DATABASE_URL!.split('://')[0] === 'sqlite') {
           runSqlAll = client.all.bind(client)
           await runSqlAll('CREATE TABLE migrations(id INTEGER, name TEXT, run_on TEXT)')
-        } else if (process.env.DB_URL!.split('://')[0] === 'postgresql') {
+        } else if (process.env.DATABASE_URL!.split('://')[0] === 'postgresql') {
           runSqlAll = client.query.bind(client)
         }
         dbmigrate = DBMigrate.getInstance(true, dbMigrateConfig)

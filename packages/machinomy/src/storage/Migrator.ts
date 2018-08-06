@@ -31,15 +31,14 @@ export default class Migrator implements IMigrator {
     driversMap.set('sqlite', 'sqlite3')
     const connectionObject = new ConnectionString(connectionUrl)
     let result = {}
-    switch (process.env.DB_URL!.split('://')[0]) {
+    switch (process.env.DATABASE_URL!.split('://')[0]) {
       case 'sqlite': {
         result = {
           cmdOptions: {
             'migrations-dir': __dirname + '/../../migrations/sqlite'
           },
           config: {
-            defaultEnv: 'defaultSqlite',
-            defaultSqlite: {
+            dev: {
               driver: `${driversMap.get(connectionObject.protocol!)}`,
               filename: `${connectionObject.hostname}`
             }
@@ -53,8 +52,7 @@ export default class Migrator implements IMigrator {
             'migrations-dir': __dirname + '/../../migrations/postgresql'
           },
           config: {
-            defaultEnv: 'defaultPg',
-            defaultPg: {
+            dev: {
               driver: `${driversMap.get(connectionObject.protocol!)}`,
               user: `${connectionObject.user}`,
               password: `${connectionObject.password}`,
