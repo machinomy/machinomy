@@ -2,6 +2,7 @@ import * as Web3 from 'web3'
 import * as BigNumber from 'bignumber.js'
 import { TransactionResult } from 'truffle-contract'
 import Logger from '@machinomy/logger'
+import ChannelManager from './ChannelManager'
 import Signature from './Signature'
 import { Unidirectional } from '@machinomy/contracts'
 import ChannelId from './ChannelId'
@@ -71,11 +72,11 @@ export default class ChannelEthContract {
     const exists = await deployed.isPresent(channelId)
 
     if (!exists) {
-      throw new Error(`Cannot fetch settlement period for non-existent channel ${channelId}.`)
+      return new BigNumber.BigNumber(ChannelManager.DEFAULT_SETTLEMENT_PERIOD)
+    } else {
+      const chan = await deployed.channels(channelId)
+      return chan[3]
     }
-
-    const chan = await deployed.channels(channelId)
-    return chan[3]
   }
 
   async startSettle (account: string, channelId: string): Promise<TransactionResult> {
