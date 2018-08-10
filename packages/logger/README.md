@@ -23,9 +23,9 @@ LOG.trace('This is trace message')
 import Logger from '@machinomy/logger'
 
 const LOG = new Logger(
-                          'your-namespace',
-                          'LogDNA-Ingestion-Key-As-String',    // Ingestion Key from "API Keys" section of LogDNA website
-                          { hostname: 'another-host' }    // Any LogDNA for Node.js constructor options
+    'your-namespace',
+    'LogDNA-Ingestion-Key-As-String',    // Ingestion Key from "API Keys" section of LogDNA website
+    { hostname: 'another-host' }         // Any LogDNA for Node.js constructor options
  )
 
 LOG.info('This is info message')
