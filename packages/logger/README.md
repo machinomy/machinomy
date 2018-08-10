@@ -36,7 +36,7 @@ LOG.debug('This is debug message')
 LOG.trace('This is trace message')
 ```
 
-For more LogDNA options see [LogDNA for Node.js]([https://github.com/logdna/nodejs#options](https://github.com/logdna/nodejs#options))
+For more LogDNA options see [LogDNA for Node.js](https://github.com/logdna/nodejs#options)
 
 
 Web site: [machinomy.com](http://machinomy.com).
