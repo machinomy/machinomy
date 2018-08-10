@@ -15,6 +15,7 @@ Available sub-projects:
 - [Examples](packages/examples) is [Machinomy](packages/machinomy) examples.
 - [Playground](packages/playground) contains code of playground.machinomy.com
 - [cli](packages/cli) is Machinomy Command Line Interface.
+- [logger](packages/logger) is Machinomy Logger. Works in browser and Node.
 
 
 Web site: [machinomy.com](http://machinomy.com).
