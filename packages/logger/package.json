@@ -1,6 +1,6 @@
 {
   "name": "@machinomy/logger",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Machinomy Logger",
   "license": "Apache-2.0",
   "main": "lib/index.js",
@@ -24,7 +24,8 @@
   },
   "dependencies": {
     "@types/debug": "^0.0.30",
-    "debug": "^3.1.0"
+    "debug": "^3.1.0",
+    "logdna": "^2.0.4"
   },
   "devDependencies": {
     "@types/node": "^10.3.6",
