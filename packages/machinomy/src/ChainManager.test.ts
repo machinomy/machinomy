@@ -2,8 +2,7 @@ import * as Web3 from 'web3'
 import * as sinon from 'sinon'
 import ChainManager from './ChainManager'
 import Signature from './Signature'
-
-const expect = require('expect')
+import * as expect from 'expect'
 
 describe('ChainManager', () => {
   const SIGNATURE = '0xd8a923b39ae82bb39d3b64d58f06e1d776bcbcae34e5b4a6f4a952e8892e6a5b4c0f88833c06fe91729057035161e599fda536e8ce0ab4be2c214d6ea961e93a01'

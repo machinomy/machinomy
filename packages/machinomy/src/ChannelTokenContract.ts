@@ -10,7 +10,6 @@ const LOG = new Logger('ChannelTokenContract')
 
 const CREATE_CHANNEL_GAS = new BigNumber.BigNumber(300000)
 
-// FIXME MOVE TOKENS SOMEWHERE HERE
 export default class ChannelTokenContract {
   contract: Promise<contracts.TokenUnidirectional.Contract>
 
@@ -21,7 +20,7 @@ export default class ChannelTokenContract {
     this.contract = contracts.TokenUnidirectional.contract(this.web3.currentProvider).deployed()
   }
 
-  async open (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number | BigNumber.BigNumber, tokenContract: string, channelId?: ChannelId | string): Promise<TransactionResult> {
+  async open (sender: string, receiver: string, price: BigNumber.BigNumber | number, settlementPeriod: number | BigNumber.BigNumber, tokenContract: string, channelId?: ChannelId | string): Promise<TransactionResult> {
     LOG.info(`Creating channel. Value: ${price} / Settlement: ${settlementPeriod}`)
     let _channelId = channelId || ChannelId.random()
     const standardTokenContract = contracts.StandardToken.contract(this.web3.currentProvider).at(tokenContract)
