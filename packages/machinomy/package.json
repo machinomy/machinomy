@@ -22,8 +22,8 @@
     "migrate:sqlite": "db-migrate up --migrations-dir='./lib/storage/sqlite/migrations'",
     "migrate": "yarn migrate:postgresql && yarn migrate:sqlite",
     "integration_test": "yarn build && mocha integration_test/**/*.test.js",
-    "test_nedb": "DB_URL='nedb://' ENGINE_NAME=nedb mocha lib/**/*.test.js",
-    "test_postgres": "DB_URL='postgresql://testuser:testpassword@127.0.0.1/testdb' ENGINE_NAME=postgresql mocha lib/**/*.test.js",
+    "test_nedb": "DB_URL='nedb://' ENGINE_NAME=nedb mocha --recursive lib/*.test.js",
+    "test_postgres": "DB_URL='postgresql://testuser:testpassword@127.0.0.1/testdb' ENGINE_NAME=postgresql mocha --recursive lib/*.test.js",
     "test_sqlite": "DB_URL='sqlite://testdb.sqlite3' ENGINE_NAME=sqlite mocha lib/**/*.test.js",
     "test": "yarn build && yarn run test_nedb && yarn run test_postgres && yarn run test_sqlite",
     "coverage": "yarn build && nyc --reporter=lcov yarn run test"
