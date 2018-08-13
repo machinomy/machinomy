@@ -1,8 +1,8 @@
 import * as sinon from 'sinon'
 import * as expect from 'expect'
-import { tmpFileName } from '../../support'
 import NedbDatastore from './NedbDatastore'
 import EngineNedb from './EngineNedb'
+import { tmpFileName } from '../../util/tmpFileName'
 
 describe('EngineNedb', () => {
   let engine: EngineNedb
