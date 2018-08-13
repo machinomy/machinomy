@@ -31,7 +31,7 @@ export default abstract class SqlMigrator implements IMigrator {
   async lastMigrationNumber (): Promise<string | undefined> {
     let allFiles = await files.readdir(this.migrationsPath)
     let migrations = allFiles.reduce((acc, filename) => {
-      let match = filename.match(/^(\d+)[\w-]+\.js$/)
+      let match = filename.match(/^(\d+)[\w-]+\.[jt]s$/)
       return match ? acc.concat([match[1]]) : acc
     }, [] as Array<string>).sort()
     return migrations[migrations.length - 1]
