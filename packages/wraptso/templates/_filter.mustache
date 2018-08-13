@@ -1,3 +1,3 @@
 {{this.name}}: {
-  (filter: {{#if inputs}}{ {{#each inputs}}{{name}}?: {{#inputType type}}{{/inputType}}{{#unless @last}}, {{/unless}}{{/each}} }, {{/if}}options?: Web3.FilterObject): Web3.FilterResult
+  ({{#if inputs}}filter: { {{#each inputs}}{{name}}?: {{#inputType type}}{{/inputType}}{{#unless @last}}, {{/unless}}{{/each}} }, {{/if}}options?: Web3.FilterObject): Web3.FilterResult
 }
