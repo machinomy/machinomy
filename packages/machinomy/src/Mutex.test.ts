@@ -1,6 +1,5 @@
 import Mutex from './Mutex'
-
-const expect = require('expect')
+import * as expect from 'expect'
 
 describe('Mutex', () => {
   function wait (time: number): Promise<number> {

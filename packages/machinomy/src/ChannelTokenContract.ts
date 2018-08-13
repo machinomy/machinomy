@@ -8,7 +8,7 @@ import ChannelId from './ChannelId'
 
 const LOG = new Logger('ChannelTokenContract')
 
-const CREATE_CHANNEL_GAS = new BigNumber.BigNumber(300000)
+const CREATE_CHANNEL_GAS = 300000
 
 export default class ChannelTokenContract {
   contract: Promise<contracts.TokenUnidirectional.Contract>
@@ -20,21 +20,21 @@ export default class ChannelTokenContract {
     this.contract = contracts.TokenUnidirectional.contract(this.web3.currentProvider).deployed()
   }
 
-  async open (sender: string, receiver: string, price: BigNumber.BigNumber | number, settlementPeriod: number | BigNumber.BigNumber, tokenContract: string, channelId?: ChannelId | string): Promise<TransactionResult> {
-    LOG.info(`Creating channel. Value: ${price} / Settlement: ${settlementPeriod}`)
+  async open (sender: string, receiver: string, value: BigNumber.BigNumber | number, settlementPeriod: number | BigNumber.BigNumber, tokenContract: string, channelId?: ChannelId | string): Promise<TransactionResult> {
+    LOG.info(`Creating channel. Value: ${value} / Settlement: ${settlementPeriod}`)
     let _channelId = channelId || ChannelId.random()
     const standardTokenContract = contracts.StandardToken.contract(this.web3.currentProvider).at(tokenContract)
     const deployedTokenUnidirectional = await this.contract
     const deployedStandardTokenContract = await standardTokenContract
 
-    const approveTx = await deployedStandardTokenContract.approve(receiver, price, { from: sender })
+    const approveTx = await deployedStandardTokenContract.approve(receiver, value, { from: sender })
     if (contracts.StandardToken.isApprovalEvent(approveTx.logs[0])) {
-      return deployedTokenUnidirectional.open(_channelId.toString(), receiver, new BigNumber.BigNumber(settlementPeriod), tokenContract, price, {
+      return deployedTokenUnidirectional.open(_channelId.toString(), receiver, new BigNumber.BigNumber(settlementPeriod), tokenContract, value, {
         from: sender,
         gas: CREATE_CHANNEL_GAS
       })
     } else {
-      const errorMessage = `Opening channel. Can not approve tokens hold from sender ${sender} to receiver ${receiver}. Value: ${price}`
+      const errorMessage = `Opening channel. Can not approve tokens hold from sender ${sender} to receiver ${receiver}. Value: ${value}`
       LOG.error(errorMessage)
       return Promise.reject(errorMessage)
     }
