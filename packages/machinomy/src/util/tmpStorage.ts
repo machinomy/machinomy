@@ -5,7 +5,8 @@ import { tmpFileName } from './tmpFileName'
 export async function tmpStorage (inflator: ChannelInflator): Promise<Storage> {
   let connectionUrl = process.env.DB_URL
   if (!connectionUrl) {
-    let filename = await tmpFileName()
+    // let filename = await tmpFileName()
+    let filename = './blah'
     connectionUrl = `sqlite://${filename}`
     console.warn(`DB_URL parameter is empty, using ${connectionUrl}`)
   }

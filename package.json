@@ -11,7 +11,9 @@
     ],
     "nohoist": [
       "**/openzeppelin-solidity",
-      "**/openzeppelin-solidity/**"
+      "**/openzeppelin-solidity/**",
+      "**/db-migrate-plugin-typescript",
+      "**/db-migrate-plugin-typescript/**"
     ]
   },
   "scripts": {
