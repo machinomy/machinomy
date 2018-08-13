@@ -92,7 +92,8 @@ export default class Machinomy {
       receiver: req.receiver,
       price: req.price,
       gateway: req.gateway,
-      meta: req.meta
+      meta: req.meta,
+      tokenContract: req.tokenContract
     })
   }
 
@@ -202,7 +203,7 @@ export default class Machinomy {
     const price = new BigNumber.BigNumber(options.price)
 
     let channelManager = await this.registry.channelManager()
-    const channel = await channelManager.requireOpenChannel(this.account, options.receiver, price)
+    const channel = await channelManager.requireOpenChannel(this.account, options.receiver, price, undefined, options.tokenContract)
     return channelManager.nextPayment(channel.channelId, price, options.meta || '')
   }
 
