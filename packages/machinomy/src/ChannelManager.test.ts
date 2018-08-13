@@ -20,7 +20,7 @@ import ChannelManager from './ChannelManager'
 import * as expect from 'expect'
 import Signature from './Signature'
 
-describe('ChannelManagerImpl', () => {
+describe('ChannelManager', () => {
   const fakeChan = new PaymentChannel('0xcafe', '0xbeef', '123', new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 0, '')
 
   const fakeLog = {
@@ -77,8 +77,10 @@ describe('ChannelManagerImpl', () => {
       closeOnInvalidPayment: true
     } as MachinomyOptions
 
-    const channelEthContract = new ChannelEthContract(web3)
-    const channelTokenContract = new ChannelTokenContract(web3)
+    // const channelEthContract = new ChannelEthContract(web3)
+    // const channelTokenContract = new ChannelTokenContract(web3)
+    const channelEthContract = {} as ChannelEthContract
+    const channelTokenContract = {} as ChannelTokenContract
     channelContract = new ChannelContract(web3, channelsDao, channelEthContract, channelTokenContract)
     channelManager = new ChannelManager('0xcafe', web3, channelsDao, paymentsDao, tokensDao, channelContract, paymentManager, machOpts)
   })
@@ -160,6 +162,7 @@ describe('ChannelManagerImpl', () => {
     it('throws an error if the channel is already settled', () => {
       channelsDao.firstById = sinon.stub().resolves(fakeChan)
       channelContract.getState = sinon.stub().resolves(2)
+      channelContract.channelById = sinon.stub().withArgs(id).resolves([fakeChan.sender, fakeChan.receiver, fakeChan.value, ChannelManager.DEFAULT_SETTLEMENT_PERIOD, 0])
       return expectsRejection(channelManager.closeChannel(id))
     })
 
@@ -167,6 +170,7 @@ describe('ChannelManagerImpl', () => {
       const channel = new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 0, '')
       channelsDao.firstById = sinon.stub().withArgs(id).resolves(channel)
       channelContract.getState = sinon.stub().resolves(0)
+      channelContract.channelById = sinon.stub().withArgs(id).resolves([fakeChan.sender, fakeChan.receiver, fakeChan.value, ChannelManager.DEFAULT_SETTLEMENT_PERIOD, 0])
       channelsDao.updateState = sinon.stub().withArgs(id, 1).resolves()
 
       return channelManager.closeChannel(id).then((res: TransactionResult) => {
@@ -179,6 +183,7 @@ describe('ChannelManagerImpl', () => {
       const channel = new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 1, '')
       channelsDao.firstById = sinon.stub().withArgs(id).resolves(channel)
       channelContract.getState = sinon.stub().resolves(1)
+      channelContract.channelById = sinon.stub().withArgs(id).resolves([fakeChan.sender, fakeChan.receiver, fakeChan.value, ChannelManager.DEFAULT_SETTLEMENT_PERIOD, 0])
       channelsDao.updateState = sinon.stub().withArgs(id, 2).resolves()
 
       return channelManager.closeChannel(id).then((res: TransactionResult) => {
@@ -190,6 +195,7 @@ describe('ChannelManagerImpl', () => {
     it('claims the contract when the sender is not the current account', () => {
       const channel = new PaymentChannel('0xdead', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 1, '')
       channelsDao.firstById = sinon.stub().withArgs(id).resolves(channel)
+      channelContract.channelById = sinon.stub().withArgs(id).resolves([fakeChan.sender, fakeChan.receiver, fakeChan.value, ChannelManager.DEFAULT_SETTLEMENT_PERIOD, 0])
       paymentsDao.firstMaximum = sinon.stub().withArgs(id).resolves(new Payment({
         channelId: id,
         sender: channel.sender,
@@ -220,6 +226,7 @@ describe('ChannelManagerImpl', () => {
       const channel = new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 0, '')
       channelsDao.firstById = sinon.stub().withArgs(id).resolves(channel)
       channelContract.getState = sinon.stub().resolves(0)
+      channelContract.channelById = sinon.stub().withArgs(id).resolves([fakeChan.sender, fakeChan.receiver, fakeChan.value, ChannelManager.DEFAULT_SETTLEMENT_PERIOD, 0])
       channelsDao.updateState = sinon.stub().withArgs(id, 1).resolves()
 
       const will = sinon.stub()
@@ -238,6 +245,7 @@ describe('ChannelManagerImpl', () => {
       channelsDao.firstById = sinon.stub().withArgs(id).resolves(channel)
       channelContract.getState = sinon.stub().resolves(0)
       channelsDao.updateState = sinon.stub().withArgs(id, 1).resolves()
+      channelContract.channelById = sinon.stub().withArgs(id).resolves([fakeChan.sender, fakeChan.receiver, fakeChan.value, ChannelManager.DEFAULT_SETTLEMENT_PERIOD, 0])
 
       const order: number[] = []
 
@@ -299,6 +307,7 @@ describe('ChannelManagerImpl', () => {
     it('should not update the database if depositing into the channel contract fails', () => {
       channelsDao.firstById = sinon.stub().withArgs(id).resolves({} as PaymentChannel)
       channelsDao.deposit = sinon.stub()
+      channelContract.channelById = sinon.stub().withArgs(id).resolves([fakeChan.sender, fakeChan.receiver, fakeChan.value, ChannelManager.DEFAULT_SETTLEMENT_PERIOD, 0])
       channelContract.deposit = sinon.stub().rejects('oh no')
 
       return expectsRejection(channelManager.deposit(id, new BigNumber.BigNumber(1))).then(() => {
@@ -310,6 +319,7 @@ describe('ChannelManagerImpl', () => {
       const value = new BigNumber.BigNumber(10)
       channelsDao.firstById = sinon.stub().withArgs(id).resolves({} as PaymentChannel)
       channelsDao.deposit = sinon.stub().withArgs('0xcafe', id, new BigNumber.BigNumber(10)).resolves()
+      channelContract.channelById = sinon.stub().withArgs(id).resolves([fakeChan.sender, fakeChan.receiver, fakeChan.value, ChannelManager.DEFAULT_SETTLEMENT_PERIOD, 0])
       channelContract.deposit = sinon.stub().resolves({ tx: '123abc' } as TransactionResult)
 
       return channelManager.deposit(id, value).then((res: TransactionResult) => {
@@ -336,10 +346,12 @@ describe('ChannelManagerImpl', () => {
     })
 
     it('should throw an error if the amount to spend is more than the remaining channel value', () => {
+      channelContract.channelById = sinon.stub().withArgs(id).resolves([fakeChan.sender, fakeChan.receiver, fakeChan.value, ChannelManager.DEFAULT_SETTLEMENT_PERIOD, 0])
       return expectsRejection(channelManager.nextPayment(id, new BigNumber.BigNumber(9), ''))
     })
 
     it('should return a new payment whose spend is the sum of the existing spend plus amount', () => {
+      channelContract.channelById = sinon.stub().withArgs(id).resolves([fakeChan.sender, fakeChan.receiver, fakeChan.value, ChannelManager.DEFAULT_SETTLEMENT_PERIOD, 0])
       paymentManager.buildPaymentForChannel = sinon.stub().withArgs(channel, sinon.match.object, sinon.match.object, '').callsFake((channel: PaymentChannel, price: BigNumber.BigNumber, value: BigNumber.BigNumber, meta: string) => {
         return new Payment({
           channelId: channel.channelId,
@@ -467,6 +479,7 @@ describe('ChannelManagerImpl', () => {
       })
       channelContract.claim = sinon.stub().resolves({})
       channelContract.getState = sinon.stub().resolves(0)
+      channelContract.channelById = sinon.stub().resolves([fakeChan.sender, fakeChan.receiver, fakeChan.value, ChannelManager.DEFAULT_SETTLEMENT_PERIOD, 0])
       channelsDao.updateState = sinon.stub().resolves()
       channelsDao.firstById = sinon.stub().withArgs(newChan.channelId).resolves(newChan)
 
