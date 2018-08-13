@@ -162,7 +162,7 @@ describe('ChannelContract', () => {
       channelsDatabase.firstById = async () => {
         return null
       }
-      await chai.assert.isRejected(contract.paymentDigest(ID, VALUE))
+      return chai.assert.isRejected(contract.paymentDigest(ID, VALUE))
     })
   })
 
@@ -189,7 +189,7 @@ describe('ChannelContract', () => {
       channelsDatabase.firstById = async () => {
         return null
       }
-      await chai.assert.isRejected(contract.canClaim(ID, VALUE, RECEIVER, SIGNATURE))
+      return chai.assert.isRejected(contract.canClaim(ID, VALUE, RECEIVER, SIGNATURE))
     })
   })
 })

@@ -69,7 +69,7 @@ describe('ChannelTokenContract', () => {
       deployed.open = sinon.stub()
       tokenDeployed.approve = sinon.stub().returns(Promise.reject('error'))
 
-      await chai.assert.isRejected(contract.open(SENDER, RECEIVER, VALUE, SETTLEMENT_PERIOD, TOKEN_CONTRACT, ID))
+      return chai.assert.isRejected(contract.open(SENDER, RECEIVER, VALUE, SETTLEMENT_PERIOD, TOKEN_CONTRACT, ID))
     })
   })
 
