@@ -19,7 +19,7 @@
   ],
   "config": {
     "truffleTests": "lib/*.test.js",
-    "wrappedArtifacts": "build/contracts/@(Unidirectional|TokenUnidirectional|StandardToken).json"
+    "wrappedArtifacts": "build/contracts/@(Unidirectional|TokenUnidirectional|StandardToken|TestToken).json"
   },
   "scripts": {
     "build": "yarn support:wrap && tsc --project tsconfig.json && tsc --project tsconfig.migrations.json",
@@ -32,7 +32,8 @@
     "truffle:test": "run-with-testrpc 'truffle test $npm_package_config_truffleTests'",
     "test": "yarn build && yarn truffle:test",
     "prepublish": "yarn support:wrap && yarn build",
-    "coverage": "solidity-coverage"
+    "coverage": "solidity-coverage",
+    "mintTestTokens": "yarn build && DEBUG=* node lib/MintTestTokens"
   },
   "devDependencies": {
     "@machinomy/types-ethereumjs-units": "^0.0.2",
@@ -64,8 +65,10 @@
     "tslint-config-standard": "^7.0.0"
   },
   "dependencies": {
+    "@machinomy/hdwallet-provider": "^1.1.0",
     "@machinomy/types-web3": "^0.0.4",
     "bignumber.js": "4.1.0",
+    "dotenv": "^4.0.0",
     "ethereumjs-units": "^0.2.0",
     "ethereumjs-util": "^5.2.0",
     "truffle-contract": "^3.0.0",
