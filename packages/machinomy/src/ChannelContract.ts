@@ -96,15 +96,13 @@ export default class ChannelContract {
   }
 
   async getContractByChannelId (channelId: string): Promise<ChannelEthContract | ChannelTokenContract> {
-    let contract: ChannelEthContract | ChannelTokenContract = this.channelEthContract
     const channel = await this.channelsDao.firstById(channelId)
-    if (!channel) {
-      LOG.info(`getContractByChannelId(): Channel ${channelId} is undefined`)
-    } else {
-      // tslint:disable-next-line:no-unnecessary-type-assertion
+    if (channel) {
       const tokenContract = channel!.tokenContract
-      contract = isTokenContractDefined(tokenContract) ? this.channelTokenContract : this.channelEthContract
+      return isTokenContractDefined(tokenContract) ? this.channelTokenContract : this.channelEthContract
+    } else {
+      LOG.info(`getContractByChannelId(): Channel ${channelId} is undefined`)
+      return this.channelEthContract
     }
-    return contract
   }
 }
