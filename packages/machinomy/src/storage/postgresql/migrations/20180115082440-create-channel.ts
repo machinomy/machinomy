@@ -1,11 +1,7 @@
 import bigNumberColumn from './util/bigNumberColumn'
-import { Base as DBMigrateBase, CallbackFunction } from 'db-migrate-base'
+import { Base, CallbackFunction } from 'db-migrate-base'
 
-let _meta: Object = {
-  version: 1
-}
-
-exports.up = (db: any, callback: CallbackFunction) => {
+export function up (db: Base, callback: CallbackFunction) {
   const createTableOptions = {
     columns:
     {
@@ -26,6 +22,6 @@ exports.up = (db: any, callback: CallbackFunction) => {
   db.createTable('channel', createTableOptions, callback)
 }
 
-exports.down = (db: DBMigrateBase, callback: CallbackFunction) => {
+export function down (db: Base, callback: CallbackFunction) {
   db.dropTable('channel', callback)
 }

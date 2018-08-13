@@ -11,7 +11,9 @@
     ],
     "nohoist": [
       "**/openzeppelin-solidity",
-      "**/openzeppelin-solidity/**"
+      "**/openzeppelin-solidity/**",
+      "**/db-migrate-plugin-typescript",
+      "**/db-migrate-plugin-typescript/**"
     ]
   },
   "scripts": {
@@ -25,7 +27,8 @@
     "coveralls": "^3.0.1",
     "lerna": "^2.11.0",
     "typescript": "^2.8.3",
-    "wsrun": "^2.2.0"
+    "wsrun": "^2.2.0",
+    "ts-node": "^7.0.x"
   },
   "resolutions": {
     "natives": "^1.1.3",

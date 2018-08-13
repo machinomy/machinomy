@@ -19,7 +19,7 @@ export interface SerializedPaymentChannel {
   channelId: string,
   receiver: string,
   sender: string,
-  tokenContract: string
+  tokenContract?: string
 }
 
 /**
@@ -32,7 +32,7 @@ export class PaymentChannel {
   value: BigNumber.BigNumber
   spent: BigNumber.BigNumber
   state: number
-  tokenContract: string
+  tokenContract?: string
 
   /**
    * @param sender      Ethereum address of the client.
@@ -41,15 +41,16 @@ export class PaymentChannel {
    * @param value       Total value of the channel.
    * @param spent       Value sent by {sender} to {receiver}.
    * @param state       0 - 'open', 1 - 'settling', 2 - 'settled'
+   * @param tokenContract
    */
-  constructor (sender: string, receiver: string, channelId: string, value: BigNumber.BigNumber, spent: BigNumber.BigNumber, state: number = 0, tokenContract: string) { // FIXME remove contract parameter
+  constructor (sender: string, receiver: string, channelId: string, value: BigNumber.BigNumber, spent: BigNumber.BigNumber, state: number = 0, tokenContract?: string) {
     this.sender = sender
     this.receiver = receiver
     this.channelId = channelId
     this.value = new BigNumber.BigNumber(value.toString())
     this.spent = new BigNumber.BigNumber(spent.toString())
-    this.state = state || 0
-    this.tokenContract = tokenContract
+    this.state = Number(state)
+    this.tokenContract = tokenContract || undefined
   }
 
   static fromPayment (payment: Payment): PaymentChannel {

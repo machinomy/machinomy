@@ -1,251 +1,198 @@
 import * as Web3 from 'web3'
-import * as uuid from 'uuid'
-import * as BigNumber from 'bignumber.js'
+import { BigNumber } from 'bignumber.js'
 import * as sinon from 'sinon'
-import * as contracts from '@machinomy/contracts'
 import ChannelContract from './ChannelContract'
-import ChannelEthContract from './ChannelEthContract'
-import ChannelTokenContract from './ChannelTokenContract'
 import Signature from './Signature'
-import IChannelsDatabase from './storage/IChannelsDatabase'
+import * as expect from 'expect'
+import * as asPromised from 'chai-as-promised'
+import * as chai from 'chai'
 
-const expect = require('expect')
+chai.use(asPromised)
+
+const ID = '0e29e61f256b40b2a6280f8181a1b5ff'
+const SETTLEMENT_PERIOD = new BigNumber(1234)
+const RECEIVER = '0xRECEIVER'
+const VALUE = new BigNumber(10)
+const SENDER = '0xSENDER'
+const TOKEN_CONTRACT = '0x01e1a2626271c7267Dd8F506503AD0318776EF69'
+const SIGNATURE = Signature.fromRpcSig('SIGNATURE')
 
 describe('ChannelContract', () => {
-  const ID = '0e29e61f256b40b2a6280f8181a1b5ff'
+  const web3 = {
+    currentProvider: {}
+  } as Web3
 
-  const SIG = Signature.fromRpcSig('0xd8a923b39ae82bb39d3b64d58f06e1d776bcbcae34e5b4a6f4a952e8892e6a5b4c0f88833c06fe91729057035161e599fda536e8ce0ab4be2c214d6ea961e93a01')
-
-  let web3: Web3
-  let deployed: any
-  let deployedToken: any
-  let contractStub: sinon.SinonStub
-  let tokenContractStub: sinon.SinonStub
-  let uuidStub: sinon.SinonStub
+  let ethUnidirectional = {} as any
+  let tokenUnidirectional = {} as any
+  let channelsDatabase = {} as any
   let contract: ChannelContract
 
   beforeEach(() => {
-    web3 = {
-      currentProvider: {}
-    } as Web3
-
-    deployed = {} as any
-    deployedToken = {} as any
-
-    uuidStub = sinon.stub(uuid, 'v4').returns('0e29e61f-256b-40b2-a628-0f8181a1b5ff')
-
-    contractStub = sinon.stub(contracts.Unidirectional, 'contract')
-    contractStub.withArgs(web3.currentProvider).returns({
-      deployed: sinon.stub().resolves(Promise.resolve(deployed))
-    })
-
-    tokenContractStub = sinon.stub(contracts.TokenUnidirectional, 'contract')
-    tokenContractStub.withArgs(web3.currentProvider).returns({
-      deployed: sinon.stub().resolves(Promise.resolve(deployed))
-    })
-    const channelEthContract = new ChannelEthContract(web3)
-    const channelTokenContract = new ChannelTokenContract(web3)
-    contract = new ChannelContract(web3, {} as IChannelsDatabase, channelEthContract, channelTokenContract)
-  })
-
-  afterEach(() => {
-    contractStub.restore()
-    tokenContractStub.restore()
-    uuidStub.restore()
+    contract = new ChannelContract(web3, channelsDatabase, ethUnidirectional, tokenUnidirectional)
   })
 
   describe('#open', () => {
-    it('eth: opens a channel with the correct id, sender, receiver, settlement period, price, and gas params', () => {
-      deployed.open = sinon.stub()
-      let settlementPeriod = new BigNumber.BigNumber(1234)
-      return contract.channelEthContract.open('send', 'recv', new BigNumber.BigNumber(10), settlementPeriod, ID).then(() => {
-        expect(deployed.open.calledWith(ID, 'recv', settlementPeriod, {
-          from: 'send',
-          value: new BigNumber.BigNumber(10),
-          gas: 300000
-        })).toBe(true)
-      })
+    it('eth: opens a channel with the correct id, sender, receiver, settlement period, price, and gas params', async () => {
+      ethUnidirectional.open = sinon.stub()
+      await contract.open(SENDER, RECEIVER, VALUE, SETTLEMENT_PERIOD, ID)
+      expect(ethUnidirectional.open.calledWith(SENDER, RECEIVER, VALUE, SETTLEMENT_PERIOD, ID)).toBeTruthy()
     })
 
-    it('tokens: opens a channel with the correct id, sender, receiver, settlement period, tokenContract, price, and gas params', () => {
-      deployedToken.open = sinon.stub()
-      let settlementPeriod = new BigNumber.BigNumber(1234)
-      return contract.channelTokenContract.open('send', 'recv', new BigNumber.BigNumber(10), settlementPeriod, '0x1234', ID).then(transactionResult => {
-        expect(deployedToken.open.calledWith(ID, 'recv', settlementPeriod, '0x1234', {
-          from: 'send',
-          value: new BigNumber.BigNumber(10),
-          gas: 300000
-        })).toBe(true)
-
-        expect(contracts.StandardToken.isApprovalEvent(transactionResult.logs[0])).toBe(true)
-      })
+    it('tokens: opens a channel with the correct id, sender, receiver, settlement period, tokenContract, price, and gas params', async () => {
+      tokenUnidirectional.open = sinon.stub()
+      await contract.open(SENDER, RECEIVER, VALUE, SETTLEMENT_PERIOD, ID, TOKEN_CONTRACT)
+      expect(tokenUnidirectional.open.calledWith(SENDER, RECEIVER, VALUE, SETTLEMENT_PERIOD, TOKEN_CONTRACT, ID)).toBeTruthy()
     })
   })
 
   describe('#claim', () => {
-    it('eth: claims the channel', () => {
-      deployed.claim = sinon.stub()
-      return contract.channelEthContract.claim('recv', ID, new BigNumber.BigNumber(10), SIG).then(() => {
-        expect(deployed.claim.calledWith(ID, new BigNumber.BigNumber(10), SIG.toString(), {
-          from: 'recv'
-        })).toBe(true)
-      })
+    it('eth: claims the channel', async () => {
+      ethUnidirectional.claim = sinon.stub()
+      channelsDatabase.firstById = async () => {
+        return { tokenContract: undefined }
+      }
+      await contract.claim(RECEIVER, ID, VALUE, SIGNATURE)
+      expect(ethUnidirectional.claim.calledWith(RECEIVER, ID, VALUE, SIGNATURE)).toBeTruthy()
     })
 
-    it('tokens: claims the channel', () => {
-      deployedToken.claim = sinon.stub()
-      return contract.channelTokenContract.claim('recv', ID, new BigNumber.BigNumber(10), SIG).then(() => {
-        expect(deployedToken.claim.calledWith(ID, new BigNumber.BigNumber(10), SIG.toString(), {
-          from: 'recv'
-        })).toBe(true)
-      })
+    it('tokens: claims the channel', async () => {
+      tokenUnidirectional.claim = sinon.stub()
+      channelsDatabase.firstById = async () => {
+        return { tokenContract: TOKEN_CONTRACT }
+      }
+      await contract.claim(RECEIVER, ID, VALUE, SIGNATURE)
+      expect(tokenUnidirectional.claim.calledWith(RECEIVER, ID, VALUE, SIGNATURE)).toBeTruthy()
     })
   })
 
   describe('#deposit', () => {
-    it('eth: deposits money into the channel', () => {
-      deployed.deposit = sinon.stub()
-      return contract.channelEthContract.deposit('send', ID, new BigNumber.BigNumber(10)).then(() => {
-        expect(deployed.deposit.calledWith(ID, {
-          from: 'send',
-          value: new BigNumber.BigNumber(10),
-          gas: 300000
-        })).toBe(true)
-      })
+    it('eth: deposits money into the channel', async () => {
+      ethUnidirectional.deposit = sinon.stub()
+      await contract.deposit(SENDER, ID, VALUE)
+      expect(ethUnidirectional.deposit.calledWith(SENDER, ID, VALUE)).toBeTruthy()
     })
 
-    it('tokens: deposits tokens into the channel', () => {
-      deployedToken.deposit = sinon.stub()
-      return contract.channelTokenContract.deposit('send', ID, new BigNumber.BigNumber(10), '0x1234').then(transactionResult => {
-        expect(deployedToken.deposit.calledWith(ID, {
-          from: 'send',
-          value: new BigNumber.BigNumber(10),
-          gas: 300000
-        })).toBe(true)
-        expect(contracts.StandardToken.isApprovalEvent(transactionResult.logs[0])).toBe(true)
-      })
+    it('tokens: deposits tokens into the channel', async () => {
+      tokenUnidirectional.deposit = sinon.stub()
+      await contract.deposit(SENDER, ID, VALUE, TOKEN_CONTRACT)
+      expect(tokenUnidirectional.deposit.calledWith(SENDER, ID, VALUE, TOKEN_CONTRACT)).toBeTruthy()
     })
   })
 
   describe('#getState', () => {
-    it('eth: returns 0 if the channel is open', () => {
-      deployed.isOpen = sinon.stub().withArgs(ID).resolves(true)
-      deployed.isSettling = sinon.stub().withArgs(ID).resolves(false)
-
-      return contract.channelEthContract.getState(ID).then((state: number) => {
-        expect(state).toBe(0)
-      })
+    it('calls eth contract if tokenContract is empty', async () => {
+      ethUnidirectional.getState = sinon.stub()
+      channelsDatabase.firstById = async () => {
+        return { tokenContract: undefined }
+      }
+      await contract.getState(ID)
+      expect(ethUnidirectional.getState.calledWith(ID)).toBeTruthy()
     })
 
-    it('eth: returns 1 if the channel is settling', () => {
-      deployed.isOpen = sinon.stub().withArgs(ID).resolves(false)
-      deployed.isSettling = sinon.stub().withArgs(ID).resolves(true)
-
-      return contract.channelEthContract.getState(ID).then((state: number) => {
-        expect(state).toBe(1)
-      })
-    })
-
-    it('tokens: returns 0 if the channel is open', () => {
-      deployedToken.isOpen = sinon.stub().withArgs(ID).resolves(true)
-      deployedToken.isSettling = sinon.stub().withArgs(ID).resolves(false)
-
-      return contract.channelTokenContract.getState(ID).then((state: number) => {
-        expect(state).toBe(0)
-      })
-    })
-
-    it('tokens: returns 1 if the channel is settling', () => {
-      deployed.isOpen = sinon.stub().withArgs(ID).resolves(false)
-      deployed.isSettling = sinon.stub().withArgs(ID).resolves(true)
-
-      return contract.channelTokenContract.getState(ID).then((state: number) => {
-        expect(state).toBe(1)
-      })
+    it('calls token contract if tokenContract is filled', async () => {
+      tokenUnidirectional.getState = sinon.stub()
+      channelsDatabase.firstById = async () => {
+        return { tokenContract: TOKEN_CONTRACT }
+      }
+      await contract.getState(ID)
+      expect(tokenUnidirectional.getState.calledWith(ID)).toBeTruthy()
     })
   })
 
   describe('#startSettle', () => {
-    it('eth: starts settling the channel', () => {
-      deployed.startSettling = sinon.stub()
-
-      return contract.channelEthContract.startSettle('acc', ID).then(() => {
-        expect(deployed.startSettling.calledWith(ID, { from: 'acc' })).toBe(true)
-      })
+    it('eth: starts settling the channel', async () => {
+      ethUnidirectional.startSettle = sinon.stub()
+      channelsDatabase.firstById = async () => {
+        return { tokenContract: undefined }
+      }
+      await contract.startSettle(SENDER, ID)
+      expect(ethUnidirectional.startSettle.calledWith(SENDER, ID)).toBeTruthy()
     })
 
-    it('tokens: starts settling the channel', () => {
-      deployed.startSettling = sinon.stub()
-
-      return contract.channelTokenContract.startSettle('acc', ID).then(() => {
-        expect(deployed.startSettling.calledWith(ID, { from: 'acc' })).toBe(true)
-      })
+    it('tokens: starts settling the channel', async () => {
+      tokenUnidirectional.startSettle = sinon.stub()
+      channelsDatabase.firstById = async () => {
+        return { tokenContract: TOKEN_CONTRACT }
+      }
+      await contract.startSettle(SENDER, ID)
+      expect(tokenUnidirectional.startSettle.calledWith(SENDER, ID)).toBeTruthy()
     })
   })
 
   describe('#finishSettle', () => {
-    it('eth: finishes settling the channel', () => {
-      deployed.settle = sinon.stub()
-
-      return contract.channelEthContract.finishSettle('acc', ID).then(() => {
-        expect(deployed.settle.calledWith(ID, { from: 'acc', gas: 400000 })).toBe(true)
-      })
+    it('eth: finishes settling the channel', async () => {
+      ethUnidirectional.finishSettle = sinon.stub()
+      channelsDatabase.firstById = async () => {
+        return { tokenContract: undefined }
+      }
+      await contract.finishSettle(SENDER, ID)
+      expect(ethUnidirectional.finishSettle.calledWith(SENDER, ID)).toBeTruthy()
     })
 
-    it('tokens: finishes settling the channel', () => {
-      deployed.settle = sinon.stub()
-
-      return contract.channelTokenContract.finishSettle('acc', ID).then(() => {
-        expect(deployed.settle.calledWith(ID, { from: 'acc', gas: 400000 })).toBe(true)
-      })
+    it('tokens: finishes settling the channel', async () => {
+      tokenUnidirectional.finishSettle = sinon.stub()
+      channelsDatabase.firstById = async () => {
+        return { tokenContract: TOKEN_CONTRACT }
+      }
+      await contract.finishSettle(SENDER, ID)
+      expect(tokenUnidirectional.finishSettle.calledWith(SENDER, ID)).toBeTruthy()
     })
   })
 
   describe('#paymentDigest', () => {
-    it('eth: returns the digest', () => {
-      deployed.paymentDigest = sinon.stub().withArgs(ID, new BigNumber.BigNumber(10)).resolves('digest')
-
-      return contract.channelEthContract.paymentDigest(ID, new BigNumber.BigNumber(10)).then((digest: string) => {
-        expect(digest).toBe('digest')
-      })
+    it('eth: returns the digest', async () => {
+      ethUnidirectional.paymentDigest = sinon.stub()
+      channelsDatabase.firstById = async () => {
+        return { tokenContract: undefined }
+      }
+      await contract.paymentDigest(ID, VALUE)
+      expect(ethUnidirectional.paymentDigest.calledWith(ID, VALUE)).toBeTruthy()
     })
 
-    it('tokens: returns the digest', () => {
-      deployed.paymentDigest = sinon.stub().withArgs(ID, new BigNumber.BigNumber(10)).resolves('digest')
+    it('tokens: returns the digest', async () => {
+      tokenUnidirectional.paymentDigest = sinon.stub()
+      channelsDatabase.firstById = async () => {
+        return { tokenContract: TOKEN_CONTRACT }
+      }
+      await contract.paymentDigest(ID, VALUE)
+      expect(tokenUnidirectional.paymentDigest.calledWith(ID, VALUE)).toBeTruthy()
+    })
 
-      return contract.channelTokenContract.paymentDigest(ID, new BigNumber.BigNumber(10), '0x1234').then((digest: string) => {
-        expect(digest).toBe('digest')
-      })
+    it('not found: throw error', async () => {
+      channelsDatabase.firstById = async () => {
+        return null
+      }
+      return chai.assert.isRejected(contract.paymentDigest(ID, VALUE))
     })
   })
 
   describe('#canClaim', () => {
-    it('eth: returns whether the user can claim', () => {
-      const sig = Signature.fromParts({
-        v: 27,
-        r: '0x01',
-        s: '0x02'
-      })
-
-      deployed.canClaim = sinon.stub().withArgs(ID, new BigNumber.BigNumber(10), 'recv', sig.toString()).resolves(true)
-
-      return contract.channelEthContract.canClaim(ID, new BigNumber.BigNumber(10), 'recv', sig).then((val: boolean) => {
-        expect(val).toBe(true)
-      })
+    it('eth: returns whether the user can claim', async () => {
+      ethUnidirectional.canClaim = sinon.stub()
+      channelsDatabase.firstById = async () => {
+        return { tokenContract: undefined }
+      }
+      await contract.canClaim(ID, VALUE, RECEIVER, SIGNATURE)
+      expect(ethUnidirectional.canClaim.calledWith(ID, VALUE, RECEIVER, SIGNATURE)).toBeTruthy()
     })
 
-    it('tokens: returns whether the user can claim', () => {
-      const sig = Signature.fromParts({
-        v: 27,
-        r: '0x01',
-        s: '0x02'
-      })
+    it('tokens: returns whether the user can claim', async () => {
+      tokenUnidirectional.canClaim = sinon.stub()
+      channelsDatabase.firstById = async () => {
+        return { tokenContract: TOKEN_CONTRACT }
+      }
+      await contract.canClaim(ID, VALUE, RECEIVER, SIGNATURE)
+      expect(tokenUnidirectional.canClaim.calledWith(ID, VALUE, RECEIVER, SIGNATURE)).toBeTruthy()
+    })
 
-      deployed.canClaim = sinon.stub().withArgs(ID, new BigNumber.BigNumber(10), 'recv', sig.toString()).resolves(true)
-
-      return contract.channelTokenContract.canClaim(ID, new BigNumber.BigNumber(10), 'recv', sig).then((val: boolean) => {
-        expect(val).toBe(true)
-      })
+    it('try ethContract if not found', async () => {
+      channelsDatabase.firstById = async () => {
+        return null
+      }
+      ethUnidirectional.channelById = sinon.stub().resolves([])
+      ethUnidirectional.canClaim = sinon.stub().returns(true)
+      let result = contract.canClaim(ID, VALUE, RECEIVER, SIGNATURE)
+      expect(result).toBeTruthy()
     })
   })
 })
