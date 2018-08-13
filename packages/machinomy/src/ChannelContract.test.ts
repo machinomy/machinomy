@@ -6,7 +6,6 @@ import Signature from './Signature'
 import * as expect from 'expect'
 import * as asPromised from 'chai-as-promised'
 import * as chai from 'chai'
-import ChannelManager from "./ChannelManager";
 
 chai.use(asPromised)
 
