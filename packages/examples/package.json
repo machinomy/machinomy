@@ -20,7 +20,9 @@
     "test": "exit 0",
     "coverage": "exit 0",
     "sender": "yarn build && DEBUG=* node ./src/sender.js",
-    "receiver": "yarn build && DEBUG=* node ./src/receiver.js"
+    "receiver": "yarn build && DEBUG=* node ./src/receiver.js",
+    "senderTokens": "yarn build && DEBUG=* node ./src/senderTokens.js",
+    "receiverTokens": "yarn build && DEBUG=* node ./src/receiverTokens.js"
   },
   "dependencies": {
     "@machinomy/hdwallet-provider": "^1.1.0",
