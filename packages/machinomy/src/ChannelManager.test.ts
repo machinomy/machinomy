@@ -156,6 +156,7 @@ describe('ChannelManager', () => {
 
     it('throws an error when no channels are found', () => {
       channelsDao.firstById = sinon.stub().resolves(null)
+      channelContract.channelById = sinon.stub().resolves(Promise.resolve([]))
       return expectsRejection(channelManager.closeChannel('nope'))
     })
 
@@ -301,6 +302,7 @@ describe('ChannelManager', () => {
 
     it('should throw an error if no channel is found', () => {
       channelsDao.firstById = sinon.stub().withArgs(id).resolves(null)
+      channelContract.channelById = sinon.stub().resolves(Promise.resolve([]))
       return expectsRejection(channelManager.deposit(id, new BigNumber.BigNumber(6)))
     })
 
@@ -342,6 +344,7 @@ describe('ChannelManager', () => {
 
     it('should throw an error if no channel is found', () => {
       channelsDao.firstById = sinon.stub().withArgs(id).resolves(null)
+      channelContract.channelById = sinon.stub().resolves(Promise.resolve([]))
       return expectsRejection(channelManager.nextPayment(id, new BigNumber.BigNumber(6), ''))
     })
 
