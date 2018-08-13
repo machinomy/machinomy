@@ -1,5 +1,5 @@
 import * as Web3 from 'web3'
-import * as BigNumber from 'bignumber.js'
+import { BigNumber } from 'bignumber.js'
 import { TransactionResult } from 'truffle-contract'
 import ChannelEthContract from './ChannelEthContract'
 import ChannelTokenContract from './ChannelTokenContract'
@@ -7,9 +7,13 @@ import Signature from './Signature'
 import ChannelId from './ChannelId'
 import IChannelsDatabase from './storage/IChannelsDatabase'
 
-export type Channel = [string, string, BigNumber.BigNumber, BigNumber.BigNumber, BigNumber.BigNumber]
-export type ChannelWithTokenContract = [string, string, BigNumber.BigNumber, BigNumber.BigNumber, BigNumber.BigNumber, string]
+export type Channel = [string, string, BigNumber, BigNumber, BigNumber]
+export type ChannelWithTokenContract = [string, string, BigNumber, BigNumber, BigNumber, string]
 export type ChannelFromContract = Channel | ChannelWithTokenContract
+
+function isTokenContractDefined (tokenContract: string | undefined): tokenContract is string {
+  return tokenContract !== undefined && tokenContract.startsWith('0x') && parseInt(tokenContract, 16) !== 0
+}
 
 export default class ChannelContract {
   channelEthContract: ChannelEthContract
@@ -22,22 +26,22 @@ export default class ChannelContract {
     this.channelsDao = channelsDao
   }
 
-  async open (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number | BigNumber.BigNumber, channelId?: ChannelId | string, tokenContract?: string): Promise<TransactionResult> {
-    if (this.isTokenContractDefined(tokenContract)) {
-      return this.channelTokenContract.open(sender, receiver, price, settlementPeriod, tokenContract!, channelId)
+  async open (sender: string, receiver: string, value: BigNumber, settlementPeriod: number | BigNumber, channelId?: ChannelId | string, tokenContract?: string): Promise<TransactionResult> {
+    if (isTokenContractDefined(tokenContract)) {
+      return this.channelTokenContract.open(sender, receiver, value, settlementPeriod, tokenContract, channelId)
     } else {
-      return this.channelEthContract.open(sender, receiver, price, settlementPeriod, channelId)
+      return this.channelEthContract.open(sender, receiver, value, settlementPeriod, channelId)
     }
   }
 
-  async claim (receiver: string, channelId: string, value: BigNumber.BigNumber, signature: Signature): Promise<TransactionResult> {
+  async claim (receiver: string, channelId: string, value: BigNumber, signature: Signature): Promise<TransactionResult> {
     const contract = await this.getContractByChannelId(channelId)
     return contract.claim(receiver, channelId, value, signature)
   }
 
-  async deposit (sender: string, channelId: string, value: BigNumber.BigNumber, tokenContract?: string): Promise<TransactionResult> {
-    if (this.isTokenContractDefined(tokenContract)) {
-      return this.channelTokenContract.deposit(sender, channelId, value, tokenContract!)
+  async deposit (sender: string, channelId: string, value: BigNumber, tokenContract?: string): Promise<TransactionResult> {
+    if (isTokenContractDefined(tokenContract)) {
+      return this.channelTokenContract.deposit(sender, channelId, value, tokenContract)
     } else {
       return this.channelEthContract.deposit(sender, channelId, value)
     }
@@ -48,7 +52,7 @@ export default class ChannelContract {
     return contract.getState(channelId)
   }
 
-  async getSettlementPeriod (channelId: string): Promise<BigNumber.BigNumber> {
+  async getSettlementPeriod (channelId: string): Promise<BigNumber> {
     const contract = await this.getContractByChannelId(channelId)
     return contract.getSettlementPeriod(channelId)
   }
@@ -63,17 +67,22 @@ export default class ChannelContract {
     return contract.finishSettle(account, channelId)
   }
 
-  async paymentDigest (channelId: string, value: BigNumber.BigNumber): Promise<string> {
+  async paymentDigest (channelId: string, value: BigNumber): Promise<string> {
     const channel = await this.channelsDao.firstById(channelId)
-    const tokenContract = channel!.tokenContract
-    if (this.isTokenContractDefined(tokenContract)) {
-      return this.channelTokenContract.paymentDigest(channelId, value, tokenContract)
+    if (channel) {
+      const tokenContract = channel.tokenContract
+      if (isTokenContractDefined(tokenContract)) {
+        return this.channelTokenContract.paymentDigest(channelId, value, tokenContract)
+      } else {
+        return this.channelEthContract.paymentDigest(channelId, value)
+      }
     } else {
-      return this.channelEthContract.paymentDigest(channelId, value)
+      throw new Error(`Channel ${channelId} is not found`)
     }
+
   }
 
-  async canClaim (channelId: string, payment: BigNumber.BigNumber, receiver: string, signature: Signature): Promise<boolean> {
+  async canClaim (channelId: string, payment: BigNumber, receiver: string, signature: Signature): Promise<boolean> {
     const contract = await this.getContractByChannelId(channelId)
     return contract.canClaim(channelId, payment, receiver, signature)
   }
@@ -83,17 +92,12 @@ export default class ChannelContract {
     return contract.channelById(channelId)
   }
 
-  isTokenContractDefined (tokenContract: string | undefined): boolean {
-    return tokenContract !== undefined && tokenContract.startsWith('0x') && parseInt(tokenContract, 16) !== 0
-  }
-
   async getContractByChannelId (channelId: string): Promise<ChannelEthContract | ChannelTokenContract> {
     const channel = await this.channelsDao.firstById(channelId)
     if (!channel) {
       throw new Error('getContractByChannelId: Channel is undefined')
     }
     const tokenContract = channel.tokenContract
-    const contract = this.isTokenContractDefined(tokenContract) ? this.channelTokenContract : this.channelEthContract
-    return contract
+    return isTokenContractDefined(tokenContract) ? this.channelTokenContract : this.channelEthContract
   }
 }
