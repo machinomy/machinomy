@@ -1,6 +1,6 @@
 {
   "name": "machinomy",
-  "version": "1.12.3",
+  "version": "1.12.7",
   "description": "Micropayments powered by Ethereum",
   "author": "Sergey Ukustov <sergey.ukustov@machinomy.com>",
   "license": "Apache-2.0",
@@ -23,9 +23,9 @@
     "migrate": "yarn migrate:postgresql && yarn migrate:sqlite",
     "integration_test": "yarn build && mocha integration_test/**/*.test.js",
     "test:all": "yarn test:nedb && yarn test:postgresql && yarn test:sqlite",
-    "test:nedb": "DB_URL='nedb://' yarn test:pure",
-    "test:postgresql": "DB_URL='postgresql://testuser:testpassword@127.0.0.1/testdb' yarn test:pure",
-    "test:sqlite": "DB_URL='sqlite://testdb.sqlite3' yarn test:pure",
+    "test:nedb": "DATABASE_URL='nedb://' yarn test:pure",
+    "test:postgresql": "DATABASE_URL='postgresql://testuser:testpassword@127.0.0.1/testdb' yarn test:pure",
+    "test:sqlite": "DATABASE_URL='sqlite://testdb.sqlite3' yarn test:pure",
     "test:pure": "mocha --compilers ts:ts-node/register ./**/*.test.ts",
     "test": "yarn test:sqlite && yarn test:nedb && yarn test:postgresql",
     "coverage": "yarn build && nyc --reporter=lcov yarn run test"

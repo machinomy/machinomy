@@ -15,6 +15,7 @@ Available sub-projects:
 - [Examples](packages/examples) is [Machinomy](packages/machinomy) examples.
 - [Playground](packages/playground) contains code of playground.machinomy.com
 - [cli](packages/cli) is Machinomy Command Line Interface.
+- [logger](packages/logger) is Machinomy Logger. Works in browser and Node.
 
 
 Web site: [machinomy.com](http://machinomy.com).
@@ -35,7 +36,7 @@ The library supports mainnet, Ropsten, and [Rinkeby](https://www.rinkeby.io/) ne
 It takes two to tango: a seller and a buyer. Seller is `packages/examples/src/server.ts` script. Build it or run through node-ts.
 ```
 $ git clone https://github.com/machinomy/machinomy
-$ yarn install && yarn bootstrap && yarn build
+$ cd machinomy && yarn install && yarn bootstrap && yarn build
 $ node packages/examples/src/server.js
 ```
 
@@ -63,6 +64,16 @@ console.log(contents)
 ### Sell
 
 The process is more convoluted than buying. Better consult [packages/examples/src/server.ts](packages/examples/src/server.ts) file.
+
+### Sending payments through channels
+
+```
+$ git clone https://github.com/machinomy/machinomy
+$ cd machinomy && yarn install && yarn bootstrap && yarn build && cd packages/examples
+$ yarn run sender && yarn run receiver
+```
+
+Look at [sender.ts](packages/examples/src/sender.ts) and [receiver.ts](packages/examples/src/receiver.ts) for more information.
 
 ## Documentation
 

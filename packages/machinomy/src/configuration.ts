@@ -7,7 +7,7 @@ import * as env from './env'
 declare var web3: Web3 | undefined
 
 const BASE_DIR = '.machinomy'
-const COFNGIRATION_FILE = 'config.json'
+const CONFIGURATION_FILE = 'config.json'
 const DATABASE_FILE = 'storage.db'
 export const VERSION = '0.0.3'
 export const PROTOCOL = 'machinomy/' + VERSION
@@ -36,7 +36,7 @@ export const baseDirPath = (): string => {
 }
 
 export const configFilePath = (): string => {
-  return path.join(baseDirPath(), COFNGIRATION_FILE)
+  return path.join(baseDirPath(), CONFIGURATION_FILE)
 }
 
 const databaseFilePath = (): string => {
@@ -46,7 +46,6 @@ const databaseFilePath = (): string => {
 export interface IConfigurationOptions {
   account?: string
   password?: string
-  engine?: string
   databaseUrl?: string
 }
 
@@ -83,7 +82,7 @@ export const sender = (): Configuration => {
     return new Configuration({
       account: process.env.MACHINOMY_SENDER_ACCOUNT || options.sender.account,
       password: process.env.MACHINOMY_SENDER_PASSWORD || options.sender.password,
-      engine: process.env.MACHINOMY_DATABASE_URL || options.sender.databaseUrl
+      databaseUrl: process.env.DATABASE_URL || options.sender.databaseUrl
     })
   } catch (error) {
     return new Configuration({})
@@ -96,7 +95,7 @@ export const receiver = (): Configuration => {
     return new Configuration({
       account: process.env.MACHINOMY_RECEIVER_ACCOUNT || options.receiver.account,
       password: process.env.MACHINOMY_RECEIVER_PASSWORD || options.receiver.password,
-      engine: process.env.MACHINOMY_DATABASE_URL || options.receiver.databaseUrl
+      databaseUrl: process.env.DATABASE_URL || options.receiver.databaseUrl
     })
   } catch (error) {
     log.error(error)
