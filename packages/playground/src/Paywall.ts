@@ -33,6 +33,16 @@ function paywallHeaders (receiverAccount: string, gatewayUri: string, price: Big
   return headers
 }
 
+function paywallHeadersToken (receiverAccount: string, gatewayUri: string, price: BigNumber.BigNumber, tokenContract: string) {
+  let headers = {} as any
+  headers['Paywall-Version'] = '0.1'
+  headers['Paywall-Price'] = price
+  headers['Paywall-Address'] = receiverAccount
+  headers['Paywall-Gateway'] = gatewayUri
+  headers['Paywall-TokenContract'] = tokenContract
+  return headers
+}
+
 function parseToken (req: express.Request, callback: (error: string | null, token?: string, meta?: string, price?: BigNumber.BigNumber) => void) {
   let content = req.get(HEADER_NAME)
   if (content) {
@@ -134,6 +144,53 @@ export default class Paywall {
       } else {
         next()
       }
+    }
+  }
+
+  paymentRequiredToken (price: BigNumber.BigNumber, tokenContract: string, req: express.Request, res: express.Response): void {
+    log('Require payment ' + price.toString() + ' for ' + req.path)
+    res.status(402)
+      .set(paywallHeadersToken(this.receiverAccount, acceptUrl(this.base), price, tokenContract))
+      .send('Payment Required')
+      .end()
+  }
+
+  paymentInvalidToken (price: BigNumber.BigNumber, tokenContract: string, req: express.Request, res: express.Response) {
+    res.status(409) // Conflict
+      .set(paywallHeadersToken(this.receiverAccount, acceptUrl(this.base), price, tokenContract))
+      .send('Payment Invalid')
+      .end()
+  }
+
+  guardToken (price: BigNumber.BigNumber, tokenContract: string, callback: express.RequestHandler): express.RequestHandler {
+    let _guard = async (fixedPrice: BigNumber.BigNumber, req: express.Request, res: express.Response, next: express.NextFunction, error: any, tokenContract: string, token?: string, meta?: string) => {
+      if (error || !token) {
+        log(error)
+        this.paymentRequiredToken(fixedPrice, tokenContract, req, res)
+      } else {
+        const response = await fetcher.fetch(`${GATEWAY_URL}${PREFIX}/verify/${token}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        })
+
+        if (response.status >= 200 && response.status < 300) {
+          log('Got valid paywall token')
+          callback(req, res, next)
+        } else {
+          log('Got invalid paywall token')
+          this.paymentInvalidToken(fixedPrice, tokenContract, req, res)
+        }
+      }
+    }
+
+    return (req: express.Request, res: express.Response, next: express.NextFunction) => {
+      log(`Requested ${req.path}`)
+      parseToken(req, (error, token, meta) => {
+        return _guard(price, req, res, next, error, token!, meta!)
+      })
     }
   }
 

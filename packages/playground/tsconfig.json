@@ -4,7 +4,10 @@
     "sourceRoot": "src/",
     "outDir": "dist/",
     "types": [
-      "@machinomy/types-web3"
+      "@machinomy/types-web3",
+      "@machinomy/types-ethereumjs-util",
+      "@machinomy/types-ethereumjs-units",
+      "@machinomy/types-truffle-contract"
     ]
   },
   "include": [
