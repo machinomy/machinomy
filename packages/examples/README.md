@@ -8,6 +8,10 @@
 
 [`machinomy.ts`](./src/machinomy.ts) - Self-contained emulation of buying and selling a content.
 
+[`sender.ts`](./src/sender.ts) - Sending payments through channels. Example of a sender.
+
+[`receiver.ts`](./src/receiver.ts) - Sending payments through channels. Example of a receiver.
+
 Web site: [machinomy.com](http://machinomy.com).
 Twitter: [@machinomy](http://twitter.com/machinomy).
 Support/Discussion: [Gitter](https://gitter.im/machinomy/machinomy).

@@ -57,7 +57,7 @@ export default class PaymentValidation {
   }
 
   private async isValidPaymentValue (): Promise<boolean> {
-    const isValidPaymentValue = this.paymentChannel.value.lessThanOrEqualTo(this.payment.channelValue)
+    const isValidPaymentValue = this.payment.value.lessThanOrEqualTo(this.payment.channelValue)
     if (!isValidPaymentValue) {
       error(`Payment value exceeds the channel value. Channel value: ${this.paymentChannel.value}, payment: %o`, this.payment)
     }

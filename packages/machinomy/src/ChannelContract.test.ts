@@ -6,6 +6,7 @@ import Signature from './Signature'
 import * as expect from 'expect'
 import * as asPromised from 'chai-as-promised'
 import * as chai from 'chai'
+import ChannelManager from "./ChannelManager";
 
 chai.use(asPromised)
 
@@ -185,11 +186,14 @@ describe('ChannelContract', () => {
       expect(tokenUnidirectional.canClaim.calledWith(ID, VALUE, RECEIVER, SIGNATURE)).toBeTruthy()
     })
 
-    it('not found: throw error', async () => {
+    it('try ethContract if not found', async () => {
       channelsDatabase.firstById = async () => {
         return null
       }
-      return chai.assert.isRejected(contract.canClaim(ID, VALUE, RECEIVER, SIGNATURE))
+      ethUnidirectional.channelById = sinon.stub().resolves([])
+      ethUnidirectional.canClaim = sinon.stub().returns(true)
+      let result = contract.canClaim(ID, VALUE, RECEIVER, SIGNATURE)
+      expect(result).toBeTruthy()
     })
   })
 })
