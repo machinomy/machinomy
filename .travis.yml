@@ -21,8 +21,7 @@ before_script:
 script:
   - yarn run lint
   - yarn run build
-  - cd packages/machinomy && yarn migrate && cd ../../
-  - yarn run test
+  - yarn run test:all
   - yarn run coverage
 after_script:
   - bash <(curl -s https://codecov.io/bash) -s packages -t $CODECOV

@@ -22,9 +22,10 @@
     "migrate:sqlite": "db-migrate up --migrations-dir='./lib/storage/sqlite/migrations'",
     "migrate": "yarn migrate:postgresql && yarn migrate:sqlite",
     "integration_test": "yarn build && mocha integration_test/**/*.test.js",
-    "test:nedb": "DB_URL='nedb://' ENGINE_NAME=nedb mocha --recursive --compilers ts:ts-node/register lib/*.test.ts",
-    "test:postgresql": "DB_URL='postgresql://testuser:testpassword@127.0.0.1/testdb' ENGINE_NAME=postgresql mocha --recursive --compilers ts:ts-node/register lib/*.test.ts",
-    "test:sqlite": "DB_URL='sqlite://testdb.sqlite3' ENGINE_NAME=sqlite mocha --compilers ts:ts-node/register ./**/*.test.ts",
+    "test:all": "yarn test:nedb && yarn test:postgresql && yarn test:sqlite",
+    "test:nedb": "DB_URL='nedb://' yarn test",
+    "test:postgresql": "DB_URL='postgresql://testuser:testpassword@127.0.0.1/testdb' yarn test",
+    "test:sqlite": "DB_URL='sqlite://testdb.sqlite3' yarn test",
     "test": "mocha --compilers ts:ts-node/register ./**/*.test.ts",
     "coverage": "yarn build && nyc --reporter=lcov yarn run test"
   },
