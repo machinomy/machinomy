@@ -1,6 +1,7 @@
 import { ConnectionString } from 'connection-string'
 import Logger from '@machinomy/logger'
 import SqlMigrator from '../SqlMigrator'
+import * as path from 'path'
 
 export function migrationsConfig (connectionUrl: string) {
   let c = new ConnectionString(connectionUrl)
@@ -8,7 +9,7 @@ export function migrationsConfig (connectionUrl: string) {
   let filename = c.hostname + '/' + segments.join('/')
   return {
     cmdOptions: {
-      'migrations-dir': './packages/machinomy/lib/storage/sqlite/migrations/'
+      'migrations-dir': path.resolve(__dirname, './migrations/')
     },
     config: {
       defaultEnv: 'defaultSqlite',
