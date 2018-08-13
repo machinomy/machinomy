@@ -72,7 +72,7 @@ export default class ChannelEthContract {
     const exists = await deployed.isPresent(channelId)
 
     if (!exists) {
-      return new BigNumber.BigNumber(ChannelManager.DEFAULT_SETTLEMENT_PERIOD)
+      return new BigNumber(ChannelManager.DEFAULT_SETTLEMENT_PERIOD)
     } else {
       const chan = await deployed.channels(channelId)
       return chan[3]
