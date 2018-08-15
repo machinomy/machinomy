@@ -14,6 +14,7 @@ import IPaymentsDatabase from './storage/IPaymentsDatabase'
 import ITokensDatabase from './storage/ITokensDatabase'
 import Logger from '@machinomy/logger'
 import { PaymentChannel } from './PaymentChannel'
+import ChannelInflator from './ChannelInflator'
 
 const LOG = new Logger('ChannelManager')
 
@@ -99,13 +100,21 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
   }
 
   async acceptPayment (payment: Payment): Promise<string> {
-    LOG.info(`Queueing payment of ${payment.price.toString()} Wei to channel with ID ${payment.channelId}.`)
+    const isPaymentInTokens = ChannelInflator.isTokenContractDefined(payment.tokenContract)
+    if (isPaymentInTokens) {
+      LOG.info(`Queueing payment of ${payment.price.toString()} token(s) to channel with ID ${payment.channelId}.`)
+    } else {
+      LOG.info(`Queueing payment of ${payment.price.toString()} Wei to channel with ID ${payment.channelId}.`)
+    }
 
     return this.mutex.synchronizeOn(payment.channelId, async () => {
       const channel = await this.findChannel(payment)
 
-      LOG.info(`Adding ${payment.price.toString()} Wei to channel with ID ${channel.channelId.toString()}.`)
-
+      if (isPaymentInTokens) {
+        LOG.info(`Adding ${payment.price.toString()} token(s) to channel with ID ${channel.channelId.toString()}.`)
+      } else {
+        LOG.info(`Adding ${payment.price.toString()} Wei to channel with ID ${channel.channelId.toString()}.`)
+      }
       const valid = await this.paymentManager.isValid(payment, channel)
 
       if (valid) {

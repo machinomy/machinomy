@@ -11,6 +11,10 @@ export default class ChannelInflator {
     this.channelTokenContract = channelTokenContract
   }
 
+  static isTokenContractDefined (tokenContract: string | undefined): boolean {
+    return tokenContract !== undefined && tokenContract !== null && tokenContract.startsWith('0x') && parseInt(tokenContract, 16) !== 0
+  }
+
   async inflate (paymentChannelJSON: PaymentChannelJSON): Promise<PaymentChannel> {
     const tokenContract = paymentChannelJSON.tokenContract
     const contract = this.actualContract(tokenContract)
@@ -30,14 +34,10 @@ export default class ChannelInflator {
   }
 
   actualContract (tokenContract?: string): ChannelEthContract | ChannelTokenContract {
-    if (this.isTokenContractDefined(tokenContract)) {
+    if (ChannelInflator.isTokenContractDefined(tokenContract)) {
       return this.channelTokenContract
     } else {
       return this.channelEthContract
     }
-  }
-
-  isTokenContractDefined (tokenContract: string | undefined): boolean {
-    return tokenContract !== undefined && tokenContract.startsWith('0x') && parseInt(tokenContract, 16) !== 0
   }
 }
