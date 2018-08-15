@@ -10,8 +10,7 @@ export function migrationsConfig (connectionUrl: string) {
       'migrations-dir': path.resolve(__dirname, './migrations/')
     },
     config: {
-      defaultEnv: 'defaultPg',
-      defaultPg: {
+      dev: {
         driver: 'pg',
         user: `${c.user}`,
         password: `${c.password}`,
