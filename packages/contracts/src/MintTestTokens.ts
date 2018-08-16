@@ -35,8 +35,8 @@ const args = yargs
 const MINT_AMOUNT = args['amount'] || 1
 
 async function run (): Promise<void> {
-  const providerFrom = new HDWalletProvider(MINT_FROM_SEED_PHRASE!, ETH_RPC_URL!)
-  const providerTo = new HDWalletProvider(MINT_TO_SEED_PHRASE!, ETH_RPC_URL!)
+  const providerFrom = new HDWalletProvider(MINT_FROM_SEED_PHRASE!, ETH_RPC_URL)
+  const providerTo = new HDWalletProvider(MINT_TO_SEED_PHRASE!, ETH_RPC_URL)
   const web3From = new Web3(providerFrom)
   const web3To = new Web3(providerTo)
   const accountsFrom = await pify<string[]>((cb: (error: Error, accounts: string[]) => void) => {
