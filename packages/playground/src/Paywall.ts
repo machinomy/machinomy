@@ -26,20 +26,20 @@ function isAcceptUrl (url: string) {
 
 function paywallHeaders (receiverAccount: string, gatewayUri: string, price: BigNumber.BigNumber) {
   let headers = {} as any
-  headers['Paywall-Version'] = '0.1'
-  headers['Paywall-Price'] = price
-  headers['Paywall-Address'] = receiverAccount
-  headers['Paywall-Gateway'] = gatewayUri
+  headers['paywall-version'] = '0.1'
+  headers['paywall-price'] = price.toString()
+  headers['paywall-address'] = receiverAccount
+  headers['paywall-gateway'] = gatewayUri
   return headers
 }
 
 function paywallHeadersToken (receiverAccount: string, gatewayUri: string, price: BigNumber.BigNumber, tokenContract: string) {
   let headers = {} as any
-  headers['Paywall-Version'] = '0.1'
-  headers['Paywall-Price'] = price
-  headers['Paywall-Address'] = receiverAccount
-  headers['Paywall-Gateway'] = gatewayUri
-  headers['Paywall-TokenContract'] = tokenContract
+  headers['paywall-version'] = '0.1'
+  headers['paywall-price'] = price.toString()
+  headers['paywall-address'] = receiverAccount
+  headers['paywall-gateway'] = gatewayUri
+  headers['paywall-token-contract'] = tokenContract
   return headers
 }
 
@@ -163,10 +163,10 @@ export default class Paywall {
   }
 
   guardToken (price: BigNumber.BigNumber, tokenContract: string, callback: express.RequestHandler): express.RequestHandler {
-    let _guard = async (fixedPrice: BigNumber.BigNumber, req: express.Request, res: express.Response, next: express.NextFunction, error: any, tokenContract: string, token?: string, meta?: string) => {
+    let _guard = async (fixedPrice: BigNumber.BigNumber, req: express.Request, res: express.Response, next: express.NextFunction, error: any, _tokenContract: string, token?: string, meta?: string) => {
       if (error || !token) {
         log(error)
-        this.paymentRequiredToken(fixedPrice, tokenContract, req, res)
+        this.paymentRequiredToken(fixedPrice, _tokenContract, req, res)
       } else {
         const response = await fetcher.fetch(`${GATEWAY_URL}${PREFIX}/verify/${token}`, {
           method: 'GET',
@@ -181,7 +181,7 @@ export default class Paywall {
           callback(req, res, next)
         } else {
           log('Got invalid paywall token')
-          this.paymentInvalidToken(fixedPrice, tokenContract, req, res)
+          this.paymentInvalidToken(fixedPrice, _tokenContract, req, res)
         }
       }
     }
@@ -189,7 +189,7 @@ export default class Paywall {
     return (req: express.Request, res: express.Response, next: express.NextFunction) => {
       log(`Requested ${req.path}`)
       parseToken(req, (error, token, meta) => {
-        return _guard(price, req, res, next, error, token!, meta!)
+        return _guard(price, req, res, next, error, tokenContract, token!, meta!)
       })
     }
   }
