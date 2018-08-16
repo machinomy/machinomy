@@ -39,6 +39,9 @@ LOG.trace('This is trace message')
 For more LogDNA options see [LogDNA for Node.js](https://github.com/logdna/nodejs#options)
 
 
+**DO NOT FORGET TO DEFINE "DEBUG=*" ENV VARIABLE!**
+
+
 Web site: [machinomy.com](http://machinomy.com).
 Twitter: [@machinomy](http://twitter.com/machinomy).
 Support/Discussion: [Gitter](https://gitter.im/machinomy/machinomy).
