@@ -27,7 +27,7 @@ export default class ChannelTokenContract {
     const deployedTokenUnidirectional = await this.contract
     const deployedStandardTokenContract = await standardTokenContract
 
-    const approveTx = await deployedStandardTokenContract.approve(receiver, value, { from: sender })
+    const approveTx = await deployedStandardTokenContract.approve(deployedTokenUnidirectional.address, value, { from: sender })
     if (contracts.StandardToken.isApprovalEvent(approveTx.logs[0])) {
       return deployedTokenUnidirectional.open(_channelId.toString(), receiver, new BigNumber.BigNumber(settlementPeriod), tokenContract, value, {
         from: sender,

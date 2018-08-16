@@ -120,7 +120,7 @@ export default class Machinomy {
     await this.checkMigrationsState()
     const _value = new BigNumber.BigNumber(value)
     let channelManager = await this.registry.channelManager()
-    return channelManager.openChannel(this.account, receiver, new BigNumber.BigNumber(0), _value, channelId, tokenContract)
+    return channelManager.openChannel(this.account, receiver, _value, new BigNumber.BigNumber(0), channelId, tokenContract)
   }
 
   /**
