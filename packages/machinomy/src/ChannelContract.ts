@@ -7,6 +7,7 @@ import ChannelTokenContract from './ChannelTokenContract'
 import Signature from './Signature'
 import ChannelId from './ChannelId'
 import IChannelsDatabase from './storage/IChannelsDatabase'
+import Payment from './payment'
 
 export type Channel = [string, string, BigNumber, BigNumber, BigNumber]
 export type ChannelWithTokenContract = [string, string, BigNumber, BigNumber, BigNumber, string]
@@ -85,9 +86,16 @@ export default class ChannelContract {
 
   }
 
-  async canClaim (channelId: string, payment: BigNumber, receiver: string, signature: Signature): Promise<boolean> {
-    const contract = await this.getContractByChannelId(channelId)
-    return contract.canClaim(channelId, payment, receiver, signature)
+  async canClaim (payment: Payment): Promise<boolean> {
+    const channelId: string = payment.channelId
+    const price: BigNumber = payment.price
+    const receiver: string = payment.receiver
+    const signature: Signature = payment.signature
+    if (isTokenContractDefined(payment.tokenContract)) {
+      return this.channelTokenContract.canClaim(channelId, price, receiver, signature)
+    } else {
+      return this.channelEthContract.canClaim(channelId, price, receiver, signature)
+    }
   }
 
   async channelById (channelId: string): Promise<ChannelFromContract> {

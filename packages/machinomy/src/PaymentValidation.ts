@@ -89,8 +89,8 @@ export default class PaymentValidation {
   }
 
   private async canClaim (): Promise<boolean> {
-    let p = this.payment
-    const canClaim = await this.channelContract.canClaim(p.channelId, p.value, p.receiver, p.signature)
+    const p = this.payment
+    const canClaim = await this.channelContract.canClaim(p)
     if (!canClaim) {
       error(`Channel contract cannot accept the claim. Payment: %o`, p)
     }
