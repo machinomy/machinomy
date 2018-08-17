@@ -67,7 +67,7 @@ export default class Machinomy {
 
     const payment = await this.nextPayment(options)
     const res = await client.doPayment(payment, options.gateway, options.purchaseMeta)
-    await channelManager.spendChannel(payment)
+    await channelManager.spendChannel(payment, res.token)
     return { token: res.token, channelId: payment.channelId }
   }
 

@@ -14,6 +14,7 @@ import IPaymentsDatabase from './storage/IPaymentsDatabase'
 import ITokensDatabase from './storage/ITokensDatabase'
 import Logger from '@machinomy/logger'
 import { PaymentChannel } from './PaymentChannel'
+import * as uuid from 'uuid'
 
 const LOG = new Logger('ChannelManager')
 
@@ -92,9 +93,11 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
     })
   }
 
-  async spendChannel (payment: Payment): Promise<Payment> {
+  async spendChannel (payment: Payment, token?: string): Promise<Payment> {
     const chan = PaymentChannel.fromPayment(payment)
     await this.channelsDao.saveOrUpdate(chan)
+    let _token = token || payment.token || uuid.v4().replace(/-/g, '')
+    await this.paymentsDao.save(_token, payment)
     return payment
   }
 

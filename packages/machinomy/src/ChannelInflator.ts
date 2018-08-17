@@ -38,6 +38,6 @@ export default class ChannelInflator {
   }
 
   isTokenContractDefined (tokenContract: string | undefined): boolean {
-    return tokenContract !== undefined && tokenContract.startsWith('0x') && parseInt(tokenContract, 16) !== 0
+    return tokenContract ? tokenContract.startsWith('0x') && parseInt(tokenContract, 16) !== 0 : false
   }
 }
