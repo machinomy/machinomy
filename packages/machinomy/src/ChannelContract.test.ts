@@ -6,6 +6,7 @@ import Signature from './Signature'
 import * as expect from 'expect'
 import * as asPromised from 'chai-as-promised'
 import * as chai from 'chai'
+import Payment from './payment'
 
 chai.use(asPromised)
 
@@ -13,9 +14,23 @@ const ID = '0e29e61f256b40b2a6280f8181a1b5ff'
 const SETTLEMENT_PERIOD = new BigNumber(1234)
 const RECEIVER = '0xRECEIVER'
 const VALUE = new BigNumber(10)
+const PRICE = new BigNumber(5)
 const SENDER = '0xSENDER'
 const TOKEN_CONTRACT = '0x01e1a2626271c7267Dd8F506503AD0318776EF69'
 const SIGNATURE = Signature.fromRpcSig('SIGNATURE')
+const PAYMENT: Payment = {
+  channelId: ID,
+  sender: SENDER,
+  receiver: RECEIVER,
+  price: PRICE,
+  value: VALUE,
+  channelValue: VALUE,
+  signature: SIGNATURE,
+  meta: 'meta',
+  token: undefined,
+  createdAt: undefined,
+  tokenContract: TOKEN_CONTRACT
+} as Payment
 
 describe('ChannelContract', () => {
   const web3 = {
@@ -172,7 +187,8 @@ describe('ChannelContract', () => {
       channelsDatabase.firstById = async () => {
         return { tokenContract: undefined }
       }
-      await contract.canClaim(ID, VALUE, RECEIVER, SIGNATURE)
+
+      await contract.canClaim(PAYMENT)
       expect(ethUnidirectional.canClaim.calledWith(ID, VALUE, RECEIVER, SIGNATURE)).toBeTruthy()
     })
 
@@ -181,7 +197,7 @@ describe('ChannelContract', () => {
       channelsDatabase.firstById = async () => {
         return { tokenContract: TOKEN_CONTRACT }
       }
-      await contract.canClaim(ID, VALUE, RECEIVER, SIGNATURE)
+      await contract.canClaim(PAYMENT)
       expect(tokenUnidirectional.canClaim.calledWith(ID, VALUE, RECEIVER, SIGNATURE)).toBeTruthy()
     })
 
@@ -191,7 +207,7 @@ describe('ChannelContract', () => {
       }
       ethUnidirectional.channelById = sinon.stub().resolves([])
       ethUnidirectional.canClaim = sinon.stub().returns(true)
-      let result = contract.canClaim(ID, VALUE, RECEIVER, SIGNATURE)
+      let result = contract.canClaim(PAYMENT)
       expect(result).toBeTruthy()
     })
   })

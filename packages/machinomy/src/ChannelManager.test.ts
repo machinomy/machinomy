@@ -438,7 +438,7 @@ describe('ChannelManager', () => {
           s: '0x02'
         }),
         meta: '',
-        contractAddress: '',
+        tokenContract: '',
         token: ''
       } as Payment
 

@@ -88,13 +88,13 @@ export default class ChannelContract {
 
   async canClaim (payment: Payment): Promise<boolean> {
     const channelId: string = payment.channelId
-    const price: BigNumber = payment.price
+    const value: BigNumber = payment.value
     const receiver: string = payment.receiver
     const signature: Signature = payment.signature
     if (isTokenContractDefined(payment.tokenContract)) {
-      return this.channelTokenContract.canClaim(channelId, price, receiver, signature)
+      return this.channelTokenContract.canClaim(channelId, value, receiver, signature)
     } else {
-      return this.channelEthContract.canClaim(channelId, price, receiver, signature)
+      return this.channelEthContract.canClaim(channelId, value, receiver, signature)
     }
   }
 
