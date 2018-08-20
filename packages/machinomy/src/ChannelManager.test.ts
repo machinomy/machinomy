@@ -385,7 +385,7 @@ describe('ChannelManager', () => {
   })
 
   describe('spendChannel', () => {
-    it('should save the channel in the database', () => {
+    it('should save the channel in the database', async () => {
       const payment = new Payment({
         channelId: '0xdead',
         sender: 'send',
@@ -404,18 +404,21 @@ describe('ChannelManager', () => {
       })
 
       channelsDao.saveOrUpdate = sinon.stub().resolves()
+      paymentsDao.save = sinon.stub().resolves()
 
-      return channelManager.spendChannel(payment).then(() => {
-        expect((channelsDao.saveOrUpdate as sinon.SinonStub).calledWith({
-          sender: 'send',
-          receiver: 'recv',
-          channelId: '0xdead',
-          value: new BigNumber.BigNumber(10),
-          spent: new BigNumber.BigNumber(10),
-          state: undefined,
-          tokenContract: undefined
-        }))
-      })
+      await channelManager.spendChannel(payment)
+
+      expect((channelsDao.saveOrUpdate as sinon.SinonStub).calledWith({
+        sender: 'send',
+        receiver: 'recv',
+        channelId: '0xdead',
+        value: new BigNumber.BigNumber(10),
+        spent: new BigNumber.BigNumber(10),
+        state: undefined,
+        tokenContract: undefined
+      }))
+
+      expect((paymentsDao.save as sinon.SinonStub).called)
     })
   })
 

@@ -29,9 +29,10 @@ import { memoize } from 'decko'
  * [deposit]{@link Machinomy.deposit} methods.
  */
 export default class Machinomy {
+  readonly registry: Registry
+
   /** Ethereum account address that sends the money. */
   private readonly account: string
-  private readonly registry: Registry
 
   constructor (account: string, web3: Web3, options?: MachinomyOptions) {
     this.account = account
@@ -66,7 +67,7 @@ export default class Machinomy {
 
     const payment = await this.nextPayment(options)
     const res = await client.doPayment(payment, options.gateway, options.purchaseMeta)
-    await channelManager.spendChannel(payment)
+    await channelManager.spendChannel(payment, res.token)
     return { token: res.token, channelId: payment.channelId }
   }
 
