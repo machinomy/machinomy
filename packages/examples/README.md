@@ -11,6 +11,20 @@
 [`sender.ts`](./src/sender.ts) - Sending payments through channels. Example of a sender.
 
 [`receiver.ts`](./src/receiver.ts) - Sending payments through channels. Example of a receiver.
+Usage:
+``` 
+  $ cd machinomy/packages/examples/
+  $ DEBUG=* yarn sender && yarn receiverTokens
+```
+
+[`senderTokens.ts`](./src/senderTokens.ts) - Sending tokens through channels. Example of a sender.
+
+[`receiverTokens.ts`](./src/receiverTokens.ts) - Sending tokens through channels. Example of a receiver.
+Usage:
+``` 
+  $ cd machinomy/packages/examples/
+  $ DEBUG=* yarn senderTokens && yarn receiverTokens
+```
 
 Web site: [machinomy.com](http://machinomy.com).
 Twitter: [@machinomy](http://twitter.com/machinomy).
