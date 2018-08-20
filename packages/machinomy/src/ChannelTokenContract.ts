@@ -45,7 +45,7 @@ export default class ChannelTokenContract {
     LOG.info(`Claiming channel with id ${channelId} on behalf of receiver ${receiver}`)
     LOG.info(`Values: ${value} / Signature: ${signature.toString()}`)
     const deployed = await this.contract
-    return deployed.claim(channelId, value, signature.toString(), { from: receiver })
+    return deployed.claim(channelId, value, signature.toString(), { from: receiver, gas: CREATE_CHANNEL_GAS })
   }
 
   async deposit (sender: string, channelId: string, value: BigNumber.BigNumber, tokenContract: string): Promise<TransactionResult> {
