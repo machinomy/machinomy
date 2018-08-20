@@ -42,7 +42,8 @@ async function main () {
   }))
 
   app.listen(PORT, () => {
-    console.log(`Waiting at http://${HOST}/hello`)
+    console.log(`Waiting at http(s)://${HOST}:${PORT}/hello`)
+    console.log(`Waiting at http(s)://${HOST}:${PORT}/hello-token`)
   })
 }
 
