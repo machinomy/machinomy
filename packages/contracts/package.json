@@ -33,7 +33,8 @@
     "test": "yarn build && yarn truffle:test",
     "prepublish": "yarn support:wrap && yarn build",
     "coverage": "solidity-coverage",
-    "mintTestTokens": "yarn build && DEBUG=* node lib/MintTestTokens"
+    "mintTestTokens": "yarn build && DEBUG=* node lib/MintTestTokens",
+    "deployTestToken": "yarn build && DEBUG=* node lib/DeployTestToken"
   },
   "devDependencies": {
     "@machinomy/types-ethereumjs-units": "^0.0.2",
