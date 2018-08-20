@@ -8,7 +8,7 @@ import Logger from '@machinomy/logger'
 const payment = require(path.resolve('./payment.json'))
 const PROVIDER = process.env.PROVIDER || 'https://rinkeby.infura.io'
 const MNEMONIC_SENDER = process.env.MNEMONIC_SENDER || 'peanut giggle name tree canoe tube render ketchup survey segment army will'
-const MNEMONIC_RECEIVER = process.env.MNEMONIC_RECEIVER || 'peanut giggle name tree canoe tube render ketchup survey segment army will'
+const MNEMONIC_RECEIVER = process.env.MNEMONIC_RECEIVER || 'dance mutual spike analyst together average reject pudding hazard move fence install'
 const LOG = new Logger('machinomy-receiver')
 
 async function run () {
