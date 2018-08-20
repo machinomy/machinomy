@@ -19,6 +19,7 @@ import * as Web3 from 'web3'
 import HDWalletProvider from '@machinomy/hdwallet-provider'
 import Machinomy from 'machinomy'
 import fetcher from 'machinomy/lib/util/fetcher'
+import BigNumber from 'bignumber.js'
 
 async function main (): Promise<string> {
   const PROVIDER_URL = String(process.env.PROVIDER_URL)
@@ -46,7 +47,7 @@ async function main (): Promise<string> {
    * Request token to content access
    */
   const result = await machinomy.buy({
-    price: parseInt(headers.get('paywall-price') || '0', 10),
+    price: new BigNumber(headers.get('paywall-price') || '0'),
     gateway: headers.get('paywall-gateway')!,
     receiver: headers.get('paywall-address')!,
     meta: 'metaidexample',
