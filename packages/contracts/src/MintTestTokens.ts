@@ -46,7 +46,8 @@ async function run (): Promise<void> {
     web3To.eth.getAccounts(cb)
   })
 
-  const instanceTestToken: contracts.TestToken.Contract = await contracts.TestToken.contract(providerFrom).deployed()
+  const TestToken = contracts.TestToken.contract(providerFrom)
+  const instanceTestToken = await TestToken.deployed()
   await instanceTestToken.mint(accountsTo[0], new BigNumber.BigNumber(MINT_AMOUNT), {
     from: accountsFrom[0]
   })

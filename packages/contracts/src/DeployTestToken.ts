@@ -1,6 +1,6 @@
 import * as fs from 'fs-extra'
 import * as path from 'path'
-import * as contracts from '@machinomy/contracts'
+import * as contracts from './index'
 import HDWalletProvider from '@machinomy/hdwallet-provider'
 import Logger from '@machinomy/logger'
 
