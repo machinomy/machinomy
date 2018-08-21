@@ -6,7 +6,7 @@ import * as contracts from '@machinomy/contracts'
 import Signature from './Signature'
 import ChannelId from './ChannelId'
 
-const LOG = new Logger('ChannelTokenContract')
+const LOG = new Logger('channel-token-contract')
 
 const CREATE_CHANNEL_GAS = 300000
 

@@ -14,7 +14,7 @@ export type Channel = [string, string, BigNumber, BigNumber, BigNumber]
 export type ChannelWithTokenContract = [string, string, BigNumber, BigNumber, BigNumber, string]
 export type ChannelFromContract = Channel | ChannelWithTokenContract
 
-const LOG = new Logger('ChannelContract')
+const LOG = new Logger('channel-contract')
 
 export default class ChannelContract {
   channelEthContract: ChannelEthContract

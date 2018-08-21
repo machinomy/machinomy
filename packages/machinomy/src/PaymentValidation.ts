@@ -7,7 +7,7 @@ import ChannelContract from './ChannelContract'
 import ChannelManager from './ChannelManager'
 import MachinomyOptions from './MachinomyOptions'
 
-const LOG = new Logger('PaymentValidation')
+const LOG = new Logger('payment-validation')
 
 function error (message: string, ...args: Array<any>) {
   LOG.error(`Payment is invalid: ${message}`, args)

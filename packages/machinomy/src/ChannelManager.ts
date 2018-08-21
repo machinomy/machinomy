@@ -17,7 +17,7 @@ import { PaymentChannel } from './PaymentChannel'
 import ChannelInflator from './ChannelInflator'
 import * as uuid from 'uuid'
 
-const LOG = new Logger('ChannelManager')
+const LOG = new Logger('channel-manager')
 
 const DAY_IN_SECONDS = 86400
 

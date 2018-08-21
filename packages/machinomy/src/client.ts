@@ -10,7 +10,7 @@ import { AcceptPaymentResponse, AcceptPaymentResponseSerde } from './accept_paym
 import { AcceptTokenRequest, AcceptTokenRequestSerde } from './accept_token_request'
 import { AcceptTokenResponse, AcceptTokenResponseSerde } from './accept_token_response'
 
-const LOG = new Logger('Client')
+const LOG = new Logger('client')
 
 export default interface Client extends EventEmitter {
   doPreflight (uri: string): Promise<PaymentRequired>
