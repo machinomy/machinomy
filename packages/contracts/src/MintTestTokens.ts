@@ -5,12 +5,25 @@ import * as contracts from './index'
 import Logger from '@machinomy/logger'
 import HDWalletProvider from '@machinomy/hdwallet-provider'
 import * as Web3 from 'web3'
-import pify from 'machinomy/lib/util/pify'
 import * as BigNumber from 'bignumber.js'
 
 const LOG = new Logger('mint-test-tokens')
 
 require('dotenv').config()
+
+function pify<T> (fn: Function): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const handler = (err: any, res: T) => {
+      if (err) {
+        return reject(err)
+      }
+
+      return resolve(res)
+    }
+
+    fn(handler)
+  })
+}
 
 const ETH_RPC_URL = process.env.ETH_RPC_URL || 'http://localhost:8545'
 
