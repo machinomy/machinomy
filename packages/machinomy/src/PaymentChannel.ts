@@ -32,7 +32,7 @@ export class PaymentChannel {
   value: BigNumber.BigNumber
   spent: BigNumber.BigNumber
   state: number
-  tokenContract?: string
+  tokenContract: string
 
   /**
    * @param sender      Ethereum address of the client.
@@ -50,7 +50,7 @@ export class PaymentChannel {
     this.value = new BigNumber.BigNumber(value.toString())
     this.spent = new BigNumber.BigNumber(spent.toString())
     this.state = Number(state)
-    this.tokenContract = tokenContract || undefined
+    this.tokenContract = tokenContract || ''
   }
 
   static fromPayment (payment: Payment): PaymentChannel {

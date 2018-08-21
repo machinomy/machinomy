@@ -9,7 +9,8 @@ export function migrationsConfig (connectionUrl: string) {
   let filename = c.hostname + '/' + segments.join('/')
   return {
     cmdOptions: {
-      'migrations-dir': path.resolve(__dirname, './migrations/')
+      'migrations-dir': path.resolve(__dirname, './migrations/'),
+      'env': 'defaultSqlite'
     },
     config: {
       defaultEnv: 'defaultSqlite',

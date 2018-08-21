@@ -79,7 +79,8 @@ describe('ChannelTokenContract', () => {
       await contract.claim(RECEIVER, ID, VALUE, SIG)
 
       expect(deployed.claim.calledWith(ID, VALUE, SIG.toString(), {
-        from: RECEIVER
+        from: RECEIVER,
+        gas: 300000
       })).toBeTruthy()
     })
   })

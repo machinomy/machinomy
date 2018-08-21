@@ -45,7 +45,7 @@ export default class Payment {
   meta: string
   token: string | undefined
   createdAt?: number
-  tokenContract?: string
+  tokenContract: string
 
   constructor (options: Payment) {
     this.channelId = options.channelId

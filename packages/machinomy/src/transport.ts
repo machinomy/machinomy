@@ -15,7 +15,7 @@ const request: (opts: RequiredUriUrl & CoreOptions) => Promise<RequestResponse> 
   })
 }
 
-const LOG = new Logger('Transport')
+const LOG = new Logger('transport')
 
 // noinspection MagicNumberJS
 export const STATUS_CODES = {

@@ -7,7 +7,7 @@ import IChannelsDatabase from './IChannelsDatabase'
 import Logger from '@machinomy/logger'
 import ChannelInflator from '../ChannelInflator'
 
-const LOG = new Logger('AbstractChannelsDatabase')
+const LOG = new Logger('abstract-channels-database')
 
 export default abstract class AbstractChannelsDatabase<T extends IEngine> implements IChannelsDatabase {
   engine: T

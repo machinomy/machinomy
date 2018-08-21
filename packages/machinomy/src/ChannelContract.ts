@@ -3,20 +3,18 @@ import * as Web3 from 'web3'
 import { BigNumber } from 'bignumber.js'
 import { TransactionResult } from 'truffle-contract'
 import ChannelEthContract from './ChannelEthContract'
+import ChannelInflator from './ChannelInflator'
 import ChannelTokenContract from './ChannelTokenContract'
 import Signature from './Signature'
 import ChannelId from './ChannelId'
 import IChannelsDatabase from './storage/IChannelsDatabase'
+import Payment from './payment'
 
 export type Channel = [string, string, BigNumber, BigNumber, BigNumber]
 export type ChannelWithTokenContract = [string, string, BigNumber, BigNumber, BigNumber, string]
 export type ChannelFromContract = Channel | ChannelWithTokenContract
 
-const LOG = new Logger('ChannelContract')
-
-function isTokenContractDefined (tokenContract: string | undefined): tokenContract is string {
-  return tokenContract !== undefined && tokenContract.startsWith('0x') && parseInt(tokenContract, 16) !== 0
-}
+const LOG = new Logger('channel-contract')
 
 export default class ChannelContract {
   channelEthContract: ChannelEthContract
@@ -30,8 +28,8 @@ export default class ChannelContract {
   }
 
   async open (sender: string, receiver: string, value: BigNumber, settlementPeriod: number | BigNumber, channelId?: ChannelId | string, tokenContract?: string): Promise<TransactionResult> {
-    if (isTokenContractDefined(tokenContract)) {
-      return this.channelTokenContract.open(sender, receiver, value, settlementPeriod, tokenContract, channelId)
+    if (ChannelInflator.isTokenContractDefined(tokenContract)) {
+      return this.channelTokenContract.open(sender, receiver, value, settlementPeriod, tokenContract!, channelId)
     } else {
       return this.channelEthContract.open(sender, receiver, value, settlementPeriod, channelId)
     }
@@ -43,8 +41,8 @@ export default class ChannelContract {
   }
 
   async deposit (sender: string, channelId: string, value: BigNumber, tokenContract?: string): Promise<TransactionResult> {
-    if (isTokenContractDefined(tokenContract)) {
-      return this.channelTokenContract.deposit(sender, channelId, value, tokenContract)
+    if (ChannelInflator.isTokenContractDefined(tokenContract)) {
+      return this.channelTokenContract.deposit(sender, channelId, value, tokenContract!)
     } else {
       return this.channelEthContract.deposit(sender, channelId, value)
     }
@@ -74,7 +72,7 @@ export default class ChannelContract {
     const channel = await this.channelsDao.firstById(channelId)
     if (channel) {
       const tokenContract = channel.tokenContract
-      if (isTokenContractDefined(tokenContract)) {
+      if (ChannelInflator.isTokenContractDefined(tokenContract)) {
         return this.channelTokenContract.paymentDigest(channelId, value, tokenContract)
       } else {
         return this.channelEthContract.paymentDigest(channelId, value)
@@ -85,9 +83,16 @@ export default class ChannelContract {
 
   }
 
-  async canClaim (channelId: string, payment: BigNumber, receiver: string, signature: Signature): Promise<boolean> {
-    const contract = await this.getContractByChannelId(channelId)
-    return contract.canClaim(channelId, payment, receiver, signature)
+  async canClaim (payment: Payment): Promise<boolean> {
+    const channelId: string = payment.channelId
+    const value: BigNumber = payment.value
+    const receiver: string = payment.receiver
+    const signature: Signature = payment.signature
+    if (ChannelInflator.isTokenContractDefined(payment.tokenContract)) {
+      return this.channelTokenContract.canClaim(channelId, value, receiver, signature)
+    } else {
+      return this.channelEthContract.canClaim(channelId, value, receiver, signature)
+    }
   }
 
   async channelById (channelId: string): Promise<ChannelFromContract> {
@@ -99,7 +104,7 @@ export default class ChannelContract {
     const channel = await this.channelsDao.firstById(channelId)
     if (channel) {
       const tokenContract = channel.tokenContract
-      return isTokenContractDefined(tokenContract) ? this.channelTokenContract : this.channelEthContract
+      return ChannelInflator.isTokenContractDefined(tokenContract) ? this.channelTokenContract : this.channelEthContract
     } else {
       LOG.info(`getContractByChannelId(): Channel ${channelId} is undefined`)
       return this.channelEthContract

@@ -7,7 +7,8 @@ export function migrationsConfig (connectionUrl: string) {
   let c = new ConnectionString(connectionUrl)
   return {
     cmdOptions: {
-      'migrations-dir': path.resolve(__dirname, './migrations/')
+      'migrations-dir': path.resolve(__dirname, './migrations/'),
+      'env': 'defaultPg'
     },
     config: {
       defaultEnv: 'defaultPg',

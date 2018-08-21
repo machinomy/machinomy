@@ -93,7 +93,8 @@ export default class Machinomy {
       receiver: req.receiver,
       price: req.price,
       gateway: req.gateway,
-      meta: req.meta
+      meta: req.meta,
+      tokenContract: req.tokenContract
     })
   }
 
@@ -120,7 +121,7 @@ export default class Machinomy {
     await this.checkMigrationsState()
     const _value = new BigNumber.BigNumber(value)
     let channelManager = await this.registry.channelManager()
-    return channelManager.openChannel(this.account, receiver, new BigNumber.BigNumber(0), _value, channelId, tokenContract)
+    return channelManager.openChannel(this.account, receiver, _value, new BigNumber.BigNumber(0), channelId, tokenContract)
   }
 
   /**
@@ -203,7 +204,7 @@ export default class Machinomy {
     const price = new BigNumber.BigNumber(options.price)
 
     let channelManager = await this.registry.channelManager()
-    const channel = await channelManager.requireOpenChannel(this.account, options.receiver, price)
+    const channel = await channelManager.requireOpenChannel(this.account, options.receiver, price, undefined, options.tokenContract)
     return channelManager.nextPayment(channel.channelId, price, options.meta || '')
   }
 

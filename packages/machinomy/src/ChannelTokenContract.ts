@@ -6,7 +6,7 @@ import * as contracts from '@machinomy/contracts'
 import Signature from './Signature'
 import ChannelId from './ChannelId'
 
-const LOG = new Logger('ChannelTokenContract')
+const LOG = new Logger('channel-token-contract')
 
 const CREATE_CHANNEL_GAS = 300000
 
@@ -27,7 +27,7 @@ export default class ChannelTokenContract {
     const deployedTokenUnidirectional = await this.contract
     const deployedStandardTokenContract = await standardTokenContract
 
-    const approveTx = await deployedStandardTokenContract.approve(receiver, value, { from: sender })
+    const approveTx = await deployedStandardTokenContract.approve(deployedTokenUnidirectional.address, value, { from: sender })
     if (contracts.StandardToken.isApprovalEvent(approveTx.logs[0])) {
       return deployedTokenUnidirectional.open(_channelId.toString(), receiver, new BigNumber.BigNumber(settlementPeriod), tokenContract, value, {
         from: sender,
@@ -45,7 +45,7 @@ export default class ChannelTokenContract {
     LOG.info(`Claiming channel with id ${channelId} on behalf of receiver ${receiver}`)
     LOG.info(`Values: ${value} / Signature: ${signature.toString()}`)
     const deployed = await this.contract
-    return deployed.claim(channelId, value, signature.toString(), { from: receiver })
+    return deployed.claim(channelId, value, signature.toString(), { from: receiver, gas: CREATE_CHANNEL_GAS })
   }
 
   async deposit (sender: string, channelId: string, value: BigNumber.BigNumber, tokenContract: string): Promise<TransactionResult> {
