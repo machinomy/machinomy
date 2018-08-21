@@ -4,6 +4,7 @@ import * as Web3 from 'web3'
 import Machinomy from 'machinomy'
 import HDWalletProvider from '@machinomy/hdwallet-provider'
 import Logger from '@machinomy/logger'
+import * as contracts from '@machinomy/contracts'
 
 const payment = require(path.resolve('./payment.json'))
 const PROVIDER = process.env.PROVIDER || 'https://rinkeby.infura.io'
@@ -23,6 +24,9 @@ async function run () {
   const senderAccount = await provider1.getAddress(0)
   const receiverAccount = await provider2.getAddress(0)
   const receiverWeb3 = new Web3(provider2)
+  const tokenAddress = payment.tokenContract
+  const TestToken = contracts.TestToken.contract(receiverWeb3.currentProvider)
+  const instanceTestToken = await TestToken.deployed()
   const receiverMachinomy = new Machinomy(
     receiverAccount,
     receiverWeb3, {
@@ -32,7 +36,11 @@ async function run () {
 
   LOG.info(`Sender: ${senderAccount}`)
   LOG.info(`Receiver: ${receiverAccount}`)
+  LOG.info(`Token address: ${tokenAddress}`)
   LOG.info(`Accept payment: ${JSON.stringify(payment)}`)
+
+  LOG.info(`Balance of Wallet ${senderAccount} = ${ await instanceTestToken.balanceOf(senderAccount) } tokens (+ ${payment.channelValue} tokens deposited in channel).`)
+  LOG.info(`Balance of Wallet ${receiverAccount} = ${ await instanceTestToken.balanceOf(receiverAccount) } tokens.`)
 
   await receiverMachinomy.acceptPayment({
     payment: payment
@@ -45,6 +53,9 @@ async function run () {
   LOG.info(`Channel ${payment.channelId} was successfully closed.`)
   LOG.info(`Trace the last transaction via https://rinkeby.etherscan.io/address/${receiverAccount}`)
   LOG.info(`Receiver done.`)
+
+  LOG.info(`Balance of Wallet ${senderAccount} = ${ await instanceTestToken.balanceOf(senderAccount) } tokens (- ${payment.price} tokens).`)
+  LOG.info(`Balance of Wallet ${receiverAccount} = ${ await instanceTestToken.balanceOf(receiverAccount) } tokens (+ ${payment.price} tokens).`)
 
   process.exit(0)
 }

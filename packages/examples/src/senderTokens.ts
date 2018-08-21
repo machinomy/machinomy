@@ -28,7 +28,7 @@ async function run () {
   LOG.info(`PROVIDER = ${PROVIDER}`)
   LOG.info(`MNEMONIC SENDER = ${MNEMONIC_SENDER}`)
   LOG.info(`MNEMONIC RECEIVER = ${MNEMONIC_RECEIVER}`)
-  LOG.info(`tokenContract = ${tokenContract}`)
+  LOG.info(`Token contract = ${tokenContract}`)
 
   const machinomy = new Machinomy(
     senderAccount,

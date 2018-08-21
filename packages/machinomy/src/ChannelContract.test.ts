@@ -18,7 +18,20 @@ const PRICE = new BigNumber(5)
 const SENDER = '0xSENDER'
 const TOKEN_CONTRACT = '0x01e1a2626271c7267Dd8F506503AD0318776EF69'
 const SIGNATURE = Signature.fromRpcSig('SIGNATURE')
-const PAYMENT: Payment = {
+const ETH_PAYMENT: Payment = {
+  channelId: ID,
+  sender: SENDER,
+  receiver: RECEIVER,
+  price: PRICE,
+  value: VALUE,
+  channelValue: VALUE,
+  signature: SIGNATURE,
+  meta: 'meta',
+  token: undefined,
+  createdAt: undefined,
+  tokenContract: ''
+} as Payment
+const TOKEN_PAYMENT: Payment = {
   channelId: ID,
   sender: SENDER,
   receiver: RECEIVER,
@@ -188,7 +201,7 @@ describe('ChannelContract', () => {
         return { tokenContract: undefined }
       }
 
-      await contract.canClaim(PAYMENT)
+      await contract.canClaim(ETH_PAYMENT)
       expect(ethUnidirectional.canClaim.calledWith(ID, VALUE, RECEIVER, SIGNATURE)).toBeTruthy()
     })
 
@@ -197,7 +210,7 @@ describe('ChannelContract', () => {
       channelsDatabase.firstById = async () => {
         return { tokenContract: TOKEN_CONTRACT }
       }
-      await contract.canClaim(PAYMENT)
+      await contract.canClaim(TOKEN_PAYMENT)
       expect(tokenUnidirectional.canClaim.calledWith(ID, VALUE, RECEIVER, SIGNATURE)).toBeTruthy()
     })
 
@@ -207,7 +220,7 @@ describe('ChannelContract', () => {
       }
       ethUnidirectional.channelById = sinon.stub().resolves([])
       ethUnidirectional.canClaim = sinon.stub().returns(true)
-      let result = contract.canClaim(PAYMENT)
+      let result = contract.canClaim(ETH_PAYMENT)
       expect(result).toBeTruthy()
     })
   })
