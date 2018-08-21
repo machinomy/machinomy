@@ -12,6 +12,7 @@ export default class ChannelInflator {
   }
 
   static isTokenContractDefined (tokenContract: string | undefined): boolean {
+    // tslint:disable-next-line:strict-type-predicates
     return tokenContract !== undefined && tokenContract !== null && tokenContract.startsWith('0x') && parseInt(tokenContract, 16) !== 0
   }
 
