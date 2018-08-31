@@ -21,7 +21,7 @@
     "templates/"
   ],
   "scripts": {
-    "prepublish": "yarn build",
+    "prepare": "yarn build",
     "build": "tsc --project tsconfig.json",
     "test": "exit 0",
     "coverage": "exit 0",
