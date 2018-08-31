@@ -7,7 +7,7 @@ import ChannelContract from './ChannelContract'
 import ChannelManager from './ChannelManager'
 import MachinomyOptions from './MachinomyOptions'
 
-const LOG = new Logger('PaymentValidation')
+const LOG = new Logger('payment-validation')
 
 function error (message: string, ...args: Array<any>) {
   LOG.error(`Payment is invalid: ${message}`, args)
@@ -89,8 +89,8 @@ export default class PaymentValidation {
   }
 
   private async canClaim (): Promise<boolean> {
-    let p = this.payment
-    const canClaim = await this.channelContract.canClaim(p.channelId, p.value, p.receiver, p.signature)
+    const p = this.payment
+    const canClaim = await this.channelContract.canClaim(p)
     if (!canClaim) {
       error(`Channel contract cannot accept the claim. Payment: %o`, p)
     }

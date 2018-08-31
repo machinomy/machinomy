@@ -2,6 +2,7 @@ import * as express from 'express'
 import * as bodyParser from 'body-parser'
 import * as dotenv from 'dotenv'
 import HDWalletProvider from '@machinomy/hdwallet-provider'
+import * as contracts from '@machinomy/contracts'
 import Paywall from './Paywall'
 import * as morgan from 'morgan'
 import * as url from 'url'
@@ -22,6 +23,10 @@ async function main () {
   const base = new url.URL(GATEWAY_URL)
   const paywall = new Paywall(account, base)
 
+  const instanceTestToken: contracts.TestToken.Contract = await contracts.TestToken.contract(provider).deployed()
+
+  const tokenContract = instanceTestToken.address
+
   let app = express()
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: false }))
@@ -32,8 +37,13 @@ async function main () {
     res.end('Thank you for the payment!')
   }))
 
+  app.get('/hello-token', paywall.guardToken(new BigNumber.BigNumber(5), tokenContract, (req, res) => {
+    res.end('Thank you for the payment!')
+  }))
+
   app.listen(PORT, () => {
-    console.log(`Waiting at http://${HOST}/hello`)
+    console.log(`Waiting at http(s)://${HOST}:${PORT}/hello`)
+    console.log(`Waiting at http(s)://${HOST}:${PORT}/hello-token`)
   })
 }
 

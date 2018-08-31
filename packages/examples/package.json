@@ -20,12 +20,16 @@
     "test": "exit 0",
     "coverage": "exit 0",
     "sender": "yarn build && DEBUG=* node ./src/sender.js",
-    "receiver": "yarn build && DEBUG=* node ./src/receiver.js"
+    "receiver": "yarn build && DEBUG=* node ./src/receiver.js",
+    "senderTokens": "yarn build && DEBUG=* node ./src/senderTokens.js",
+    "receiverTokens": "yarn build && DEBUG=* node ./src/receiverTokens.js",
+    "clientTokens": "yarn build && DEBUG=* node ./src/clientTokens.js",
+    "serverTokens": "yarn build && DEBUG=* node ./src/serverTokens.js"
   },
   "dependencies": {
     "@machinomy/hdwallet-provider": "^1.1.0",
     "@machinomy/types-bn": "^0.0.3",
-    "@machinomy/types-truffle-contract": "^0.0.3",
+    "@machinomy/types-truffle-contract": "^0.0.4",
     "@machinomy/types-web3": "^0.0.4",
     "@types/bignumber.js": "^4.0.2",
     "@types/fs-extra": "^5.0.4",

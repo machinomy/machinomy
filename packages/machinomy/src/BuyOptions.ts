@@ -14,4 +14,5 @@ export default interface BuyOptions {
   gateway?: string,
   meta?: string,
   purchaseMeta?: object
+  tokenContract?: string
 }
