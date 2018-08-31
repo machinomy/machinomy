@@ -22,7 +22,6 @@
   ],
   "scripts": {
     "prepublish": "yarn build",
-    "preinstall": "yarn build",
     "build": "tsc --project tsconfig.json",
     "test": "exit 0",
     "coverage": "exit 0",
