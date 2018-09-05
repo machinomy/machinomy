@@ -19,6 +19,7 @@ before_script:
   - psql -c "create user testuser with password 'testpassword' createdb;" -U postgres
   - PGPASSWORD='testpassword' psql -c 'create database testdb;' -U testuser -d postgres
 script:
+  - yarn global add @machinomy/wraptso
   - yarn run lint
   - yarn run build
   - yarn run test
