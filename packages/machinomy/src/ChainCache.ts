@@ -1,42 +1,19 @@
-import { ChannelState } from './ChannelState'
-import BigNumber from 'bignumber.js'
+import ChainCacheEntry from './ChainCacheEntry'
 
 export default class ChainCache {
-  refreshDatetime: Date
-  cachePeriod: Date
-  state: ChannelState
-  value: BigNumber
-  settlementPeriod: BigNumber
+  private readonly chainCachePeriod: number | undefined
+  private readonly entries: Map<string, ChainCacheEntry>
 
   constructor (chainCachePeriod: number | undefined) {
-    this.refreshDatetime = new Date()
-    this.cachePeriod = new Date(chainCachePeriod ? chainCachePeriod : 30 * 60 * 1000)
-    this.value = new BigNumber(-1)
-    this.state = ChannelState.Impossible
-    this.settlementPeriod = new BigNumber(-1)
+    this.chainCachePeriod = chainCachePeriod
+    this.entries = new Map()
   }
 
-  isStale (): boolean {
-    const diff = Math.abs(Date.now().valueOf() - this.refreshDatetime.valueOf())
-    return this.state === ChannelState.Impossible || diff > this.cachePeriod.valueOf()
-  }
-
-  getState (): ChannelState | undefined {
-    return this.state
-  }
-
-  getValue (): BigNumber {
-    return this.value
-  }
-
-  getSettlementPeriod (): BigNumber {
-    return this.settlementPeriod
-  }
-
-  setData (state: ChannelState, value: BigNumber, settlementPeriod: BigNumber): void {
-    this.refreshDatetime = new Date()
-    this.state = state
-    this.value = value
-    this.settlementPeriod = settlementPeriod
+  getCache (channelId: string): ChainCacheEntry {
+    if (this.entries.has(channelId) !== true) {
+      const chainCacheEntry = new ChainCacheEntry(this.chainCachePeriod)
+      this.entries.set(channelId, chainCacheEntry)
+    }
+    return this.entries.get(channelId)!
   }
 }
