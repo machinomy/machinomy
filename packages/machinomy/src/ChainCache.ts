@@ -9,7 +9,7 @@ export default class ChainCache {
     this.entries = new Map()
   }
 
-  getCache (channelId: string): ChainCacheEntry {
+  cached (channelId: string): ChainCacheEntry {
     if (this.entries.has(channelId) !== true) {
       const chainCacheEntry = new ChainCacheEntry(this.chainCachePeriod)
       this.entries.set(channelId, chainCacheEntry)

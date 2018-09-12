@@ -23,17 +23,17 @@ export default class ChannelInflator {
   async inflate (paymentChannelJSON: PaymentChannelJSON): Promise<PaymentChannel> {
     let value
     let state
-    if (this.chainCache.getCache(paymentChannelJSON.channelId).isStale()) {
+    if (this.chainCache.cached(paymentChannelJSON.channelId).isStale()) {
       const tokenContract = paymentChannelJSON.tokenContract
       const contract = this.actualContract(tokenContract)
       state = await contract.getState(paymentChannelJSON.channelId)
       const channel = await contract.channelById(paymentChannelJSON.channelId)
       value = channel[2]
       const settlementPeriod = await contract.getSettlementPeriod(paymentChannelJSON.channelId)
-      this.chainCache.getCache(paymentChannelJSON.channelId).setData(state, value, settlementPeriod)
+      this.chainCache.cached(paymentChannelJSON.channelId).setData(state, value, settlementPeriod)
     } else {
-      state = this.chainCache.getCache(paymentChannelJSON.channelId).getState()
-      value = this.chainCache.getCache(paymentChannelJSON.channelId).getValue()
+      state = this.chainCache.cached(paymentChannelJSON.channelId).state()
+      value = this.chainCache.cached(paymentChannelJSON.channelId).value()
     }
 
     return new PaymentChannel(

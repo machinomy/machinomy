@@ -1,42 +1,42 @@
 import { ChannelState } from './ChannelState'
 import BigNumber from 'bignumber.js'
 
-export default class ChainCache {
-  refreshDatetime: Date
-  cachePeriod: Date
-  state: ChannelState
-  value: BigNumber
-  settlementPeriod: BigNumber
+export default class ChainCacheEntry {
+  private _refreshDatetime: Date
+  private _cachePeriod: Date
+  private _state: ChannelState
+  private _value: BigNumber
+  private _settlementPeriod: BigNumber
 
   constructor (chainCachePeriod: number | undefined) {
-    this.refreshDatetime = new Date()
-    this.cachePeriod = new Date(chainCachePeriod ? chainCachePeriod : 30 * 60 * 1000)
-    this.value = new BigNumber(-1)
-    this.state = ChannelState.Impossible
-    this.settlementPeriod = new BigNumber(-1)
+    this._refreshDatetime = new Date()
+    this._cachePeriod = new Date(chainCachePeriod ? chainCachePeriod : 30 * 60 * 1000)
+    this._value = new BigNumber(-1)
+    this._state = ChannelState.Impossible
+    this._settlementPeriod = new BigNumber(-1)
   }
 
   isStale (): boolean {
-    const diff = Math.abs(Date.now().valueOf() - this.refreshDatetime.valueOf())
-    return this.state === ChannelState.Impossible || diff > this.cachePeriod.valueOf()
+    const diff = Math.abs(Date.now().valueOf() - this._refreshDatetime.valueOf())
+    return this._state === ChannelState.Impossible || diff > this._cachePeriod.valueOf()
   }
 
-  getState (): ChannelState | undefined {
-    return this.state
+  state (): ChannelState {
+    return this._state
   }
 
-  getValue (): BigNumber {
-    return this.value
+  value (): BigNumber {
+    return this._value
   }
 
-  getSettlementPeriod (): BigNumber {
-    return this.settlementPeriod
+  settlementPeriod (): BigNumber {
+    return this._settlementPeriod
   }
 
   setData (state: ChannelState, value: BigNumber, settlementPeriod: BigNumber): void {
-    this.refreshDatetime = new Date()
-    this.state = state
-    this.value = value
-    this.settlementPeriod = settlementPeriod
+    this._refreshDatetime = new Date()
+    this._state = state
+    this._value = value
+    this._settlementPeriod = settlementPeriod
   }
 }

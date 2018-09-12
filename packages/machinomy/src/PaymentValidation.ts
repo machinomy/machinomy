@@ -102,11 +102,11 @@ export default class PaymentValidation {
 
   private async isAboveMinSettlementPeriod (): Promise<boolean> {
     let settlementPeriod: BigNumber.BigNumber
-    if (this.chainCache.getCache(this.payment.channelId).isStale()) {
+    if (this.chainCache.cached(this.payment.channelId).isStale()) {
       settlementPeriod = await this.channelContract.getSettlementPeriod(this.payment.channelId)
-      this.chainCache.getCache(this.payment.channelId).setData(this.paymentChannel.state, this.paymentChannel.value, settlementPeriod)
+      this.chainCache.cached(this.payment.channelId).setData(this.paymentChannel.state, this.paymentChannel.value, settlementPeriod)
     } else {
-      settlementPeriod = this.chainCache.getCache(this.payment.channelId).getSettlementPeriod()
+      settlementPeriod = this.chainCache.cached(this.payment.channelId).settlementPeriod()
     }
 
     const minSettlementPeriod = new BigNumber.BigNumber(this.options.minimumSettlementPeriod || ChannelManager.DEFAULT_SETTLEMENT_PERIOD)

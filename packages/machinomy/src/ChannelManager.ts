@@ -173,13 +173,13 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
   async channelById (channelId: ChannelId | string): Promise<PaymentChannel | null> {
     let channel = await this.channelsDao.firstById(channelId)
     if (channel) {
-      if (this.chainCache.getCache(channelId.toString()).isStale()) {
+      if (this.chainCache.cached(channelId.toString()).isStale()) {
         let channelC = await this.channelContract.channelById(channelId.toString())
         const settlementPeriod = await this.channelContract.getSettlementPeriod(channelId.toString())
         channel.value = channelC[2]
-        this.chainCache.getCache(channelId.toString()).setData(channel.state, channelC[2], settlementPeriod)
+        this.chainCache.cached(channelId.toString()).setData(channel.state, channelC[2], settlementPeriod)
       } else {
-        channel.value = this.chainCache.getCache(channelId.toString()).getValue()
+        channel.value = this.chainCache.cached(channelId.toString()).value()
       }
       return channel
     } else {
