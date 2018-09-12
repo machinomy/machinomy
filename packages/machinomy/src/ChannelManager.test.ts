@@ -85,6 +85,8 @@ describe('ChannelManager', () => {
     const chainCache = new ChainCache(undefined)
     channelContract = new ChannelContract(web3, channelsDao, channelEthContract, channelTokenContract)
     channelManager = new ChannelManager('0xcafe', web3, channelsDao, paymentsDao, tokensDao, channelContract, paymentManager, chainCache, machOpts)
+    channelEthContract.getSettlementPeriod = sinon.stub().resolves(ChannelManager.DEFAULT_SETTLEMENT_PERIOD)
+    channelTokenContract.getSettlementPeriod = sinon.stub().resolves(ChannelManager.DEFAULT_SETTLEMENT_PERIOD)
   })
 
   afterEach(() => {
