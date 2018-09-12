@@ -82,7 +82,7 @@ describe('ChannelManager', () => {
     // const channelTokenContract = new ChannelTokenContract(web3)
     const channelEthContract = {} as ChannelEthContract
     const channelTokenContract = {} as ChannelTokenContract
-    const chainCache = {} as ChainCache
+    const chainCache = new ChainCache(undefined)
     channelContract = new ChannelContract(web3, channelsDao, channelEthContract, channelTokenContract)
     channelManager = new ChannelManager('0xcafe', web3, channelsDao, paymentsDao, tokensDao, channelContract, paymentManager, chainCache, machOpts)
   })
