@@ -1,4 +1,5 @@
 import * as BigNumber from 'bignumber.js'
+import ChainCache from './ChainCache'
 import ChainManager from './ChainManager'
 import { PaymentChannel } from './PaymentChannel'
 import Payment from './payment'
@@ -11,11 +12,14 @@ export default class PaymentManager {
 
   private channelContract: ChannelContract
 
+  private chainCache: ChainCache
+
   private options: MachinomyOptions
 
-  constructor (chainManager: ChainManager, channelContract: ChannelContract, options: MachinomyOptions) {
+  constructor (chainManager: ChainManager, channelContract: ChannelContract, chainCache: ChainCache, options: MachinomyOptions) {
     this.chainManager = chainManager
     this.channelContract = channelContract
+    this.chainCache = chainCache
     this.options = options
   }
 
@@ -38,7 +42,7 @@ export default class PaymentManager {
   }
 
   async isValid (payment: Payment, paymentChannel: PaymentChannel): Promise<boolean> {
-    let validation = new PaymentValidation(this.channelContract, payment, paymentChannel, this.options)
+    let validation = new PaymentValidation(this.channelContract, payment, paymentChannel, this.chainCache, this.options)
     return validation.isValid()
   }
 }

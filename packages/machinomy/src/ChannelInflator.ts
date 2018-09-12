@@ -1,14 +1,18 @@
+import ChainCache from './ChainCache'
 import ChannelEthContract from './ChannelEthContract'
 import ChannelTokenContract from './ChannelTokenContract'
 import { PaymentChannel, PaymentChannelJSON } from './PaymentChannel'
+import { ChannelState } from './ChannelState'
 
 export default class ChannelInflator {
   channelEthContract: ChannelEthContract
   channelTokenContract: ChannelTokenContract
+  chainCache: ChainCache
 
-  constructor (channelEthContract: ChannelEthContract, channelTokenContract: ChannelTokenContract) {
+  constructor (channelEthContract: ChannelEthContract, channelTokenContract: ChannelTokenContract, chainCache: ChainCache) {
     this.channelEthContract = channelEthContract
     this.channelTokenContract = channelTokenContract
+    this.chainCache = chainCache
   }
 
   static isTokenContractDefined (tokenContract: string | undefined): boolean {
@@ -17,11 +21,20 @@ export default class ChannelInflator {
   }
 
   async inflate (paymentChannelJSON: PaymentChannelJSON): Promise<PaymentChannel> {
-    const tokenContract = paymentChannelJSON.tokenContract
-    const contract = this.actualContract(tokenContract)
-    const state = await contract.getState(paymentChannelJSON.channelId)
-    const channel = await contract.channelById(paymentChannelJSON.channelId)
-    const value = channel[2]
+    let value
+    let state
+    if (this.chainCache.isStale()) {
+      const tokenContract = paymentChannelJSON.tokenContract
+      const contract = this.actualContract(tokenContract)
+      state = await contract.getState(paymentChannelJSON.channelId)
+      const channel = await contract.channelById(paymentChannelJSON.channelId)
+      value = channel[2]
+      const settlementPeriod = await contract.getSettlementPeriod(paymentChannelJSON.channelId)
+      this.chainCache.setData(state, value, settlementPeriod)
+    } else {
+      state = this.chainCache.getState()
+      value = this.chainCache.getValue()
+    }
 
     return new PaymentChannel(
       paymentChannelJSON.sender,
@@ -29,7 +42,7 @@ export default class ChannelInflator {
       paymentChannelJSON.channelId,
       value,
       paymentChannelJSON.spent,
-      state === -1 ? 2 : state,
+      state === ChannelState.Impossible ? ChannelState.Settled : state,
       paymentChannelJSON.tokenContract
     )
   }

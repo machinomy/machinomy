@@ -11,7 +11,8 @@ export interface MachinomyOptions {
   minimumSettlementPeriod?: number
   settlementPeriod?: number,
   closeOnInvalidPayment?: boolean
-  migrate?: MigrateOption
+  migrate?: MigrateOption,
+  chainCachePeriod?: number
 }
 
 export namespace MachinomyOptions {

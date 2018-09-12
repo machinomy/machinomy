@@ -1,4 +1,5 @@
 import * as BigNumber from 'bignumber.js'
+import ChainCache from './ChainCache'
 
 import { PaymentChannel } from './PaymentChannel'
 import Payment from './payment'
@@ -18,12 +19,14 @@ export default class PaymentValidation {
   private readonly paymentChannel: PaymentChannel
   private readonly channelContract: ChannelContract
   private readonly options: MachinomyOptions
+  private readonly chainCache: ChainCache
 
-  constructor (channelContract: ChannelContract, payment: Payment, paymentChannel: PaymentChannel, options: MachinomyOptions) {
+  constructor (channelContract: ChannelContract, payment: Payment, paymentChannel: PaymentChannel, chainCache: ChainCache, options: MachinomyOptions) {
     this.payment = payment
     this.paymentChannel = paymentChannel
     this.channelContract = channelContract
     this.options = options
+    this.chainCache = chainCache
   }
 
   async isValid (): Promise<boolean> {
@@ -98,7 +101,14 @@ export default class PaymentValidation {
   }
 
   private async isAboveMinSettlementPeriod (): Promise<boolean> {
-    const settlementPeriod = await this.channelContract.getSettlementPeriod(this.payment.channelId)
+    let settlementPeriod: BigNumber.BigNumber
+    if (this.chainCache.isStale()) {
+      settlementPeriod = await this.channelContract.getSettlementPeriod(this.payment.channelId)
+      this.chainCache.setData(this.paymentChannel.state, this.paymentChannel.value, settlementPeriod)
+    } else {
+      settlementPeriod = this.chainCache.getSettlementPeriod()
+    }
+
     const minSettlementPeriod = new BigNumber.BigNumber(this.options.minimumSettlementPeriod || ChannelManager.DEFAULT_SETTLEMENT_PERIOD)
     const isAboveMinSettlementPeriod = minSettlementPeriod.lessThanOrEqualTo(settlementPeriod)
     if (!isAboveMinSettlementPeriod) {

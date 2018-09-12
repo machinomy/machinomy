@@ -1,5 +1,6 @@
 import * as Web3 from 'web3'
 import { memoize } from 'decko'
+import ChainCache from './ChainCache'
 import ChannelEthContract from './ChannelEthContract'
 import ChannelTokenContract from './ChannelTokenContract'
 import ChannelInflator from './ChannelInflator'
@@ -11,7 +12,6 @@ import ChannelManager from './ChannelManager'
 import PaymentManager from './PaymentManager'
 import ChainManager from './ChainManager'
 import Client, { ClientImpl } from './client'
-import IChannelsDatabase from './storage/IChannelsDatabase'
 import { Transport } from './transport'
 
 export default class Registry {
@@ -29,7 +29,8 @@ export default class Registry {
   async inflator (): Promise<ChannelInflator> {
     const channelEthContract = await this.channelEthContract()
     const channelTokenContract = await this.channelTokenContract()
-    return new ChannelInflator(channelEthContract, channelTokenContract)
+    const chainCache = await this.chainCache()
+    return new ChannelInflator(channelEthContract, channelTokenContract, chainCache)
   }
 
   @memoize
@@ -66,7 +67,8 @@ export default class Registry {
   async paymentManager (): Promise<PaymentManager> {
     let chainManager = await this.chainManager()
     let channelContract = await this.channelContract()
-    return new PaymentManager(chainManager, channelContract, this.options)
+    let chainCache = await this.chainCache()
+    return new PaymentManager(chainManager, channelContract, chainCache, this.options)
   }
 
   @memoize
@@ -84,6 +86,12 @@ export default class Registry {
     let tokens = storage.tokensDatabase
     let channelContract = await this.channelContract()
     let paymentManager = await this.paymentManager()
-    return new ChannelManager(this.account, this.web3, channels, payments, tokens, channelContract, paymentManager, this.options)
+    let chainCache = await this.chainCache()
+    return new ChannelManager(this.account, this.web3, channels, payments, tokens, channelContract, paymentManager, chainCache, this.options)
+  }
+
+  @memoize
+  async chainCache (): Promise<ChainCache> {
+    return new ChainCache(this.options.chainCachePeriod)
   }
 }
