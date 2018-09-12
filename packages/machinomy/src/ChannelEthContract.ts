@@ -3,6 +3,7 @@ import { BigNumber } from 'bignumber.js'
 import { TransactionResult } from 'truffle-contract'
 import Logger from '@machinomy/logger'
 import ChannelManager from './ChannelManager'
+import { ChannelState } from './ChannelState'
 import Signature from './Signature'
 import { Unidirectional } from '@machinomy/contracts'
 import ChannelId from './ChannelId'
@@ -56,14 +57,14 @@ export default class ChannelEthContract {
     const isSettling = await deployed.isSettling(channelId)
 
     if (isOpen) {
-      return 0
+      return ChannelState.Open
     }
 
     if (isSettling) {
-      return 1
+      return ChannelState.Settling
     }
 
-    return 2
+    return ChannelState.Settled
   }
 
   async getSettlementPeriod (channelId: string): Promise<BigNumber> {

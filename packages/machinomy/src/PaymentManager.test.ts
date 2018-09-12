@@ -1,5 +1,6 @@
 import * as sinon from 'sinon'
 import * as BigNumber from 'bignumber.js'
+import ChainCache from './ChainCache'
 import { PaymentChannel } from './PaymentChannel'
 import PaymentManager from './PaymentManager'
 import Signature from './Signature'
@@ -16,11 +17,14 @@ describe('PaymentManager', () => {
 
   let manager: PaymentManager
 
+  let chainCache: ChainCache
+
   beforeEach(() => {
     chainManager = {}
     channelContract = {}
     options = {}
-    manager = new PaymentManager(chainManager, channelContract, options)
+    chainCache = {} as ChainCache
+    manager = new PaymentManager(chainManager, channelContract, chainCache, options)
   })
 
   describe('#buildPaymentForChannel', () => {

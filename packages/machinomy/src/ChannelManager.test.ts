@@ -1,5 +1,6 @@
 import * as sinon from 'sinon'
 import * as BigNumber from 'bignumber.js'
+import ChainCache from './ChainCache'
 import ChannelEthContract from './ChannelEthContract'
 import ChannelTokenContract from './ChannelTokenContract'
 import { PaymentChannel } from './PaymentChannel'
@@ -81,8 +82,9 @@ describe('ChannelManager', () => {
     // const channelTokenContract = new ChannelTokenContract(web3)
     const channelEthContract = {} as ChannelEthContract
     const channelTokenContract = {} as ChannelTokenContract
+    const chainCache = {} as ChainCache
     channelContract = new ChannelContract(web3, channelsDao, channelEthContract, channelTokenContract)
-    channelManager = new ChannelManager('0xcafe', web3, channelsDao, paymentsDao, tokensDao, channelContract, paymentManager, machOpts)
+    channelManager = new ChannelManager('0xcafe', web3, channelsDao, paymentsDao, tokensDao, channelContract, paymentManager, chainCache, machOpts)
   })
 
   afterEach(() => {
