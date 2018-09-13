@@ -333,15 +333,6 @@ contract('TokenUnidirectional', accounts => {
       await instance.startSettling(didOpenEvent.channelId, { from: sender })
       return assert.isRejected(instance.settle(didOpenEvent.channelId, { from: sender }))
     })
-    specify('refuse if can not transfer to sender', async () => {
-      let didOpenEvent = await createChannel()
-      await instance.startSettling(didOpenEvent.channelId, { from: sender })
-      let before = await token.balanceOf(sender)
-      let r = assert.isRejected(instance.settle(didOpenEvent.channelId, { from: sender }))
-      let after = await token.balanceOf(sender)
-      assert.equal(before.toString(), after.toString())
-      return r
-    })
   })
 
   describe('.deposit', () => {
