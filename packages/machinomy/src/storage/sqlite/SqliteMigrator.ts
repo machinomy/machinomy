@@ -6,7 +6,7 @@ import * as path from 'path'
 export function migrationsConfig (connectionUrl: string) {
   let c = new ConnectionString(connectionUrl)
   let segments = c.segments || []
-  let filename = c.hostname + '/' + segments.join('/')
+  let filename = '/' + segments.join('/')
   return {
     cmdOptions: {
       'migrations-dir': path.resolve(__dirname, './migrations/'),
