@@ -18,8 +18,8 @@ async function run () {
   const TestToken = contracts.TestToken.contract(provider)
   const instanceTestToken = await TestToken.new({ from: await provider.getAddress(0) })
 
-  const address = await instanceTestToken.address
-  const transactionHash = await instanceTestToken.transactionHash
+  const address = instanceTestToken.address
+  const transactionHash = instanceTestToken.transactionHash
 
   LOG.info(`Address = ${address}`)
   LOG.info(`TransactionHash = ${transactionHash}`)

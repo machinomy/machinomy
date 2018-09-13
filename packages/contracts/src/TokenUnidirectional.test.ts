@@ -218,8 +218,6 @@ contract('TokenUnidirectional', accounts => {
       let didOpenEvent = await createChannel()
       let _payment = channelValue.plus(payment.mul(100))
       let signature = await paymentSignature(sender, didOpenEvent.channelId, _payment)
-      let receiverBefore = await token.balanceOf(receiver)
-      let contractBefore = await token.balanceOf(instance.address)
       let r = await instance.claim(didOpenEvent.channelId, _payment, signature, { from: receiver })
 
       let receiverAfter = await token.balanceOf(receiver)
