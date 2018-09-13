@@ -41,6 +41,8 @@ For more LogDNA options see [LogDNA for Node.js](https://github.com/logdna/nodej
 
 **DO NOT FORGET TO DEFINE "DEBUG=*" ENV VARIABLE!**
 
+**IF YOU USE @machinomy/logger AT MULTIPLE LAYERS OF YOUR SOFTWARE - DO NOT FORGET TO DEFINE "DEBUG_DEPTH=10" ENV VARIABLE!**
+
 
 Web site: [machinomy.com](http://machinomy.com).
 Twitter: [@machinomy](http://twitter.com/machinomy).
