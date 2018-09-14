@@ -18,8 +18,8 @@ export default abstract class SqlMigrator implements IMigrator {
 
   async isLatest (): Promise<boolean> {
     let r = await this.dbmigrate.check()
-    r ? this.log.info('Latest migration is applied') : this.log.info('Have migrations to be applied')
-    return this.dbmigrate.check()
+    r && r.length > 0 ? this.log.info('Have migrations to be applied') : this.log.info('Latest migration is applied')
+    return !(r && r.length > 0)
   }
 
   async sync (n?: string): Promise<void> {
