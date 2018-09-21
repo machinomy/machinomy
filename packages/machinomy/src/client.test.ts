@@ -95,8 +95,8 @@ describe('ClientImpl', () => {
   describe('doPayment', () => {
     let paymentJson: any
 
-    transport.doPayment = sinon.stub().resolves(new AcceptPaymentResponse('beep'))
     beforeEach(() => {
+      transport.doPayment = sinon.stub().resolves(new AcceptPaymentResponse('beep'))
       paymentJson = {
         channelId: '0x1234',
         value: '1000',
