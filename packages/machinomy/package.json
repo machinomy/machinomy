@@ -1,6 +1,6 @@
 {
   "name": "machinomy",
-  "version": "1.12.14",
+  "version": "1.13.0",
   "description": "Micropayments powered by Ethereum",
   "author": "Sergey Ukustov <sergey.ukustov@machinomy.com>",
   "license": "Apache-2.0",
@@ -37,7 +37,7 @@
     "examples/"
   ],
   "dependencies": {
-    "@machinomy/contracts": "^4.1.x",
+    "@machinomy/contracts": "^4.1.3",
     "@machinomy/logger": "^0.0.5",
     "@machinomy/types-bn": "^0.0.3",
     "@machinomy/types-truffle-contract": "^0.0.4",
