@@ -40,7 +40,7 @@ export default abstract class AbstractChannelsDatabase<T extends IEngine> implem
   }
 
   filterByState (state: number, channels: PaymentChannel[]): PaymentChannel[] {
-    return channels.filter((chan: PaymentChannel) => chan.state === state)
+    return channels.filter((chan: PaymentChannel) => chan ? chan.state === state : false)
   }
 
   abstract save (paymentChannel: PaymentChannel): Promise<void>
