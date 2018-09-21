@@ -73,7 +73,7 @@ export default class Registry {
 
   @memoize
   async client (): Promise<Client> {
-    let transport = new Transport()
+    let transport = this.options.transport ? this.options.transport :  new Transport()
     let channelManager = await this.channelManager()
     return new ClientImpl(transport, channelManager)
   }

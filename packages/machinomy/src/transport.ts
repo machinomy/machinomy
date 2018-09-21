@@ -2,6 +2,10 @@ import { RequestResponse, RequiredUriUrl, CoreOptions } from 'request'
 import Payment from './payment'
 import * as BigNumber from 'bignumber.js'
 import Logger from '@machinomy/logger'
+import { AcceptPaymentRequest, AcceptPaymentRequestSerde } from './accept_payment_request'
+import { AcceptPaymentResponse, AcceptPaymentResponseSerde } from './accept_payment_response'
+import { AcceptTokenRequest, AcceptTokenRequestSerde } from './accept_token_request'
+import { AcceptTokenResponse, AcceptTokenResponseSerde } from './accept_token_response'
 let req = require('request')
 
 const request: (opts: RequiredUriUrl & CoreOptions) => Promise<RequestResponse> = (opts: RequiredUriUrl & CoreOptions) => {
@@ -107,6 +111,38 @@ export class Transport {
       }
       return result
     })
+  }
+
+  async doPayment (paymentRequest: AcceptPaymentRequest, gateway: string): Promise<AcceptPaymentResponse> {
+    const options = {
+      method: 'POST',
+      uri: gateway,
+      json: true,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      body: AcceptPaymentRequestSerde.instance.serialize(paymentRequest)
+    }
+    const res = await request(options)
+    return AcceptPaymentResponseSerde.instance.deserialize(res.body)
+  }
+
+  async doVerify (tokenRequest: AcceptTokenRequest, gateway: string): Promise<AcceptTokenResponse> {
+    const options = {
+      method: 'POST',
+      uri: gateway,
+      json: true,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      body: AcceptTokenRequestSerde.instance.serialize(tokenRequest)
+    }
+
+    const res = await request(options)
+
+    return AcceptTokenResponseSerde.instance.deserialize(res.body)
   }
 }
 

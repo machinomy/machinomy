@@ -1,5 +1,6 @@
 import * as BigNumber from 'bignumber.js'
 import { MigrateOption } from './MigrateOption'
+import { Transport } from './transport'
 
 /**
  * Params for Machinomy. Currently Machinomy supports nedb and postgresql as a database engine.
@@ -12,7 +13,8 @@ export interface MachinomyOptions {
   settlementPeriod?: number,
   closeOnInvalidPayment?: boolean
   migrate?: MigrateOption,
-  chainCachePeriod?: number
+  chainCachePeriod?: number,
+  transport?: Transport
 }
 
 export namespace MachinomyOptions {

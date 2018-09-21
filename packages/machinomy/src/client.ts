@@ -63,17 +63,7 @@ export class ClientImpl extends EventEmitter implements Client {
 
     const request = new AcceptPaymentRequest(payment, purchaseMeta)
 
-    const res = await fetcher.fetch(gateway, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      credentials: 'include',
-      body: JSON.stringify(AcceptPaymentRequestSerde.instance.serialize(request))
-    })
-
-    const resJson = await res.json()
-    const deres = AcceptPaymentResponseSerde.instance.deserialize(resJson)
+    const deres = this.transport.doPayment(request, gateway)
     LOG.info(`Successfully sent payment to ${gateway}.`)
     this.emit('didSendPayment')
     return deres
@@ -96,18 +86,7 @@ export class ClientImpl extends EventEmitter implements Client {
     const request = new AcceptTokenRequest(token)
 
     try {
-      const res = await fetcher.fetch(gateway, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify(AcceptTokenRequestSerde.instance.serialize(request))
-      })
-
-      const resJson = await res.json()
-
-      const deres = AcceptTokenResponseSerde.instance.deserialize(resJson)
+      const deres = this.transport.doVerify(request, gateway)
       LOG.info(`Successfully verified token with ${gateway}.`)
       this.emit('didVerifyToken')
       return deres

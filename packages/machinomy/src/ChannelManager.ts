@@ -17,6 +17,7 @@ import Logger from '@machinomy/logger'
 import { PaymentChannel } from './PaymentChannel'
 import ChannelInflator from './ChannelInflator'
 import * as uuid from 'uuid'
+import { PaymentNotValid } from './Exceptions'
 
 const LOG = new Logger('channel-manager')
 
@@ -144,7 +145,7 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
         }
       }
 
-      throw new Error('Invalid payment.')
+      throw new PaymentNotValid()
     })
   }
 
