@@ -95,8 +95,7 @@ describe('ClientImpl', () => {
   describe('doPayment', () => {
     let paymentJson: any
 
-    let post: sinon.SinonStub
-
+    transport.doPayment = sinon.stub().resolves(new AcceptPaymentResponse('beep'))
     beforeEach(() => {
       paymentJson = {
         channelId: '0x1234',
@@ -111,22 +110,6 @@ describe('ClientImpl', () => {
         contractAddress: '0xab',
         token: '0x123'
       }
-
-      post = sinon.stub(fetcher, 'fetch')
-      post.withArgs('gateway', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: sinon.match.string
-      }).resolves({
-        json: () => Promise.resolve({ token: 'beep' })
-      })
-    })
-
-    afterEach(() => {
-      post.restore()
     })
 
     it('returns an AcceptPaymentResponse on success', () => {
@@ -151,6 +134,22 @@ describe('ClientImpl', () => {
       })
     })
 
+    it('throws an error if transport reject', () => {
+      const payment = PaymentSerde.instance.deserialize(paymentJson)
+
+      transport.doPayment = sinon.stub().rejects()
+
+      return expectsRejection(client.doPayment(payment, 'gateway'))
+    })
+
+    it('throws an error if transport throw', () => {
+      const payment = PaymentSerde.instance.deserialize(paymentJson)
+
+      transport.doPayment = sinon.stub().throws('any')
+
+      return expectsRejection(client.doPayment(payment, 'gateway'))
+    })
+/*
     it('throws an error if deserialization fails', () => {
       const payment = PaymentSerde.instance.deserialize(paymentJson)
 
@@ -164,7 +163,7 @@ describe('ClientImpl', () => {
       })
 
       return expectsRejection(client.doPayment(payment, 'gateway'))
-    })
+    }) */
   })
 
   describe('acceptPayment', () => {
@@ -194,28 +193,9 @@ describe('ClientImpl', () => {
   })
 
   describe('doVerify', () => {
-    let post: sinon.SinonStub
-
-    beforeEach(() => {
-      post = sinon.stub(fetcher, 'fetch')
-      post.withArgs('gateway', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify({ token: 'token' })
-      })
-    })
-
-    afterEach(() => {
-      post.restore()
-    })
 
     it('returns an AcceptTokenResponse if the token is accepted', () => {
-      post.resolves({
-        json: () => Promise.resolve({ status: true })
-      })
+      transport.doVerify = sinon.stub().resolves(new AcceptTokenResponse(true))
 
       return client.doVerify('token', 'gateway').then((res: AcceptTokenResponse) => {
         expect(res.status).toBe(true)
@@ -223,9 +203,7 @@ describe('ClientImpl', () => {
     })
 
     it('returns an AcceptTokenResponse if the token is rejected', () => {
-      post.resolves({
-        status: false
-      })
+      transport.doVerify = sinon.stub().resolves(new AcceptTokenResponse(false))
 
       return client.doVerify('token', 'gateway').then((res: AcceptTokenResponse) => {
         expect(res.status).toBe(false)
@@ -233,7 +211,7 @@ describe('ClientImpl', () => {
     })
 
     it('returns a false AcceptTokenResponse if an error occurs', () => {
-      post.rejects()
+      transport.doVerify = sinon.stub().throws()
 
       return client.doVerify('token', 'gateway').then((res: AcceptTokenResponse) => {
         expect(res.status).toBe(false)
