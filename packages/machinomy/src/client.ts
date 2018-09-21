@@ -4,11 +4,10 @@ import Payment from './payment'
 import IChannelManager from './IChannelManager'
 import * as request from 'request'
 import Logger from '@machinomy/logger'
-import fetcher from './util/fetcher'
-import { AcceptPaymentRequest, AcceptPaymentRequestSerde } from './accept_payment_request'
-import { AcceptPaymentResponse, AcceptPaymentResponseSerde } from './accept_payment_response'
-import { AcceptTokenRequest, AcceptTokenRequestSerde } from './accept_token_request'
-import { AcceptTokenResponse, AcceptTokenResponseSerde } from './accept_token_response'
+import { AcceptPaymentRequest } from './accept_payment_request'
+import { AcceptPaymentResponse } from './accept_payment_response'
+import { AcceptTokenRequest } from './accept_token_request'
+import { AcceptTokenResponse } from './accept_token_response'
 
 const LOG = new Logger('client')
 
