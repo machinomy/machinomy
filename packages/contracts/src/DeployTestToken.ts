@@ -6,12 +6,14 @@ import Logger from '@machinomy/logger'
 
 const LOG = new Logger('deploy-test-token')
 
+const KEY = 'peanut giggle name tree canoe tube render ketchup survey segment army will'
+
 async function run () {
   const ETH_RPC_URL = process.env.ETH_RPC_URL || 'https://rinkeby.infura.io'
 
   LOG.info(`ETH_RPC_URL = ${ETH_RPC_URL}`)
 
-  const provider = new HDWalletProvider('peanut giggle name tree canoe tube render ketchup survey segment army will', ETH_RPC_URL)
+  const provider = HDWalletProvider.http(KEY, ETH_RPC_URL)
 
   LOG.info(`Wait for 30-60 seconds, please.`)
 

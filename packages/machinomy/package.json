@@ -49,7 +49,7 @@
     "connection-string": "^0.5.3",
     "db-migrate": "^0.11.1",
     "db-migrate-pg": "^0.4.0",
-    "db-migrate-sqlite3": "^0.2.1",
+    "db-migrate-sqlite3": "^0.3.x",
     "debug": "^3.1.0",
     "decko": "^1.2.0",
     "ethereumjs-util": "^5.1.5",

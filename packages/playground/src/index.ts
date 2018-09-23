@@ -18,7 +18,7 @@ async function main () {
   const PROVIDER_URL = String(process.env.PROVIDER_URL)
   const GATEWAY_URL = String(process.env.GATEWAY_URL)
 
-  const provider = new HDWalletProvider(MNEMONIC, PROVIDER_URL)
+  const provider = HDWalletProvider.http(MNEMONIC, PROVIDER_URL)
   const account = await provider.getAddress(0)
   const base = new url.URL(GATEWAY_URL)
   const paywall = new Paywall(account, base)

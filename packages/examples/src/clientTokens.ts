@@ -26,7 +26,7 @@ async function main (): Promise<string> {
   const MNEMONIC = String(process.env.MNEMONIC).trim()
 
   const TARGET = 'https://playground.machinomy.com/hello-token'
-  const provider = new HDWalletProvider(MNEMONIC, PROVIDER_URL)
+  const provider = HDWalletProvider.http(MNEMONIC, PROVIDER_URL)
   const web3 = new Web3(provider)
 
   /**

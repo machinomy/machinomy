@@ -13,7 +13,7 @@ const LOG = new Logger('machinomy-sender')
 async function run () {
   fs.removeSync(path.resolve('./sender-receiver'))
 
-  const provider = new HDWalletProvider(MNEMONIC, PROVIDER, 2)
+  const provider = HDWalletProvider.http(MNEMONIC, PROVIDER, 2)
   const senderAccount = await provider.getAddress(0)
   const receiverAccount = await provider.getAddress(1)
   const web3 = new Web3(provider)

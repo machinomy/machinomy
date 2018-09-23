@@ -35,7 +35,7 @@ async function main () {
   const APP_PORT = 3000
   const HUB_PORT = 3001
 
-  const provider = new HDWalletProvider(MNEMONIC, PROVIDER_URL)
+  const provider = HDWalletProvider.http(MNEMONIC, PROVIDER_URL)
   const web3 = new Web3(provider)
 
   /**
