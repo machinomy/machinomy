@@ -7,7 +7,7 @@
   "keywords": [
     "micropayments",
     "ethereum",
-    "express"
+    "state channels"
   ],
   "repository": {
     "type": "git",
