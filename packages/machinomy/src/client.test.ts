@@ -1,13 +1,15 @@
 import * as sinon from 'sinon'
 import * as BigNumber from 'bignumber.js'
-import { PaymentRequired, Transport } from './transport'
+import { Transport } from './transport'
 import { ClientImpl } from './client'
-import expectsRejection from './util/expects_rejection'
+import expectsRejection, { expectsRejectionType } from './util/expects_rejection'
 import { PaymentSerde } from './payment'
 import { AcceptPaymentRequestSerde } from './accept_payment_request'
 import { AcceptPaymentResponse } from './accept_payment_response'
 import { AcceptTokenResponse } from './accept_token_response'
 import IChannelManager from './IChannelManager'
+import { PaymentRequiredResponse, PaymentRequiredResponseSerializer, TRANSPORT_VERSION } from './PaymentRequiredResponse'
+import { TransportVersionNotSupport } from './Exceptions'
 
 const expect = require('expect')
 
@@ -26,37 +28,30 @@ describe('ClientImpl', () => {
 
   describe('doPreflight', () => {
     it('returns payment required when a payment required or OK response comes back', () => {
-      return Promise.all([200, 402].map((statusCode: number) => {
-        transport.get = sinon.stub().withArgs('http://honkhost:1234/site').resolves({
-          statusCode: 402,
-          headers: {
-            'paywall-version': '1.0',
-            'paywall-address': '0x1234',
-            'paywall-price': '1000',
-            'paywall-gateway': 'http://honkhost:8080/machinomy',
-            'paywall-meta': 'hello',
-            'paywall-token-contract': '0xbeef'
-          }
-        })
-
-        return client.doPreflight('http://honkhost:1234/site').then((res: PaymentRequired) => {
-          expect(res.receiver).toBe('0x1234')
-          expect(res.price).toEqual(new BigNumber.BigNumber(1000))
-          expect(res.gateway).toBe('http://honkhost:8080/machinomy')
-          expect(res.meta).toBe('hello')
-          expect(res.tokenContract).toBe('0xbeef')
-        })
+      transport.paymentRequired = sinon.stub().resolves(PaymentRequiredResponseSerializer.instance.deserialize({
+        'paywall-version': TRANSPORT_VERSION,
+        'paywall-address': '0x1234',
+        'paywall-price': '1000',
+        'paywall-gateway': 'http://honkhost:8080/machinomy',
+        'paywall-meta': 'hello',
+        'paywall-token-contract': '0xbeef'
       }))
+
+      return client.doPreflight('http://honkhost:1234/site').then((res: PaymentRequiredResponse) => {
+        expect(res.receiver).toBe('0x1234')
+        expect(res.price).toEqual(new BigNumber.BigNumber(1000))
+        expect(res.gateway).toBe('http://honkhost:8080/machinomy')
+        expect(res.meta).toBe('hello')
+        expect(res.tokenContract).toBe('0xbeef')
+      })
     })
 
     it('throws an error for any other status code', () => {
-      transport.get = sinon.stub().withArgs('http://honkhost:1234/site').resolves({
-        statusCode: 300
-      })
+      transport.paymentRequired = sinon.stub().rejects()
 
       return expectsRejection(client.doPreflight('http://honkhost:1234/site'))
     })
-
+/* must be another test
     it('throws an error when required headers don\'t show up', () => {
       const prefixes = [
         'version',
@@ -81,14 +76,11 @@ describe('ClientImpl', () => {
 
         delete badHeaders[`paywall-${prefix}`]
 
-        transport.get = sinon.stub().withArgs('http://honkhost:1234/site').resolves({
-          statusCode: 402,
-          headers: badHeaders
-        })
+        transport.paymentRequired = sinon.stub().resolves(PaymentRequiredResponseSerializer.instance.deserialize(badHeaders))
 
         return expectsRejection(client.doPreflight('http://honkhost:1234/site'))
       }))
-    })
+    })*/
   })
 
   describe('doPayment', () => {

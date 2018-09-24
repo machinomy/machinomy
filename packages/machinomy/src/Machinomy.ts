@@ -4,7 +4,6 @@ import { PaymentChannel } from './PaymentChannel'
 import * as BigNumber from 'bignumber.js'
 import Payment, { PaymentSerde } from './payment'
 import { TransactionResult } from 'truffle-contract'
-import { PaymentRequired } from './transport'
 import ChannelId from './ChannelId'
 import { AcceptPaymentRequestSerde } from './accept_payment_request'
 import { AcceptPaymentResponse } from './accept_payment_response'
@@ -16,6 +15,7 @@ import BuyOptions from './BuyOptions'
 import NextPaymentResult from './NextPaymentResult'
 import BuyResult from './BuyResult'
 import { memoize } from 'decko'
+import { PaymentRequiredResponse } from './PaymentRequiredResponse'
 
 /**
  * Machinomy is a library for micropayments in Ether over HTTP.
@@ -79,10 +79,10 @@ export default class Machinomy {
     return { payment: PaymentSerde.instance.serialize(payment) }
   }
 
-  async pry (uri: string): Promise<PaymentRequired> {
+  async pry (uri: string, datetime?: number): Promise<PaymentRequiredResponse> {
     await this.checkMigrationsState()
     let client = await this.registry.client()
-    return client.doPreflight(uri)
+    return client.doPreflight(uri, datetime)
   }
 
   async buyUrl (uri: string): Promise<BuyResult> {

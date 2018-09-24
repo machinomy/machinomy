@@ -1,11 +1,13 @@
 import { RequestResponse, RequiredUriUrl, CoreOptions } from 'request'
 import Payment from './payment'
-import * as BigNumber from 'bignumber.js'
 import Logger from '@machinomy/logger'
 import { AcceptPaymentRequest, AcceptPaymentRequestSerde } from './accept_payment_request'
 import { AcceptPaymentResponse, AcceptPaymentResponseSerde } from './accept_payment_response'
 import { AcceptTokenRequest, AcceptTokenRequestSerde } from './accept_token_request'
 import { AcceptTokenResponse, AcceptTokenResponseSerde } from './accept_token_response'
+import { PaymentRequiredRequest, PaymentRequiredRequestSerializer } from './PaymentRequiredRequest'
+import { PaymentRequiredResponse, PaymentRequiredResponseSerializer } from './PaymentRequiredResponse'
+import { BadResponse } from './Exceptions'
 let req = require('request')
 
 const request: (opts: RequiredUriUrl & CoreOptions) => Promise<RequestResponse> = (opts: RequiredUriUrl & CoreOptions) => {
@@ -144,30 +146,22 @@ export class Transport {
 
     return AcceptTokenResponseSerde.instance.deserialize(res.body)
   }
-}
 
-export class PaymentRequired {
-  receiver: string
-  price: BigNumber.BigNumber
-  gateway: string
-  meta: string
-  tokenContract?: string
+  async paymentRequired (paymentRequiredRequest: PaymentRequiredRequest, gateway: string): Promise<PaymentRequiredResponse> {
+    const options = {
+      method: 'GET',
+      uri: PaymentRequiredRequestSerializer.instance.serialize(paymentRequiredRequest, gateway),
+      credentials: 'include'
+    }
 
-  constructor (receiver: string, price: BigNumber.BigNumber, gateway: string, meta: string, tokenContract?: string) {
-    this.receiver = receiver
-    this.price = price
-    this.gateway = gateway
-    this.meta = meta
-    this.tokenContract = tokenContract
-  }
-
-  static parse = function (headers: any): PaymentRequired {
-    let receiver = headers['paywall-address']
-    let price = new BigNumber.BigNumber(headers['paywall-price'])
-    let gateway = headers['paywall-gateway']
-    let tokenContract = headers['paywall-token-contract']
-    let meta = headers['paywall-meta']
-    return new PaymentRequired(receiver, price, gateway, meta, tokenContract)
+    const res = await request(options)
+    switch (res.statusCode) {
+      case STATUS_CODES.PAYMENT_REQUIRED:
+      case STATUS_CODES.OK:
+        return PaymentRequiredResponseSerializer.instance.deserialize(res.headers)
+      default:
+        throw new BadResponse()
+    }
   }
 }
 
