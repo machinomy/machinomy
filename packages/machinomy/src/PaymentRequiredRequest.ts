@@ -1,4 +1,3 @@
-import Serde from './Serde'
 import { InvalidUrl } from './Exceptions'
 
 export class PaymentRequiredRequest {
