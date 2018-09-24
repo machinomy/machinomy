@@ -1,5 +1,5 @@
 import * as BigNumber from 'bignumber.js'
-import { TransportVersionNotSupport } from './Exceptions'
+import { TransportVersionNotSupportError } from './Exceptions'
 
 export const TRANSPORT_VERSION = '0.0.3'
 
@@ -34,7 +34,7 @@ export class PaymentRequiredResponseSerializer {
 
   deserialize (headers: any): PaymentRequiredResponse {
     if (!headers['paywall-version'] || headers['paywall-version'] !== TRANSPORT_VERSION) {
-      throw new TransportVersionNotSupport()
+      throw new TransportVersionNotSupportError()
     }
     return {
       price: new BigNumber.BigNumber(headers['paywall-price']),
