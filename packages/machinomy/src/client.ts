@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import { PaymentRequired, STATUS_CODES, Transport } from './transport'
+import { STATUS_CODES, Transport } from './transport'
 import Payment from './payment'
 import IChannelManager from './IChannelManager'
 import * as request from 'request'
@@ -8,11 +8,13 @@ import { AcceptPaymentRequest } from './accept_payment_request'
 import { AcceptPaymentResponse } from './accept_payment_response'
 import { AcceptTokenRequest } from './accept_token_request'
 import { AcceptTokenResponse } from './accept_token_response'
+import { PaymentRequiredRequest } from './PaymentRequiredRequest'
+import { PaymentRequiredResponse } from './PaymentRequiredResponse'
 
 const LOG = new Logger('client')
 
 export default interface Client extends EventEmitter {
-  doPreflight (uri: string): Promise<PaymentRequired>
+  doPreflight (gateway: string, datetime?: number): Promise<PaymentRequiredResponse>
   doPayment (payment: Payment, gateway: string, purchaseMeta?: any): Promise<AcceptPaymentResponse>
   acceptPayment (req: AcceptPaymentRequest): Promise<AcceptPaymentResponse>
   doVerify (token: string, gateway: string): Promise<AcceptTokenResponse>
@@ -20,14 +22,6 @@ export default interface Client extends EventEmitter {
 }
 
 export class ClientImpl extends EventEmitter implements Client {
-  private static HEADER_PREFIX = 'paywall'
-
-  private static REQUIRED_HEADERS = [
-    'version',
-    'address',
-    'price',
-    'gateway'
-  ]
 
   private transport: Transport
 
@@ -39,20 +33,14 @@ export class ClientImpl extends EventEmitter implements Client {
     this.channelManager = channelManager
   }
 
-  doPreflight (uri: string): Promise<PaymentRequired> {
+  async doPreflight (gateway: string, datetime?: number): Promise<PaymentRequiredResponse> {
     this.emit('willPreflight')
 
-    return this.transport.get(uri).then((res: request.RequestResponse) => {
-      this.emit('didPreflight')
+    const request = new PaymentRequiredRequest(datetime)
 
-      switch (res.statusCode) {
-        case STATUS_CODES.PAYMENT_REQUIRED:
-        case STATUS_CODES.OK:
-          return this.handlePaymentRequired(res)
-        default:
-          throw new Error('Received bad response from content server.')
-      }
-    })
+    const deres = await this.transport.paymentRequired(request, gateway)
+    this.emit('didPreflight')
+    return deres
   }
 
   async doPayment (payment: Payment, gateway: string, purchaseMeta?: any): Promise<AcceptPaymentResponse> {
@@ -98,18 +86,5 @@ export class ClientImpl extends EventEmitter implements Client {
     return this.channelManager.verifyToken(req.token)
       .then((res: boolean) => new AcceptTokenResponse(res))
       .catch(() => new AcceptTokenResponse(false))
-  }
-
-  private handlePaymentRequired (res: request.RequestResponse): PaymentRequired {
-    const headers = res.headers
-
-    ClientImpl.REQUIRED_HEADERS.forEach((name: string) => {
-      const header = `${ClientImpl.HEADER_PREFIX}-${name}`
-      if (!headers[header]) {
-        throw new Error(`Missing required header: ${header}`)
-      }
-    })
-
-    return PaymentRequired.parse(headers)
   }
 }

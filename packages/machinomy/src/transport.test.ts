@@ -5,6 +5,7 @@ import Payment from './payment'
 import * as BigNumber from 'bignumber.js'
 import Signature from './Signature'
 import ChannelId from './ChannelId'
+import { PaymentRequiredResponseSerializer, TRANSPORT_VERSION } from './PaymentRequiredResponse'
 let expect = require('expect')
 
 describe('transport', () => {
@@ -89,9 +90,10 @@ describe('transport', () => {
       let headers = {
         'paywall-address': '0xdeadbeaf',
         'paywall-price': '10',
-        'paywall-gateway': 'http://example.com/gateway'
+        'paywall-gateway': 'http://example.com/gateway',
+        'paywall-version': TRANSPORT_VERSION
       }
-      let paymentRequired = transport.PaymentRequired.parse(headers)
+      let paymentRequired = PaymentRequiredResponseSerializer.instance.deserialize(headers)
       expect(paymentRequired.receiver).toBe(headers['paywall-address'])
       expect(paymentRequired.price.toString()).toBe(headers['paywall-price'])
       expect(paymentRequired.gateway).toBe(headers['paywall-gateway'])
