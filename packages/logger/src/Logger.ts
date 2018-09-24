@@ -12,10 +12,6 @@ export default class Logger {
   private readonly namespace: string
   private readonly loggerDNA: any
 
-  static enable (namespace: string): void {
-    d.enable(namespace)
-  }
-
   constructor (namespace: string, logDNAKey?: string, logDNAOptions?: any) {
     let levels = new Levels(namespace)
     this._fatal = levels.fatal
