@@ -4,7 +4,7 @@ export class PaymentNotValid extends Error {
   }
 }
 
-export class TransportVersionNotSupport extends Error {
+export class TransportVersionNotSupportError extends Error {
   constructor () {
     super('Transport version not supported')
   }
