@@ -1,4 +1,3 @@
-import Serde from './Serde'
 import * as BigNumber from 'bignumber.js'
 import { TransportVersionNotSupport } from './Exceptions'
 

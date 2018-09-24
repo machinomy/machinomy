@@ -2,14 +2,13 @@ import * as sinon from 'sinon'
 import * as BigNumber from 'bignumber.js'
 import { Transport } from './transport'
 import { ClientImpl } from './client'
-import expectsRejection, { expectsRejectionType } from './util/expects_rejection'
+import expectsRejection from './util/expects_rejection'
 import { PaymentSerde } from './payment'
 import { AcceptPaymentRequestSerde } from './accept_payment_request'
 import { AcceptPaymentResponse } from './accept_payment_response'
 import { AcceptTokenResponse } from './accept_token_response'
 import IChannelManager from './IChannelManager'
 import { PaymentRequiredResponse, PaymentRequiredResponseSerializer, TRANSPORT_VERSION } from './PaymentRequiredResponse'
-import { TransportVersionNotSupport } from './Exceptions'
 
 const expect = require('expect')
 
