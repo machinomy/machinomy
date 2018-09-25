@@ -13,7 +13,7 @@ import { PaymentRequiredResponse } from './PaymentRequiredResponse'
 const LOG = new Logger('client')
 
 export default interface Client extends EventEmitter {
-  doPreflight (gateway: string, datetime?: number): Promise<PaymentRequiredResponse>
+  doPreflight (sender: string, gateway: string, datetime?: number): Promise<PaymentRequiredResponse>
   doPayment (payment: Payment, gateway: string, purchaseMeta?: any): Promise<AcceptPaymentResponse>
   acceptPayment (req: AcceptPaymentRequest): Promise<AcceptPaymentResponse>
   doVerify (token: string, gateway: string): Promise<AcceptTokenResponse>
@@ -32,10 +32,10 @@ export class ClientImpl extends EventEmitter implements Client {
     this.channelManager = channelManager
   }
 
-  async doPreflight (gateway: string, datetime?: number): Promise<PaymentRequiredResponse> {
+  async doPreflight (sender: string, gateway: string, datetime?: number): Promise<PaymentRequiredResponse> {
     this.emit('willPreflight')
 
-    const request = new PaymentRequiredRequest(datetime)
+    const request = new PaymentRequiredRequest(sender, datetime)
 
     const deres = await this.transport.paymentRequired(request, gateway)
     this.emit('didPreflight')

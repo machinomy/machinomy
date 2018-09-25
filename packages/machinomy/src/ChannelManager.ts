@@ -17,7 +17,10 @@ import Logger from '@machinomy/logger'
 import { PaymentChannel } from './PaymentChannel'
 import ChannelInflator from './ChannelInflator'
 import * as uuid from 'uuid'
-import { PaymentNotValid } from './Exceptions'
+import { PaymentNotValidError, InvalidChannelError } from './Exceptions'
+import { RemoteChannelInfos } from './RemoteChannelInfo'
+import { ChannelState } from './ChannelState';
+import Signature from './Signature';
 
 const LOG = new Logger('channel-manager')
 
@@ -145,7 +148,7 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
         }
       }
 
-      throw new PaymentNotValid()
+      throw new PaymentNotValidError()
     })
   }
 
@@ -192,7 +195,52 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
     return this.tokensDao.isPresent(token)
   }
 
-  private async internalOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount: BigNumber.BigNumber = new BigNumber.BigNumber(0), channelId?: ChannelId | string, tokenContract?: string): Promise<PaymentChannel> {
+  async syncChannels (sender: string, receiver: string, remoteChannels: RemoteChannelInfos): Promise<void> {
+    const channels = await this.openChannels()
+    const recChannels = channels.filter(chan => chan.receiver === receiver)
+    const promises = remoteChannels.channels.map(async remoteChan => {
+      const localChan = recChannels.find(chan => chan.channelId === remoteChan.channelId)
+      let newSpent = remoteChan.spent
+      if (localChan) {
+        if (localChan.spent >= remoteChan.spent) { // all is ok
+          return
+        }
+        newSpent = newSpent.sub(localChan.spent)
+      } else {
+        await this.nextPayment(remoteChan.channelId, new BigNumber.BigNumber(0), '') // create channel if not exist
+      }
+      // tslint:disable-next-line:no-unused-variable
+      const [senderChan, receiverChan, valueChan, settlingPeriodChan, settlingUntilChan] = await this.channelContract.channelById(remoteChan.channelId)
+      if (sender !== senderChan) {
+        throw new InvalidChannelError('sender')
+      }
+      if (receiverChan !== receiver) {
+        throw new InvalidChannelError('receiver')
+      }
+      const state = await this.channelContract.getState(remoteChan.channelId)
+      if (state !== ChannelState.Open) {
+        throw new InvalidChannelError('state')
+      }
+      await this.channelContract.claim(receiverChan, remoteChan.channelId, remoteChan.lastPayment, remoteChan.sign)
+      const payment = await this.nextPayment(remoteChan.channelId, newSpent, '')
+      let chan = await this.findChannel(payment)
+      chan.spent = remoteChan.spent
+      await this.channelsDao.saveOrUpdate(chan)
+      return
+    })
+    await Promise.all(promises)
+  }
+
+  async lastPayment (channelId: string | ChannelId): Promise<Payment> {
+    channelId = channelId.toString()
+    let payment = await this.paymentsDao.firstMaximum(channelId)
+    if (!payment) {
+      throw new Error(`No payment found for channel ID ${channelId}`)
+    }
+    return payment
+  }
+
+  private async internalOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount: BigNumber.BigNumber = new BigNumber.BigNumber(0), channelId?: ChannelId | string, tokenContract?: string): Promise<PaymentChannel > {
     let depositAmount = amount.times(10)
 
     if (minDepositAmount.greaterThan(0) && minDepositAmount.greaterThan(depositAmount)) {
@@ -229,7 +277,7 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
     return txn
   }
 
-  private settle (channel: PaymentChannel): Promise<TransactionResult> {
+  private settle (channel: PaymentChannel): Promise<TransactionResult > {
     return this.channelContract.getState(channel.channelId).then((state: number) => {
       if (state === 2) {
         throw new Error(`Channel ${channel.channelId.toString()} is already settled.`)
@@ -249,10 +297,7 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
   }
 
   private async claim (channel: PaymentChannel): Promise<TransactionResult> {
-    let payment = await this.paymentsDao.firstMaximum(channel.channelId)
-    if (!payment) {
-      throw new Error(`No payment found for channel ID ${channel.channelId.toString()}`)
-    }
+    let payment = await this.lastPayment(channel.channelId)
     let result = await this.channelContract.claim(channel.receiver, channel.channelId, payment.value, payment.signature)
     await this.channelsDao.updateState(channel.channelId, 2)
     return result
@@ -278,7 +323,7 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
     return chan
   }
 
-  private async findChannel (payment: Payment): Promise<PaymentChannel> {
+  private async findChannel (payment: Payment): Promise < PaymentChannel > {
     let chan = await this.channelsDao.findBySenderReceiverChannelId(payment.sender, payment.receiver, payment.channelId)
 
     if (chan) {

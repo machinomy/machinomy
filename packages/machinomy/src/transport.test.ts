@@ -91,7 +91,8 @@ describe('transport', () => {
         'paywall-address': '0xdeadbeaf',
         'paywall-price': '10',
         'paywall-gateway': 'http://example.com/gateway',
-        'paywall-version': TRANSPORT_VERSION
+        'paywall-version': TRANSPORT_VERSION,
+        'paywall-channels': '[]'
       }
       let paymentRequired = PaymentRequiredResponseSerializer.instance.deserialize(headers)
       expect(paymentRequired.receiver).toBe(headers['paywall-address'])

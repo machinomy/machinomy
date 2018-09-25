@@ -82,13 +82,16 @@ export default class Machinomy {
   async pry (uri: string, datetime?: number): Promise<PaymentRequiredResponse> {
     await this.checkMigrationsState()
     let client = await this.registry.client()
-    return client.doPreflight(uri, datetime)
+    const response = await client.doPreflight(this.account, uri, datetime)
+    let channelManager = await this.registry.channelManager()
+    await channelManager.syncChannels(this.account, response.receiver, response.remoteChannelInfo)
+    return response
   }
 
   async buyUrl (uri: string): Promise<BuyResult> {
     await this.checkMigrationsState()
     let client = await this.registry.client()
-    let req = await client.doPreflight(uri)
+    let req = await client.doPreflight(this.account, uri)
     return this.buy({
       receiver: req.receiver,
       price: req.price,

@@ -1,7 +1,8 @@
 import * as BigNumber from 'bignumber.js'
 import { TransportVersionNotSupportError } from './Exceptions'
+import { RemoteChannelInfos, RemoteChannelInfosSerde } from './RemoteChannelInfo'
 
-export const TRANSPORT_VERSION = '0.0.3'
+export const TRANSPORT_VERSION = '0.0.4'
 
 export class PaymentRequiredResponse {
   price: BigNumber.BigNumber
@@ -9,13 +10,15 @@ export class PaymentRequiredResponse {
   gateway: string
   tokenContract: string
   meta: any
+  remoteChannelInfo: RemoteChannelInfos
 
-  constructor (price: BigNumber.BigNumber, receiver: string, gateway: string, tokenContract: string, meta: any) {
+  constructor (price: BigNumber.BigNumber, receiver: string, gateway: string, tokenContract: string, meta: any, remoteChannelInfo: RemoteChannelInfos) {
     this.price = price
     this.receiver = receiver
     this.gateway = gateway
     this.tokenContract = tokenContract
     this.meta = meta
+    this.remoteChannelInfo = remoteChannelInfo
   }
 }
 
@@ -29,6 +32,7 @@ export class PaymentRequiredResponseSerializer {
     headers['paywall-token-contract'] = obj.tokenContract
     headers['paywall-meta'] = obj.meta
     headers['paywall-version'] = TRANSPORT_VERSION
+    headers['paywall-channels'] = JSON.stringify(RemoteChannelInfosSerde.instance.serialize(obj.remoteChannelInfo))
     return headers
   }
 
@@ -41,7 +45,8 @@ export class PaymentRequiredResponseSerializer {
       receiver: headers['paywall-address'],
       gateway: headers['paywall-gateway'],
       tokenContract: headers['paywall-token-contract'],
-      meta: headers['paywall-meta']
+      meta: headers['paywall-meta'],
+      remoteChannelInfo: RemoteChannelInfosSerde.instance.deserialize(JSON.parse(headers['paywall-channels']))
     }
   }
 }
