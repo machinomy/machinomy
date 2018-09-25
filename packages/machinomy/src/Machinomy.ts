@@ -84,7 +84,7 @@ export default class Machinomy {
     let client = await this.registry.client()
     const response = await client.doPreflight(this.account, uri, datetime)
     let channelManager = await this.registry.channelManager()
-    await channelManager.syncChannels(this.account, response.receiver, response.remoteChannelInfo)
+    await channelManager.syncChannels(this.account, response.receiver, response.remoteChannelInfo.channels)
     return response
   }
 

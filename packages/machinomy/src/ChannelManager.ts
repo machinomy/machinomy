@@ -18,7 +18,7 @@ import { PaymentChannel } from './PaymentChannel'
 import ChannelInflator from './ChannelInflator'
 import * as uuid from 'uuid'
 import { PaymentNotValidError, InvalidChannelError } from './Exceptions'
-import { RemoteChannelInfos } from './RemoteChannelInfo'
+import { RemoteChannelInfo } from './RemoteChannelInfo'
 const sigUtil = require('eth-sig-util')
 
 const LOG = new Logger('channel-manager')
@@ -194,18 +194,16 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
     return this.tokensDao.isPresent(token)
   }
 
-  async syncChannels (sender: string, receiver: string, remoteChannels: RemoteChannelInfos): Promise<void> {
+  async syncChannels (sender: string, receiver: string, remoteChannels: RemoteChannelInfo[]): Promise<void> {
     const channels = await this.openChannels()
     const recChannels = channels.filter(chan => chan.receiver === receiver)
-    const promises = remoteChannels.channels.map(async remoteChan => {
+    const promises = remoteChannels.map(async remoteChan => {
       const localChan = recChannels.find(chan => chan.channelId === remoteChan.channelId)
-      if (localChan) {
-        if (localChan.spent >= remoteChan.spent) { // all is ok
-          return
-        }
+      if (localChan && localChan.spent >= remoteChan.spent) { // all is ok
+        return
       }
-      const digist = await this.channelContract.paymentDigest(remoteChan.channelId, remoteChan.spent)
-      const restored = sigUtil.recoverPersonalSignature({ data: digist, sig: remoteChan.sign.toString() })
+      const digest = await this.channelContract.paymentDigest(remoteChan.channelId, remoteChan.spent)
+      const restored = sigUtil.recoverPersonalSignature({ data: digest, sig: remoteChan.sign.toString() })
       if (restored !== sender) {
         throw new InvalidChannelError('signature')
       }
@@ -213,7 +211,6 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
       let chan = await this.findChannel(payment)
       chan.spent = remoteChan.spent
       await this.channelsDao.saveOrUpdate(chan)
-      return
     })
     await Promise.all(promises)
   }
@@ -227,7 +224,7 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
     return payment
   }
 
-  private async internalOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount: BigNumber.BigNumber = new BigNumber.BigNumber(0), channelId?: ChannelId | string, tokenContract?: string): Promise<PaymentChannel > {
+  private async internalOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount: BigNumber.BigNumber = new BigNumber.BigNumber(0), channelId?: ChannelId | string, tokenContract ?: string): Promise<PaymentChannel > {
     let depositAmount = amount.times(10)
 
     if (minDepositAmount.greaterThan(0) && minDepositAmount.greaterThan(depositAmount)) {
@@ -264,7 +261,7 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
     return txn
   }
 
-  private settle (channel: PaymentChannel): Promise<TransactionResult > {
+  private settle (channel: PaymentChannel): Promise<TransactionResult> {
     return this.channelContract.getState(channel.channelId).then((state: number) => {
       if (state === 2) {
         throw new Error(`Channel ${channel.channelId.toString()} is already settled.`)
@@ -290,7 +287,7 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
     return result
   }
 
-  private async buildChannel (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number, channelId?: ChannelId | string, tokenContract?: string): Promise<PaymentChannel> {
+  private async buildChannel (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number, channelId ?: ChannelId | string, tokenContract ?: string): Promise<PaymentChannel> {
     const res = await this.channelContract.open(sender, receiver, price, settlementPeriod, channelId, tokenContract)
     const _channelId = res.logs[0].args.channelId
     return new PaymentChannel(sender, receiver, _channelId, price, new BigNumber.BigNumber(0), 0, tokenContract)
@@ -310,7 +307,7 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
     return chan
   }
 
-  private async findChannel (payment: Payment): Promise < PaymentChannel > {
+  private async findChannel (payment: Payment): Promise<PaymentChannel> {
     let chan = await this.channelsDao.findBySenderReceiverChannelId(payment.sender, payment.receiver, payment.channelId)
 
     if (chan) {
