@@ -1,6 +1,5 @@
 import { PaymentRequiredResponseSerializer, TRANSPORT_VERSION } from './PaymentRequiredResponse'
 import * as BigNumber from 'bignumber.js'
-import { TransportVersionNotSupportError } from './Exceptions'
 import Signature from './Signature'
 const expect = require('expect')
 
