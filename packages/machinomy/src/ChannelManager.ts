@@ -19,7 +19,7 @@ import ChannelInflator from './ChannelInflator'
 import * as uuid from 'uuid'
 import { PaymentNotValidError, InvalidChannelError } from './Exceptions'
 import { RemoteChannelInfo } from './RemoteChannelInfo'
-const sigUtil = require('eth-sig-util')
+import { recoverPersonalSignature } from 'eth-sig-util'
 
 const LOG = new Logger('channel-manager')
 
@@ -199,11 +199,15 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
     const recChannels = channels.filter(chan => chan.receiver === receiver)
     const promises = remoteChannels.map(async remoteChan => {
       const localChan = recChannels.find(chan => chan.channelId === remoteChan.channelId)
-      if (localChan && localChan.spent >= remoteChan.spent) { // all is ok
-        return
+      if (localChan) { // all is ok
+        if (localChan.spent >= remoteChan.spent) {
+          return
+        }
+      } else {
+        await this.nextPayment(remoteChan.channelId, new BigNumber.BigNumber(0), '')
       }
       const digest = await this.channelContract.paymentDigest(remoteChan.channelId, remoteChan.spent)
-      const restored = sigUtil.recoverPersonalSignature({ data: digest, sig: remoteChan.sign.toString() })
+      const restored = recoverPersonalSignature({ data: digest, sig: remoteChan.sign.toString() })
       if (restored !== sender) {
         throw new InvalidChannelError('signature')
       }

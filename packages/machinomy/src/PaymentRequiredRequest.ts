@@ -1,4 +1,5 @@
 import { InvalidUrlError } from './Exceptions'
+import { URLSearchParams } from 'url'
 
 export class PaymentRequiredRequest {
   sender: string
@@ -13,7 +14,7 @@ export class PaymentRequiredRequestSerializer {
   static instance: PaymentRequiredRequestSerializer = new PaymentRequiredRequestSerializer()
 
   serialize (obj: PaymentRequiredRequest, baseurl: string): string {
-    const url = `${baseurl}/${obj.sender}${obj.datetime ? `/${obj.datetime}` : ''}`
+    const url = `${baseurl}?sender=${obj.sender}${obj.datetime ? `&timestamp=${obj.datetime}` : ''}`
     return url
   }
 
@@ -26,14 +27,15 @@ export class PaymentRequiredRequestSerializer {
     if (index < 0) {
       throw new InvalidUrlError()
     }
-    const uri = url.substring(index + baseurl.length)
-    const parts = uri.split('/')
-    if (parts.length < 1) {
+    const searchParams = new URLSearchParams(url)
+    const sender = searchParams.get('sender')
+    if (!sender) {
       throw new InvalidUrlError()
     }
+    const datetime = searchParams.get('datetime')
     return {
-      sender: parts[0],
-      datetime: parts.length >= 2 ? Number(parts[1]) : undefined
+      sender: sender,
+      datetime: datetime ? Number(datetime) : undefined
     }
   }
 }
