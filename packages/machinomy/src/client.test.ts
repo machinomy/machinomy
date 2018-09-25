@@ -9,7 +9,7 @@ import { AcceptPaymentResponse } from './accept_payment_response'
 import { AcceptTokenResponse } from './accept_token_response'
 import IChannelManager from './IChannelManager'
 import { PaymentRequiredResponse, PaymentRequiredResponseSerializer, TRANSPORT_VERSION } from './PaymentRequiredResponse'
-import Signature from './Signature';
+import Signature from './Signature'
 
 const expect = require('expect')
 
@@ -35,7 +35,7 @@ describe('ClientImpl', () => {
         'paywall-gateway': 'http://honkhost:8080/machinomy',
         'paywall-meta': 'hello',
         'paywall-token-contract': '0xbeef',
-        'paywall-channels': '[{"channelId": "0x111", "spent": "10", "lastPayment": "11", "sign": "0xbabe"}]'
+        'paywall-channels': '[{"channelId": "0x111", "spent": "10", "sign": "0xbabe"}]'
       }))
 
       return client.doPreflight('0xcafe', 'http://honkhost:1234/site').then((res: PaymentRequiredResponse) => {
@@ -47,7 +47,6 @@ describe('ClientImpl', () => {
         expect(res.remoteChannelInfo.channels.length).toBe(1)
         expect(res.remoteChannelInfo.channels[0].channelId).toBe('0x111')
         expect(res.remoteChannelInfo.channels[0].spent).toEqual(new BigNumber.BigNumber(10))
-        expect(res.remoteChannelInfo.channels[0].lastPayment).toEqual(new BigNumber.BigNumber(11))
         expect(res.remoteChannelInfo.channels[0].sign).toEqual(Signature.fromRpcSig('0xbabe'))
       })
     })

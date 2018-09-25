@@ -19,8 +19,7 @@ import ChannelInflator from './ChannelInflator'
 import * as uuid from 'uuid'
 import { PaymentNotValidError, InvalidChannelError } from './Exceptions'
 import { RemoteChannelInfos } from './RemoteChannelInfo'
-import { ChannelState } from './ChannelState';
-import Signature from './Signature';
+const sigUtil = require('eth-sig-util')
 
 const LOG = new Logger('channel-manager')
 
@@ -200,32 +199,17 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
     const recChannels = channels.filter(chan => chan.receiver === receiver)
     const promises = remoteChannels.channels.map(async remoteChan => {
       const localChan = recChannels.find(chan => chan.channelId === remoteChan.channelId)
-      let newSpent = remoteChan.spent
       if (localChan) {
         if (localChan.spent >= remoteChan.spent) { // all is ok
           return
         }
-        newSpent = newSpent.sub(localChan.spent)
-      } else {
-        await this.nextPayment(remoteChan.channelId, new BigNumber.BigNumber(0), '') // create channel if not exist
       }
-      // tslint:disable-next-line:no-unused-variable
-      const [senderChan, receiverChan, valueChan, settlingPeriodChan, settlingUntilChan] = await this.channelContract.channelById(remoteChan.channelId)
-      if (sender !== senderChan) {
-        throw new InvalidChannelError('sender')
+      const digist = await this.channelContract.paymentDigest(remoteChan.channelId, remoteChan.spent)
+      const restored = sigUtil.recoverPersonalSignature({ data: digist, sig: remoteChan.sign.toString() })
+      if (restored !== sender) {
+        throw new InvalidChannelError('signature')
       }
-      if (receiverChan !== receiver) {
-        throw new InvalidChannelError('receiver')
-      }
-      const state = await this.channelContract.getState(remoteChan.channelId)
-      if (state !== ChannelState.Open) {
-        throw new InvalidChannelError('state')
-      }
-      const digist = await this.channelContract.paymentDigest(remoteChan.channelId, remoteChan.lastPayment)
-      if (Signature.fromRpcSig(digist) !== remoteChan.sign) {
-        throw new InvalidChannelError('digist')
-      }
-      const payment = await this.nextPayment(remoteChan.channelId, newSpent, '')
+      const payment = await this.nextPayment(remoteChan.channelId, remoteChan.spent, '')
       let chan = await this.findChannel(payment)
       chan.spent = remoteChan.spent
       await this.channelsDao.saveOrUpdate(chan)

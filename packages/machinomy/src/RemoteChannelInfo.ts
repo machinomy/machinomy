@@ -6,13 +6,11 @@ import Signature from './Signature'
 export class RemoteChannelInfo {
   channelId: string
   spent: BigNumber.BigNumber
-  lastPayment: BigNumber.BigNumber
   sign: Signature
 
-  constructor (channelId: string, spent: BigNumber.BigNumber, lastPayment: BigNumber.BigNumber, sign: Signature) {
+  constructor (channelId: string, spent: BigNumber.BigNumber, sign: Signature) {
     this.channelId = channelId
     this.spent = spent
-    this.lastPayment = lastPayment
     this.sign = sign
   }
 }
@@ -24,7 +22,6 @@ export class RemoteChannelInfoSerde implements Serde<RemoteChannelInfo> {
     return {
       channelId: obj.channelId,
       spent: obj.spent.toString(),
-      lastPayment: obj.lastPayment.toString(),
       sign: obj.sign.toString()
     }
   }
@@ -36,9 +33,6 @@ export class RemoteChannelInfoSerde implements Serde<RemoteChannelInfo> {
     if (!data.spent) {
       throw new IvalidTypeError(RemoteChannelInfo.name, 'spent')
     }
-    if (!data.lastPayment) {
-      throw new IvalidTypeError(RemoteChannelInfo.name, 'spent')
-    }
     if (!data.sign) {
       throw new IvalidTypeError(RemoteChannelInfo.name, 'sign')
     }
@@ -46,7 +40,6 @@ export class RemoteChannelInfoSerde implements Serde<RemoteChannelInfo> {
     return {
       channelId: data.channelId,
       spent: new BigNumber.BigNumber(data.spent),
-      lastPayment: new BigNumber.BigNumber(data.lastPayment),
       sign: Signature.fromRpcSig(data.sign)
     }
   }
