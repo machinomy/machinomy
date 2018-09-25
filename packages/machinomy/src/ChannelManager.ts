@@ -221,7 +221,10 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
       if (state !== ChannelState.Open) {
         throw new InvalidChannelError('state')
       }
-      await this.channelContract.claim(receiverChan, remoteChan.channelId, remoteChan.lastPayment, remoteChan.sign)
+      const digist = await this.channelContract.paymentDigest(remoteChan.channelId, remoteChan.lastPayment)
+      if (Signature.fromRpcSig(digist) !== remoteChan.sign) {
+        throw new InvalidChannelError('digist')
+      }
       const payment = await this.nextPayment(remoteChan.channelId, newSpent, '')
       let chan = await this.findChannel(payment)
       chan.spent = remoteChan.spent
