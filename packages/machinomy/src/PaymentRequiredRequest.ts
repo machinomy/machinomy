@@ -1,6 +1,5 @@
 import { InvalidUrlError } from './Exceptions'
-import { URLSearchParams } from 'url'
-
+import { parse } from 'url'
 export class PaymentRequiredRequest {
   sender: string
   datetime?: number
@@ -18,24 +17,29 @@ export class PaymentRequiredRequestSerializer {
     return url
   }
 
-  deserialize (url: string, baseurl: string): PaymentRequiredRequest {
-    if (url.length < baseurl.length) {
+  deserialize (urlString: string): PaymentRequiredRequest {
+    const url = parse(urlString)
+    if (!url.query) {
       throw new InvalidUrlError()
     }
-    const index = url.indexOf(baseurl)
-
-    if (index < 0) {
-      throw new InvalidUrlError()
-    }
-    const searchParams = new URLSearchParams(url)
-    const sender = searchParams.get('sender')
+    const params: any = url.query.split('&').reduce((acc, hash) => {
+      const [key, val] = hash.split('=')
+      return Object.assign(acc, { [key]: decodeURIComponent(val) })
+    }, {})
+    const sender = params.sender
     if (!sender) {
       throw new InvalidUrlError()
     }
-    const datetime = searchParams.get('datetime')
+    let datetime: number | undefined = params.datetime
+    if (datetime) {
+      datetime = Number(datetime)
+    }
+    if (datetime && isNaN(datetime)) {
+      datetime = undefined
+    }
     return {
       sender: sender,
-      datetime: datetime ? Number(datetime) : undefined
+      datetime: datetime
     }
   }
 }
