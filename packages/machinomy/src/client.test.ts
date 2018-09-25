@@ -50,36 +50,6 @@ describe('ClientImpl', () => {
 
       return expectsRejection(client.doPreflight('http://honkhost:1234/site'))
     })
-/* must be another test
-    it('throws an error when required headers don\'t show up', () => {
-      const prefixes = [
-        'version',
-        'address',
-        'price',
-        'gateway'
-      ]
-
-      const headers = {
-        'paywall-version': '1.0',
-        'paywall-address': '0x1234',
-        'paywall-price': '1000',
-        'paywall-gateway': 'http://honkhost:8080/machinomy',
-        'paywall-meta': 'hello',
-        'paywall-token-address': '0xbeef'
-      }
-
-      return Promise.all(prefixes.map((prefix: string) => {
-        const badHeaders: any = {
-          ...headers
-        }
-
-        delete badHeaders[`paywall-${prefix}`]
-
-        transport.paymentRequired = sinon.stub().resolves(PaymentRequiredResponseSerializer.instance.deserialize(badHeaders))
-
-        return expectsRejection(client.doPreflight('http://honkhost:1234/site'))
-      }))
-    })*/
   })
 
   describe('doPayment', () => {
@@ -139,21 +109,6 @@ describe('ClientImpl', () => {
 
       return expectsRejection(client.doPayment(payment, 'gateway'))
     })
-/*
-    it('throws an error if deserialization fails', () => {
-      const payment = PaymentSerde.instance.deserialize(paymentJson)
-
-      post.withArgs('gateway', {
-        json: true,
-        body: {
-          payment: paymentJson
-        }
-      }).resolves({
-        falafels: 'are good'
-      })
-
-      return expectsRejection(client.doPayment(payment, 'gateway'))
-    }) */
   })
 
   describe('acceptPayment', () => {
