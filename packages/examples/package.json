@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@machinomy/examples",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Examples of Machinomy usage",
   "author": "Sergey Ukustov <sergey.ukustov@machinomy.com>",
   "license": "Apache-2.0",
@@ -41,7 +41,7 @@
     "fetch-ponyfill": "^6.0.0",
     "fs-extra": "^7.0.0",
     "homedir": "https://github.com/ukstv/node-homedir",
-    "machinomy": "^1.13.3",
+    "machinomy": "^1.13.4",
     "nedb": "^1.8.0",
     "prompt": "^1.0.0",
     "request": "^2.76.0",
