@@ -1,6 +1,6 @@
 const expect = require('expect')
 
-export function expectsRejectionType<T = Error> (res: Promise<any>, constructor: {new (): T}): Promise<any> {
+export default function expectsRejection (res: Promise<any>): Promise<any> {
   return res.then(() => {
     throw new Error('errExpected')
   }).catch((e) => {
@@ -13,10 +13,6 @@ export function expectsRejectionType<T = Error> (res: Promise<any>, constructor:
       throw new Error('An error was expected.')
     }
 
-    expect(e instanceof constructor).toBe(true)
+    expect(e instanceof Error).toBe(true)
   })
-}
-
-export default function expectsRejection (res: Promise<any>): Promise<any> {
-  return expectsRejectionType<Error>(res, Error)
 }
