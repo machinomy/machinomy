@@ -23,7 +23,7 @@ describe('PaymentRequiredResponse', () => {
     })
 
     it('wrongversion', () => {
-      try {
+      expect(() => {
         PaymentRequiredResponseSerializer.instance.deserialize({
           'paywall-version': '',
           'paywall-address': '0x1234',
@@ -32,11 +32,7 @@ describe('PaymentRequiredResponse', () => {
           'paywall-meta': 'hello',
           'paywall-token-contract': '0xbeef'
         })
-      } catch (err) {
-        expect(err instanceof TransportVersionNotSupportError).toBe(true)
-        return
-      }
-      expect(false, true) // We must return in catch
+      }).toThrow()
     })
   })
 })
