@@ -5,6 +5,7 @@
     "outDir": "lib/",
     "types": [
       "@machinomy/types-ethereumjs-util",
+      "@machinomy/types-eth-sig-util",
       "@machinomy/types-web3",
       "@machinomy/types-truffle-contract",
       "@types/mocha",

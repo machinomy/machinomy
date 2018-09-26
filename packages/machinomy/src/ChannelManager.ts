@@ -17,7 +17,9 @@ import Logger from '@machinomy/logger'
 import { PaymentChannel } from './PaymentChannel'
 import ChannelInflator from './ChannelInflator'
 import * as uuid from 'uuid'
-import { PaymentNotValid } from './Exceptions'
+import { PaymentNotValidError, InvalidChannelError } from './Exceptions'
+import { RemoteChannelInfo } from './RemoteChannelInfo'
+import { recoverPersonalSignature } from 'eth-sig-util'
 
 const LOG = new Logger('channel-manager')
 
@@ -145,7 +147,7 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
         }
       }
 
-      throw new PaymentNotValid()
+      throw new PaymentNotValidError()
     })
   }
 
@@ -192,7 +194,41 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
     return this.tokensDao.isPresent(token)
   }
 
-  private async internalOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount: BigNumber.BigNumber = new BigNumber.BigNumber(0), channelId?: ChannelId | string, tokenContract?: string): Promise<PaymentChannel> {
+  async syncChannels (sender: string, receiver: string, remoteChannels: RemoteChannelInfo[]): Promise<void> {
+    const channels = await this.openChannels()
+    const recChannels = channels.filter(chan => chan.receiver === receiver)
+    const promises = remoteChannels.map(async remoteChan => {
+      const localChan = recChannels.find(chan => chan.channelId === remoteChan.channelId)
+      if (localChan) { // all is ok
+        if (localChan.spent >= remoteChan.spent) {
+          return
+        }
+      } else {
+        await this.nextPayment(remoteChan.channelId, new BigNumber.BigNumber(0), '')
+      }
+      const digest = await this.channelContract.paymentDigest(remoteChan.channelId, remoteChan.spent)
+      const restored = recoverPersonalSignature({ data: digest, sig: remoteChan.sign.toString() })
+      if (restored !== sender) {
+        throw new InvalidChannelError('signature')
+      }
+      const payment = await this.nextPayment(remoteChan.channelId, remoteChan.spent, '')
+      let chan = await this.findChannel(payment)
+      chan.spent = remoteChan.spent
+      await this.channelsDao.saveOrUpdate(chan)
+    })
+    await Promise.all(promises)
+  }
+
+  async lastPayment (channelId: string | ChannelId): Promise<Payment> {
+    channelId = channelId.toString()
+    let payment = await this.paymentsDao.firstMaximum(channelId)
+    if (!payment) {
+      throw new Error(`No payment found for channel ID ${channelId}`)
+    }
+    return payment
+  }
+
+  private async internalOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount: BigNumber.BigNumber = new BigNumber.BigNumber(0), channelId?: ChannelId | string, tokenContract?: string): Promise<PaymentChannel > {
     let depositAmount = amount.times(10)
 
     if (minDepositAmount.greaterThan(0) && minDepositAmount.greaterThan(depositAmount)) {
@@ -249,10 +285,7 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
   }
 
   private async claim (channel: PaymentChannel): Promise<TransactionResult> {
-    let payment = await this.paymentsDao.firstMaximum(channel.channelId)
-    if (!payment) {
-      throw new Error(`No payment found for channel ID ${channel.channelId.toString()}`)
-    }
+    let payment = await this.lastPayment(channel.channelId)
     let result = await this.channelContract.claim(channel.receiver, channel.channelId, payment.value, payment.signature)
     await this.channelsDao.updateState(channel.channelId, 2)
     return result

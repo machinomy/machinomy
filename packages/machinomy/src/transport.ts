@@ -7,7 +7,7 @@ import { AcceptTokenRequest, AcceptTokenRequestSerde } from './accept_token_requ
 import { AcceptTokenResponse, AcceptTokenResponseSerde } from './accept_token_response'
 import { PaymentRequiredRequest, PaymentRequiredRequestSerializer } from './PaymentRequiredRequest'
 import { PaymentRequiredResponse, PaymentRequiredResponseSerializer } from './PaymentRequiredResponse'
-import { BadResponse } from './Exceptions'
+import { BadResponseError } from './Exceptions'
 let req = require('request')
 
 const request: (opts: RequiredUriUrl & CoreOptions) => Promise<RequestResponse> = (opts: RequiredUriUrl & CoreOptions) => {
@@ -160,7 +160,7 @@ export class Transport {
       case STATUS_CODES.OK:
         return PaymentRequiredResponseSerializer.instance.deserialize(res.headers)
       default:
-        throw new BadResponse()
+        throw new BadResponseError()
     }
   }
 }

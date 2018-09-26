@@ -9,6 +9,7 @@ import { AcceptPaymentResponse } from './accept_payment_response'
 import { AcceptTokenResponse } from './accept_token_response'
 import IChannelManager from './IChannelManager'
 import { PaymentRequiredResponse, PaymentRequiredResponseSerializer, TRANSPORT_VERSION } from './PaymentRequiredResponse'
+import Signature from './Signature'
 
 const expect = require('expect')
 
@@ -33,23 +34,29 @@ describe('ClientImpl', () => {
         'paywall-price': '1000',
         'paywall-gateway': 'http://honkhost:8080/machinomy',
         'paywall-meta': 'hello',
-        'paywall-token-contract': '0xbeef'
+        'paywall-token-contract': '0xbeef',
+        'paywall-channels': '[{"channelId": "0x111", "spent": "10", "sign": "0xbabe"}]'
       }))
 
-      return client.doPreflight('http://honkhost:1234/site').then((res: PaymentRequiredResponse) => {
+      return client.doPreflight('0xcafe', 'http://honkhost:1234/site').then((res: PaymentRequiredResponse) => {
         expect(res.receiver).toBe('0x1234')
         expect(res.price).toEqual(new BigNumber.BigNumber(1000))
         expect(res.gateway).toBe('http://honkhost:8080/machinomy')
         expect(res.meta).toBe('hello')
         expect(res.tokenContract).toBe('0xbeef')
+        expect(res.remoteChannelInfo.channels.length).toBe(1)
+        expect(res.remoteChannelInfo.channels[0].channelId).toBe('0x111')
+        expect(res.remoteChannelInfo.channels[0].spent).toEqual(new BigNumber.BigNumber(10))
+        expect(res.remoteChannelInfo.channels[0].sign).toEqual(Signature.fromRpcSig('0xbabe'))
       })
     })
 
     it('throws an error for any other status code', () => {
       transport.paymentRequired = sinon.stub().rejects()
 
-      return expectsRejection(client.doPreflight('http://honkhost:1234/site'))
+      return expectsRejection(client.doPreflight('0xcafe', 'http://honkhost:1234/site'))
     })
+
   })
 
   describe('doPayment', () => {
@@ -109,6 +116,7 @@ describe('ClientImpl', () => {
 
       return expectsRejection(client.doPayment(payment, 'gateway'))
     })
+
   })
 
   describe('acceptPayment', () => {

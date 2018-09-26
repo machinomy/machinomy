@@ -1,8 +1,10 @@
-import { InvalidUrl } from './Exceptions'
-
+import { InvalidUrlError } from './Exceptions'
+import { parse } from 'url'
 export class PaymentRequiredRequest {
+  sender: string
   datetime?: number
-  constructor (datetime?: number) {
+  constructor (sender: string, datetime?: number) {
+    this.sender = sender
     this.datetime = datetime
   }
 }
@@ -11,23 +13,33 @@ export class PaymentRequiredRequestSerializer {
   static instance: PaymentRequiredRequestSerializer = new PaymentRequiredRequestSerializer()
 
   serialize (obj: PaymentRequiredRequest, baseurl: string): string {
-    const url = `${baseurl}${obj.datetime ? `/${obj.datetime}` : ''}`
+    const url = `${baseurl}?sender=${obj.sender}${obj.datetime ? `&timestamp=${obj.datetime}` : ''}`
     return url
   }
 
-  deserialize (url: string, baseurl: string): PaymentRequiredRequest {
-    if (url.length < baseurl.length) {
-      throw new InvalidUrl()
+  deserialize (urlString: string): PaymentRequiredRequest {
+    const url = parse(urlString)
+    if (!url.query) {
+      throw new InvalidUrlError()
     }
-    const index = url.indexOf(baseurl)
-
-    if (index < 0) {
-      throw new InvalidUrl()
+    const params: any = url.query.split('&').reduce((acc, hash) => {
+      const [key, val] = hash.split('=')
+      return Object.assign(acc, { [key]: decodeURIComponent(val) })
+    }, {})
+    const sender = params.sender
+    if (!sender) {
+      throw new InvalidUrlError()
     }
-    const uri = url.substring(index + baseurl.length)
-    const parts = uri.split('/')
+    let datetime: number | undefined = params.datetime
+    if (datetime) {
+      datetime = Number(datetime)
+    }
+    if (datetime && isNaN(datetime)) {
+      datetime = undefined
+    }
     return {
-      datetime: parts.length >= 1 ? Number(parts[0]) : undefined
+      sender: sender,
+      datetime: datetime
     }
   }
 }
