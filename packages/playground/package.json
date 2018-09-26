@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@machinomy/playground",
-  "version": "1.4.10",
+  "version": "1.4.11",
   "description": "Playground for Machinomy dapplications",
   "main": "dist/index.js",
   "author": "Sergey Ukustov",
@@ -25,7 +25,7 @@
     "db-migrate-sqlite3": "^0.2.1",
     "dotenv": "^5.0.1",
     "express": "^4.14.0",
-    "machinomy": "^1.13.4",
+    "machinomy": "^1.13.5",
     "morgan": "^1.9.0",
     "sqlite3": "^4.0.0",
     "tslint": "^5.10.0",
