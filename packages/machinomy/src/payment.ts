@@ -99,7 +99,7 @@ export class PaymentSerde implements Serde<Payment> {
 
   deserialize (data: any): Payment {
     PaymentSerde.required.forEach((field: string) => {
-      if (!data[field]) {
+      if (!(field in data)) {
         throw new Error(`Required field not found: ${field}`)
       }
     })
