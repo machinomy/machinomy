@@ -25,7 +25,7 @@ FAQ: [GitHub Wiki Page](https://github.com/machinomy/machinomy/wiki/Frequently-A
 
 ## Installation
 
-Using [yarn](https://yarnpkg.com/lang/en/) is mandatory (**don't use npm!**)
+Using [yarn](https://yarnpkg.com/lang/en/) and Node.js **v9** is mandatory (**don't use npm!**)
 
     $ yarn add machinomy
 
