@@ -33,7 +33,7 @@ export default class Logger {
   }
 
   fatal (formatter: any, ...args: any[]) {
-    this._fatal(formatter, args)
+    this._fatal(formatter, ...args)
     if (this.loggerDNA) {
       this.loggerDNA.log(formatter, {
         level: 'Fatal',
@@ -45,7 +45,7 @@ export default class Logger {
   }
 
   error (formatter: any, ...args: any[]) {
-    this._error(formatter, args)
+    this._error(formatter, ...args)
     if (this.loggerDNA) {
       this.loggerDNA.log(formatter, {
         level: 'Error',
@@ -57,7 +57,7 @@ export default class Logger {
   }
 
   warn (formatter: any, ...args: any[]) {
-    this._warn(formatter, args)
+    this._warn(formatter, ...args)
     if (this.loggerDNA) {
       this.loggerDNA.log(formatter, {
         level: 'Warn',
@@ -69,7 +69,7 @@ export default class Logger {
   }
 
   info (formatter: any, ...args: any[]) {
-    this._info(formatter, args)
+    this._info(formatter, ...args)
     if (this.loggerDNA) {
       this.loggerDNA.log(formatter, {
         level: 'Info',
@@ -81,7 +81,7 @@ export default class Logger {
   }
 
   debug (formatter: any, ...args: any[]) {
-    this._debug(formatter, args)
+    this._debug(formatter, ...args)
     if (this.loggerDNA) {
       this.loggerDNA.log(formatter, {
         level: 'Debug',
@@ -93,7 +93,7 @@ export default class Logger {
   }
 
   trace (formatter: any, ...args: any[]) {
-    this._trace(formatter, args)
+    this._trace(formatter, ...args)
     if (this.loggerDNA) {
       this.loggerDNA.log(formatter, {
         level: 'Trace',
