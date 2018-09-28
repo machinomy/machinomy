@@ -106,11 +106,11 @@ export class PaymentSerde implements Serde<Payment> {
 
     return new Payment({
       channelId: data.channelId,
-      value: new BigNumber.BigNumber(`${data.value}`),
+      value: new BigNumber.BigNumber(String(data.value)),
       sender: data.sender,
       receiver: data.receiver,
-      price: new BigNumber.BigNumber(`${data.price}`),
-      channelValue: new BigNumber.BigNumber(`${data.channelValue}`),
+      price: new BigNumber.BigNumber(String(data.price)),
+      channelValue: new BigNumber.BigNumber(String(data.channelValue)),
       signature: Signature.fromParts({
         v: Number(data.v),
         r: data.r,
