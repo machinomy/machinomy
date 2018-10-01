@@ -28,6 +28,8 @@
     "lint": "tslint --format stylish --project ."
   },
   "dependencies": {
+    "@types/chalk": "^2.2.0",
+    "chalk": "^2.4.1",
     "glob": "^7.1.2",
     "handlebars": "^4.0.11",
     "mkdirp": "^0.5.1",
