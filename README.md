@@ -16,6 +16,7 @@ Available sub-projects:
 - [Playground](packages/playground) contains code of playground.machinomy.com
 - [cli](packages/cli) is Machinomy Command Line Interface.
 - [logger](packages/logger) is Machinomy Logger. Works in browser and Node.
+- [wraptso](packages/wraptso) is Machinomy Wrapper for Truffle Contract.
 
 
 Web site: [machinomy.com](http://machinomy.com).
