@@ -1,21 +1,21 @@
 import * as Web3 from 'web3'
-import { MigrateOption } from './MigrateOption'
-import { PaymentChannel } from './PaymentChannel'
+import {MigrateOption} from './MigrateOption'
+import {PaymentChannel} from './PaymentChannel'
 import * as BigNumber from 'bignumber.js'
-import Payment, { PaymentSerde } from './payment'
-import { TransactionResult } from 'truffle-contract'
+import Payment, {PaymentSerde} from './payment'
+import {TransactionResult} from 'truffle-contract'
 import ChannelId from './ChannelId'
-import { AcceptPaymentRequestSerde } from './accept_payment_request'
-import { AcceptPaymentResponse } from './accept_payment_response'
-import { AcceptTokenRequest } from './accept_token_request'
-import { AcceptTokenResponse } from './accept_token_response'
+import {AcceptPaymentRequestSerde} from './accept_payment_request'
+import {AcceptPaymentResponse} from './accept_payment_response'
+import {AcceptTokenRequest} from './accept_token_request'
+import {AcceptTokenResponse} from './accept_token_response'
 import Registry from './Registry'
 import MachinomyOptions from './MachinomyOptions'
 import BuyOptions from './BuyOptions'
 import NextPaymentResult from './NextPaymentResult'
 import BuyResult from './BuyResult'
-import { memoize } from 'decko'
-import { PaymentRequiredResponse } from './PaymentRequiredResponse'
+import {memoize} from 'decko'
+import {PaymentRequiredResponse} from './PaymentRequiredResponse'
 
 /**
  * Machinomy is a library for micropayments in Ether over HTTP.
@@ -82,10 +82,7 @@ export default class Machinomy {
   async pry (uri: string, datetime?: number): Promise<PaymentRequiredResponse> {
     await this.checkMigrationsState()
     let client = await this.registry.client()
-    const response = await client.doPreflight(this.account, uri, datetime)
-    let channelManager = await this.registry.channelManager()
-    await channelManager.syncChannels(this.account, response.receiver, response.remoteChannelInfo.channels)
-    return response
+    return client.doPreflight(this.account, uri, datetime)
   }
 
   async buyUrl (uri: string): Promise<BuyResult> {

@@ -194,6 +194,12 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
     return this.tokensDao.isPresent(token)
   }
 
+  /**
+   * DO NOT USE THIS.
+   * @param sender
+   * @param receiver
+   * @param remoteChannels
+   */
   async syncChannels (sender: string, receiver: string, remoteChannels: RemoteChannelInfo[]): Promise<void> {
     const channels = await this.openChannels()
     const recChannels = channels.filter(chan => chan.receiver === receiver)
