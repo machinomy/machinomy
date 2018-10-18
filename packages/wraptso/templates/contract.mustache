@@ -1,6 +1,9 @@
 import { BigNumber } from 'bignumber.js'
 import * as Web3 from 'web3'
 import * as truffle from 'truffle-contract'
+import chalk from 'chalk'
+
+require('console.table')
 
 export namespace {{contractName}} {
   export const ARTIFACT = require('{{relativeArtifactPath}}')
@@ -37,6 +40,21 @@ export namespace {{contractName}} {
       instance.defaults(defaults)
     }
     return instance
+  }
+
+  export function printEvents (txResult: truffle.TransactionResult): void {
+    const result: Map<string, string> = new Map()
+    for (let key of txResult.logs.keys()) {
+      let event: truffle.TransactionEvent<any> = txResult.logs[key];
+      const length = event.args['__length__']
+      for (let j = 0; j < length; j++) {
+        delete event.args[j]
+      }
+      delete event.args['__length__']
+      console.log(`${chalk.black.bgGreen.bold('SOLIDITY EVENT')} ${chalk.green.bold(event.event)} with args:`)
+      console.table(event.args)
+      result.clear()
+    }
   }
 }
 
