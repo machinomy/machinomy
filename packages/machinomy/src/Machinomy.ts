@@ -34,6 +34,8 @@ export default class Machinomy {
   /** Ethereum account address that sends the money. */
   private readonly account: string
 
+  private migrated: boolean = false
+
   constructor (account: string, web3: Web3, options?: MachinomyOptions) {
     this.account = account
     let _options = MachinomyOptions.defaults(options)
@@ -210,12 +212,15 @@ export default class Machinomy {
 
   @memoize
   private async checkMigrationsState (): Promise<void> {
+    if (this.migrated) return
+
     let storage = await this.registry.storage()
     let isLatest = await storage.migrator.isLatest()
     let needMigration = !isLatest
 
     if (needMigration) {
       if (this.registry.options.migrate === undefined || this.registry.options.migrate === MigrateOption.Silent) {
+        this.migrated = true
         return storage.migrator.sync()
       } else {
         throw new Error('There are non-applied db-migrations!')
