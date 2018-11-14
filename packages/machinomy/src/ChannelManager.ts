@@ -1,4 +1,3 @@
-import ChainCache from './ChainCache'
 import IChannelsDatabase from './storage/IChannelsDatabase'
 import PaymentManager from './PaymentManager'
 import ChannelContract from './ChannelContract'
@@ -45,11 +44,9 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
 
   private mutex: Mutex = new Mutex()
 
-  private chainCache: ChainCache
-
   private machinomyOptions: MachinomyOptions
 
-  constructor (account: string, web3: Web3, channelsDao: IChannelsDatabase, paymentsDao: IPaymentsDatabase, tokensDao: ITokensDatabase, channelContract: ChannelContract, paymentManager: PaymentManager, chainCache: ChainCache, machinomyOptions: MachinomyOptions) {
+  constructor (account: string, web3: Web3, channelsDao: IChannelsDatabase, paymentsDao: IPaymentsDatabase, tokensDao: ITokensDatabase, channelContract: ChannelContract, paymentManager: PaymentManager, machinomyOptions: MachinomyOptions) {
     super()
     this.account = account
     this.web3 = web3
@@ -59,7 +56,6 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
     this.channelContract = channelContract
     this.paymentManager = paymentManager
     this.machinomyOptions = machinomyOptions
-    this.chainCache = chainCache
   }
   openChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber, channelId?: ChannelId | string, tokenContract?: string): Promise<PaymentChannel> {
     return this.mutex.synchronize(() => this.internalOpenChannel(sender, receiver, amount, minDepositAmount, channelId, tokenContract))
@@ -178,15 +174,9 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
 
   async channelById (channelId: ChannelId | string): Promise<PaymentChannel | null> {
     let channel = await this.channelsDao.firstById(channelId)
-    if (channel) {
-      if (this.chainCache.cached(channelId.toString()).isStale()) {
-        let channelC = await this.channelContract.channelById(channelId.toString())
-        const settlementPeriod = await this.channelContract.getSettlementPeriod(channelId.toString())
-        channel.value = channelC[2]
-        this.chainCache.cached(channelId.toString()).setData(channel.state, channelC[2], settlementPeriod)
-      } else {
-        channel.value = this.chainCache.cached(channelId.toString()).value()
-      }
+    let channelC = await this.channelContract.channelById(channelId.toString())
+    if (channel && channelC) {
+      channel.value = channelC[2]
       return channel
     } else {
       return this.handleUnknownChannel(channelId)
@@ -308,8 +298,12 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
 
   private async handleUnknownChannel (channelId: ChannelId | string): Promise<PaymentChannel | null> {
     channelId = channelId.toString()
-    // tslint:disable-next-line:no-unused-variable
-    const [sender, receiver, value, settlingPeriod, settlingUntil] = await this.channelContract.channelById(channelId)
+    const channel = await this.channelContract.channelById(channelId)
+    if (!channel) return null
+    const sender = channel[0]
+    const receiver = channel[1]
+    const value = channel[2]
+    const settlingUntil = channel[4]
 
     if (sender !== this.account && receiver !== this.account) {
       return null

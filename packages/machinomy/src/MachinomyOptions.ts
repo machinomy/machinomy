@@ -14,15 +14,13 @@ export interface MachinomyOptions {
   closeOnInvalidPayment?: boolean
   migrate?: MigrateOption,
   chainCachePeriod?: number,
-  transport?: Transport,
-  ttl?: number
+  transport?: Transport
 }
 
 export namespace MachinomyOptions {
   export function defaults (options?: MachinomyOptions): MachinomyOptions {
     let defaultOptions = {
-      databaseUrl: 'nedb://machinomy',
-      ttl: 0
+      databaseUrl: 'nedb://machinomy'
     }
     return Object.assign({}, defaultOptions, options)
   }

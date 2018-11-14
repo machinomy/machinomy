@@ -12,7 +12,7 @@ import Payment from './payment'
 
 export type Channel = [string, string, BigNumber, BigNumber, BigNumber]
 export type ChannelWithTokenContract = [string, string, BigNumber, BigNumber, BigNumber, string]
-export type ChannelFromContract = Channel | ChannelWithTokenContract
+export type ChannelFromContract = Channel | ChannelWithTokenContract | undefined
 
 const LOG = new Logger('channel-contract')
 
