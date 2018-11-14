@@ -57,8 +57,11 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
     this.paymentManager = paymentManager
     this.machinomyOptions = machinomyOptions
   }
+
   openChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber, channelId?: ChannelId | string, tokenContract?: string): Promise<PaymentChannel> {
-    return this.mutex.synchronize(() => this.internalOpenChannel(sender, receiver, amount, minDepositAmount, channelId, tokenContract))
+    return this.mutex.synchronize(async () => {
+      return this.internalOpenChannel(sender, receiver, amount, minDepositAmount, channelId, tokenContract)
+    })
   }
 
   closeChannel (channelId: string | ChannelId): Promise<TransactionResult> {

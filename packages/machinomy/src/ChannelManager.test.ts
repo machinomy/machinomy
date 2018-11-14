@@ -114,19 +114,17 @@ describe('ChannelManager', () => {
         })
     })
 
-    it('emits willOpenChannel and didOpenChannel', () => {
-      const will = sinon.stub()
-      const did = sinon.stub()
-
-      channelManager.addListener('willOpenChannel', will)
-      channelManager.addListener('didOpenChannel', did)
-
-      const promise = channelManager.openChannel('0xcafe', '0xbeef', new BigNumber.BigNumber(1))
-      expect(will.calledWith('0xcafe', '0xbeef', new BigNumber.BigNumber(10))).toBe(true)
-      expect(did.called).toBe(false)
-      return promise.then(() => {
-        expect(did.calledWith(fakeChan)).toBe(true)
+    it('emits willOpenChannel and didOpenChannel', async () => {
+      let n = 0
+      channelManager.addListener('willOpenChannel', () => {
+        expect(n).toBe(0)
+        n += 1
       })
+      channelManager.addListener('didOpenChannel', () => {
+        expect(n).toBe(1)
+      })
+
+      await channelManager.openChannel(fakeChan.sender, fakeChan.receiver, fakeChan.value)
     })
 
     it('only allows one call at once', () => {
