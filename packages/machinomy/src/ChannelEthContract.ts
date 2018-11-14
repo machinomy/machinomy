@@ -118,7 +118,7 @@ export default class ChannelEthContract {
     let digest = await this.paymentDigest(channelId, payment)
     let recovered = sigUtil.recoverPersonalSignature({
       data: digest,
-      sig: signature
+      sig: signature.toString()
     })
     return recovered === sender
   }
