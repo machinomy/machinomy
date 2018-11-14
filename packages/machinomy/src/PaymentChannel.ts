@@ -1,16 +1,9 @@
 import Payment from './payment'
 import * as BigNumber from 'bignumber.js'
 import Serde from './Serde'
+import IPaymentChannel from './IPaymentChannel'
 
-export interface PaymentChannelJSON {
-  sender: string
-  receiver: string
-  channelId: string
-  value: BigNumber.BigNumber
-  spent: BigNumber.BigNumber
-  state: number
-  tokenContract: string
-}
+export type PaymentChannelJSON = IPaymentChannel
 
 export interface SerializedPaymentChannel {
   state: number,
@@ -25,7 +18,7 @@ export interface SerializedPaymentChannel {
 /**
  * The Payment Channel
  */
-export class PaymentChannel {
+export class PaymentChannel implements IPaymentChannel {
   sender: string
   receiver: string
   channelId: string
