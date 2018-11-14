@@ -35,12 +35,12 @@ export default class Registry {
 
   @memoize
   async channelEthContract (): Promise<ChannelEthContract> {
-    return new ChannelEthContract(this.web3)
+    return new ChannelEthContract(this.web3, this.options.ttl || 0)
   }
 
   @memoize
   async channelTokenContract (): Promise<ChannelTokenContract> {
-    return new ChannelTokenContract(this.web3)
+    return new ChannelTokenContract(this.web3, this.options.ttl || 0)
   }
 
   @memoize

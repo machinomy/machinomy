@@ -6,6 +6,8 @@ import * as contracts from './index'
 import Units from './Units'
 import Gaser from './support/Gaser'
 import TestToken from './support/TestToken'
+import * as abi from 'ethereumjs-abi'
+import * as sigUtil from 'eth-sig-util'
 
 chai.use(asPromised)
 
@@ -54,7 +56,16 @@ contract('TokenUnidirectional', accounts => {
 
   async function paymentSignature (sender: string, channelId: string, payment: BigNumber.BigNumber): Promise<string> {
     let digest = await instance.paymentDigest(channelId, payment, token.address)
-    return web3.eth.sign(sender, digest)
+    let alternative = abi.soliditySHA3(['address', 'bytes32', 'uint256', 'address'],
+      [instance.address, channelId, payment.toString(), token.address])
+    assert(digest === '0x' + alternative.toString('hex'))
+    let signature = web3.eth.sign(sender, digest)
+    let recovered = sigUtil.recoverPersonalSignature({
+      data: digest,
+      sig: signature
+    })
+    assert(recovered === sender)
+    return signature
   }
 
   describe('.open', () => {

@@ -45,7 +45,7 @@ describe('ChannelTokenContract', () => {
       at: sinon.stub().resolves(Promise.resolve(tokenDeployed))
     })
 
-    contract = new ChannelTokenContract(web3)
+    contract = new ChannelTokenContract(web3, 0)
   })
 
   afterEach(() => {
@@ -88,6 +88,7 @@ describe('ChannelTokenContract', () => {
   describe('#deposit', () => {
     it('deposits tokens into the channel', async () => {
       deployed.deposit = sinon.stub()
+      deployed.isPresent = sinon.stub().returns(true)
       tokenDeployed.approve = sinon.stub().returns(Promise.resolve({ logs: [ { event: 'Approval' } ] }))
       deployed.channels = () => {
         return { tokenContract: TOKEN_CONTRACT }
@@ -102,6 +103,7 @@ describe('ChannelTokenContract', () => {
 
   describe('#getState', () => {
     it('eth: returns 0 if the channel is open', async () => {
+      contract.channelById = sinon.stub().returns(Promise.resolve([SENDER, RECEIVER, VALUE, SETTLEMENT_PERIOD, new BigNumber(0), TOKEN_CONTRACT]))
       deployed.isOpen = sinon.stub().withArgs(ID).resolves(true)
       deployed.isSettling = sinon.stub().withArgs(ID).resolves(false)
 
@@ -110,6 +112,7 @@ describe('ChannelTokenContract', () => {
     })
 
     it('eth: returns 1 if the channel is settling', async () => {
+      contract.channelById = sinon.stub().returns(Promise.resolve([SENDER, RECEIVER, VALUE, SETTLEMENT_PERIOD, new BigNumber(10).plus(SETTLEMENT_PERIOD), TOKEN_CONTRACT]))
       deployed.isOpen = sinon.stub().withArgs(ID).resolves(false)
       deployed.isSettling = sinon.stub().withArgs(ID).resolves(true)
 
@@ -137,19 +140,8 @@ describe('ChannelTokenContract', () => {
 
   describe('#paymentDigest', () => {
     it('return the digest', async () => {
-      deployed.paymentDigest = sinon.stub().withArgs(ID, VALUE).resolves('digest')
-
       let digest = await contract.paymentDigest(ID, VALUE, TOKEN_CONTRACT)
-      expect(digest).toBe('digest')
-    })
-  })
-
-  describe('#canClaim', () => {
-    it('return whether the user can claim', async () => {
-      deployed.canClaim = sinon.stub().withArgs(ID, VALUE, RECEIVER, SIG.toString()).resolves(true)
-
-      let canClaim = await contract.canClaim(ID, VALUE, RECEIVER, SIG)
-      expect(canClaim).toBeTruthy()
+      expect(digest).toBe('0xcf721b8f35dbe41e9e725466121f35e68c4c7b4330ee38e40cf5d0dffa131b71')
     })
   })
 })

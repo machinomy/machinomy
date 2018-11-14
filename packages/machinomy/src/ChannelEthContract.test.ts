@@ -33,7 +33,7 @@ describe('ChannelEthContract', () => {
       deployed: sinon.stub().resolves(Promise.resolve(deployed))
     })
 
-    contract = new ChannelEthContract(web3)
+    contract = new ChannelEthContract(web3, 0)
   })
 
   afterEach(() => {
@@ -78,17 +78,13 @@ describe('ChannelEthContract', () => {
 
   describe('#getState', () => {
     it('eth: returns 0 if the channel is open', async () => {
-      deployed.isOpen = sinon.stub().withArgs(ID).resolves(true)
-      deployed.isSettling = sinon.stub().withArgs(ID).resolves(false)
-
+      contract.channelById = sinon.stub().returns(Promise.resolve([SENDER, RECEIVER, VALUE, SETTLEMENT_PERIOD, new BigNumber(0)]))
       let state = await contract.getState(ID)
       expect(state).toBe(0)
     })
 
     it('eth: returns 1 if the channel is settling', async () => {
-      deployed.isOpen = sinon.stub().withArgs(ID).resolves(false)
-      deployed.isSettling = sinon.stub().withArgs(ID).resolves(true)
-
+      contract.channelById = sinon.stub().returns(Promise.resolve([SENDER, RECEIVER, VALUE, SETTLEMENT_PERIOD, new BigNumber(10).plus(SETTLEMENT_PERIOD)]))
       let state = await contract.getState(ID)
       expect(state).toBe(1)
     })
@@ -116,16 +112,7 @@ describe('ChannelEthContract', () => {
       deployed.paymentDigest = sinon.stub().withArgs(ID, VALUE).resolves('digest')
 
       let digest = await contract.paymentDigest(ID, VALUE)
-      expect(digest).toBe('digest')
-    })
-  })
-
-  describe('#canClaim', () => {
-    it('eth: returns whether the user can claim', async () => {
-      deployed.canClaim = sinon.stub().withArgs(ID, VALUE, RECEIVER, SIG.toString()).resolves(true)
-
-      let canClaim = await contract.canClaim(ID, VALUE, RECEIVER, SIG)
-      expect(canClaim).toBeTruthy()
+      expect(digest).toBe('0x62a8023ff2b551d6334468a55f46c55452d606f13fc2e79b8ce429f6fa26025b')
     })
   })
 })

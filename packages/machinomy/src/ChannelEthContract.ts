@@ -7,19 +7,32 @@ import { ChannelState } from './ChannelState'
 import Signature from './Signature'
 import { Unidirectional } from '@machinomy/contracts'
 import ChannelId from './ChannelId'
+import * as abi from 'ethereumjs-abi'
+import * as sigUtil from 'eth-sig-util'
+import MemoryCache from './caching/MemoryCache'
 
 const log = new Logger('channel-eth-contract')
 
 const CREATE_CHANNEL_GAS = 300000
 
+type Raw = [
+  string, // sender
+  string, // receiver
+  BigNumber, // value
+  BigNumber, // settlingPeriod
+  BigNumber // settlingUntil
+]
+
 export default class ChannelEthContract {
   contract: Promise<Unidirectional.Contract>
 
   private web3: Web3
+  private cache: MemoryCache<Raw>
 
-  constructor (web3: Web3) {
+  constructor (web3: Web3, ttl: number) {
     this.web3 = web3
     this.contract = Unidirectional.contract(this.web3.currentProvider).deployed()
+    this.cache = new MemoryCache(ttl)
   }
 
   async open (sender: string, receiver: string, price: BigNumber, settlementPeriod: number | BigNumber, channelId?: ChannelId | string): Promise<TransactionResult> {
@@ -52,31 +65,28 @@ export default class ChannelEthContract {
 
   async getState (channelId: string): Promise<number> {
     log.info(`Fetching state for channel ${channelId}`)
-    const deployed = await this.contract
-    const isOpen = await deployed.isOpen(channelId)
-    const isSettling = await deployed.isSettling(channelId)
+    const chan = await this.channelById(channelId)
+    if (!chan) return ChannelState.Settled
 
-    if (isOpen) {
-      return ChannelState.Open
-    }
-
-    if (isSettling) {
+    const settlingPeriod = chan[3]
+    const settlingUntil = chan[4]
+    log.info(`Fetched state for channel ${channelId}`)
+    if (settlingPeriod.gt(0) && settlingUntil.gt(0)) {
       return ChannelState.Settling
+    } else if (settlingPeriod.gt(0) && settlingUntil.eq(0)) {
+      return ChannelState.Open
+    } else {
+      return ChannelState.Settled
     }
-
-    return ChannelState.Settled
   }
 
   async getSettlementPeriod (channelId: string): Promise<BigNumber> {
     log.info(`Fetching settlement period for channel ${channelId}`)
-    const deployed = await this.contract
-    const exists = await deployed.isPresent(channelId)
-
-    if (!exists) {
-      return new BigNumber(ChannelManager.DEFAULT_SETTLEMENT_PERIOD)
+    const channel = await this.channelById(channelId)
+    if (channel) {
+      return channel[3]
     } else {
-      const chan = await deployed.channels(channelId)
-      return chan[3]
+      return new BigNumber(ChannelManager.DEFAULT_SETTLEMENT_PERIOD)
     }
   }
 
@@ -94,16 +104,38 @@ export default class ChannelEthContract {
 
   async paymentDigest (channelId: string, value: BigNumber): Promise<string> {
     const deployed = await this.contract
-    return deployed.paymentDigest(channelId, value)
+    const digest = abi.soliditySHA3(['address', 'bytes32', 'uint256'],
+      [deployed.address, channelId, value.toString()])
+    return '0x' + digest.toString('hex')
   }
 
   async canClaim (channelId: string, payment: BigNumber, receiver: string, signature: Signature): Promise<boolean> {
-    const deployed = await this.contract
-    return deployed.canClaim(channelId, payment, receiver, signature.toString())
+    const channel = await this.channelById(channelId)
+    if (!channel) return false
+
+    const sender = channel[0]
+
+    let digest = await this.paymentDigest(channelId, payment)
+    let recovered = sigUtil.recoverPersonalSignature({
+      data: digest,
+      sig: signature
+    })
+    return recovered === sender
   }
 
-  async channelById (channelId: string): Promise<[string, string, BigNumber, BigNumber, BigNumber]> {
-    const deployed = await this.contract
-    return deployed.channels(channelId)
+  async channelById (channelId: string): Promise<Raw | undefined> {
+    const cached = await this.cache.get(channelId)
+    if (cached) {
+      return cached
+    } else {
+      const deployed = await this.contract
+
+      const exists = await deployed.isPresent(channelId)
+      if (!exists) return undefined
+
+      const instance = await deployed.channels(channelId)
+      await this.cache.set(channelId, instance)
+      return instance
+    }
   }
 }
