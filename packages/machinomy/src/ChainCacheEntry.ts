@@ -8,9 +8,9 @@ export default class ChainCacheEntry {
   private _value: BigNumber
   private _settlementPeriod: BigNumber
 
-  constructor (chainCachePeriod: number | undefined) {
+  constructor (chainCachePeriod: number) {
     this._refreshDatetime = new Date()
-    this._cachePeriod = new Date(chainCachePeriod ? chainCachePeriod : 30 * 60 * 1000)
+    this._cachePeriod = new Date(chainCachePeriod)
     this._value = new BigNumber(-1)
     this._state = ChannelState.Impossible
     this._settlementPeriod = new BigNumber(-1)

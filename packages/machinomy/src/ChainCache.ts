@@ -1,11 +1,13 @@
 import ChainCacheEntry from './ChainCacheEntry'
 
+const DEFAULT_TTL = 60 * 60 * 1000 // 1 Hour
+
 export default class ChainCache {
-  private readonly chainCachePeriod: number | undefined
+  private readonly chainCachePeriod: number
   private readonly entries: Map<string, ChainCacheEntry>
 
   constructor (chainCachePeriod: number | undefined) {
-    this.chainCachePeriod = chainCachePeriod
+    this.chainCachePeriod = chainCachePeriod || DEFAULT_TTL
     this.entries = new Map()
   }
 
