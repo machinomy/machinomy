@@ -4,6 +4,8 @@ import * as BigNumber from 'bignumber.js'
 import * as asPromised from 'chai-as-promised'
 import * as contracts from './index'
 import * as support from './support'
+import * as abi from 'ethereumjs-abi'
+import * as sigUtil from 'eth-sig-util'
 import Units from './Units'
 import Gaser from './support/Gaser'
 
@@ -43,7 +45,16 @@ contract('Unidirectional', accounts => {
 
   async function paymentSignature (sender: string, channelId: string, payment: BigNumber.BigNumber): Promise<string> {
     let digest = await instance.paymentDigest(channelId, payment)
-    return web3.eth.sign(sender, digest)
+    let alternative = abi.soliditySHA3(['address', 'bytes32', 'uint256'],
+      [instance.address, channelId, payment.toString()])
+    assert(digest === '0x' + alternative.toString('hex'))
+    let signature = web3.eth.sign(sender, digest)
+    let recovered = sigUtil.recoverPersonalSignature({
+      data: digest,
+      sig: signature
+    })
+    assert(recovered === sender)
+    return signature
   }
 
   before(async () => {
