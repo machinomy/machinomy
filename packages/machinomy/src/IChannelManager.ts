@@ -20,5 +20,5 @@ export default interface IChannelManager extends EventEmitter {
   channelById (channelId: ChannelId | string): Promise<PaymentChannel | null>
   verifyToken (token: string): Promise<boolean>
   syncChannels (sender: string, receiver: string, remoteChannels: RemoteChannelInfo[]): Promise<void>
-  lastPayment (channelId: string | ChannelId): Promise<Payment>
+  lastPayment (channelId: string | ChannelId): Promise<Payment | null>
 }

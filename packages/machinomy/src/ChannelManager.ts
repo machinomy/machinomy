@@ -221,13 +221,9 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
     await Promise.all(promises)
   }
 
-  async lastPayment (channelId: string | ChannelId): Promise<Payment> {
+  async lastPayment (channelId: string | ChannelId): Promise<Payment | null> {
     channelId = channelId.toString()
-    let payment = await this.paymentsDao.firstMaximum(channelId)
-    if (!payment) {
-      throw new Error(`No payment found for channel ID ${channelId}`)
-    }
-    return payment
+    return this.paymentsDao.firstMaximum(channelId)
   }
 
   private async internalOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount: BigNumber.BigNumber = new BigNumber.BigNumber(0), channelId?: ChannelId | string, tokenContract?: string): Promise<PaymentChannel > {
@@ -288,9 +284,13 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
 
   private async claim (channel: PaymentChannel): Promise<TransactionResult> {
     let payment = await this.lastPayment(channel.channelId)
-    let result = await this.channelContract.claim(channel.receiver, channel.channelId, payment.value, payment.signature)
-    await this.channelsDao.updateState(channel.channelId, 2)
-    return result
+    if (payment) {
+      let result = await this.channelContract.claim(channel.receiver, channel.channelId, payment.value, payment.signature)
+      await this.channelsDao.updateState(channel.channelId, 2)
+      return result
+    } else {
+      throw new Error('Can not claim unknown channnel')
+    }
   }
 
   private async buildChannel (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number, channelId?: ChannelId | string, tokenContract?: string): Promise<PaymentChannel> {
