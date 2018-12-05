@@ -7,15 +7,7 @@ export function up (db: Base, callback: CallbackFunction) {
       kind: 'string',
       channelId: {
         type: 'string',
-        notNull: true,
-        foreignKey: {
-          name: 'tokens_channel_id_fk',
-          table: 'channel',
-          mapping: 'channelId',
-          rules: {
-            onDelete: 'CASCADE'
-          }
-        }
+        notNull: true
       }
     },
     ifNotExists: true
