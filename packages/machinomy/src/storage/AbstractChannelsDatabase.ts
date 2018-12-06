@@ -50,10 +50,10 @@ export default abstract class AbstractChannelsDatabase<T extends IEngine> implem
 
     return this.firstById(paymentChannel.channelId).then((found: PaymentChannel | null) => {
       if (found) {
-        LOG.info(`Spending channel with ID ${paymentChannel.channelId.toString()}`)
+        LOG.info(`Spending channel with ID ${paymentChannel.channelId.toString()}`, paymentChannel)
         return this.spend(paymentChannel.channelId, paymentChannel.spent)
       } else {
-        LOG.info(`Spending channel with ID ${paymentChannel.channelId.toString()}`)
+        LOG.info(`Saving channel with ID ${paymentChannel.channelId.toString()}`, paymentChannel)
         return this.save(paymentChannel)
       }
     })

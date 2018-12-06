@@ -69,7 +69,7 @@ export default class PostgresChannelsDatabase extends AbstractChannelsDatabase<E
   }
 
   allOpen (): Promise<PaymentChannel[]> {
-    return this.engine.exec((client: any) => client.query(
+    return this.engine.exec(client => client.query(
       'SELECT "channelId", kind, sender, receiver, value, spent, state, "tokenContract" FROM channel ' +
       'WHERE state = 0'
     )).then((res: any) => this.inflatePaymentChannels(res.rows))
