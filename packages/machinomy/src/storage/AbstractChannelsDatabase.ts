@@ -33,7 +33,7 @@ export default abstract class AbstractChannelsDatabase<T extends IEngine> implem
 
   async inflatePaymentChannel (json: PaymentChannelJSON): Promise<PaymentChannel | null> {
     if (!json) {
-      return Promise.resolve(null)
+      return null
     } else {
       return this.inflator.inflate(json)
     }
