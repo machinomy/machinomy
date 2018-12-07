@@ -21,7 +21,7 @@ export default class ChannelInflator {
     const tokenContract = paymentChannelJSON.tokenContract
     const channelId = paymentChannelJSON.channelId
     const contract = this.actualContract(tokenContract)
-    let state = await contract.getState(channelId)
+    const state = await contract.getState(channelId)
     const channel = await contract.channelById(channelId)
     if (channel) {
       let value = channel[2]

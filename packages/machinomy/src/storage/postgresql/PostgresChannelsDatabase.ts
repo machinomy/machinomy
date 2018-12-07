@@ -76,8 +76,8 @@ export default class PostgresChannelsDatabase extends AbstractChannelsDatabase<E
       .then((chans: PaymentChannel[]) => this.filterByState(0, chans))
   }
 
-  findUsable (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel | null> {
-    return this.engine.exec((client: any) => client.query(
+  async findUsable (sender: string, receiver: string, amount: BigNumber.BigNumber): Promise<PaymentChannel | null> {
+    const res = await this.engine.exec(client => client.query(
       'SELECT "channelId", kind, sender, receiver, value, spent, state, "tokenContract" FROM channel ' +
       'WHERE sender = $1 AND receiver = $2 AND value >= spent + $3 AND state = 0',
       [
@@ -85,8 +85,19 @@ export default class PostgresChannelsDatabase extends AbstractChannelsDatabase<E
         receiver,
         amount.toString()
       ]
-    )).then((res: any) => this.inflatePaymentChannel(res.rows[0]))
-      .then((channel: PaymentChannel | null) => this.filterByState(0, [channel!])[0] || null)
+    ))
+    const channels = await Promise.all(res.rows.map(r => this.inflatePaymentChannel(r)))
+    const nonEmpty = channels.reduce<Array<PaymentChannel>>((acc, chan) => {
+      if (chan) {
+        acc.push(chan)
+      }
+      return acc
+    }, [])
+    if (nonEmpty.length) {
+      return this.filterByState(0, nonEmpty)[0]
+    } else {
+      return null
+    }
   }
 
   findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>> {

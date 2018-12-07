@@ -13,7 +13,7 @@ export default interface IChannelManager extends EventEmitter {
   nextPayment (channelId: string | ChannelId, amount: BigNumber.BigNumber, meta: string): Promise<Payment>
   spendChannel (payment: Payment, token?: string): Promise<Payment>
   acceptPayment (payment: Payment): Promise<string>
-  requireOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber, tokenContract?: string): Promise<PaymentChannel>
+  requireOpenChannel (sender: string, receiver: string, amount: BigNumber.BigNumber, minDepositAmount?: BigNumber.BigNumber | number, tokenContract?: string): Promise<PaymentChannel>
   channels (): Promise<PaymentChannel[]>
   openChannels (): Promise<PaymentChannel[]>
   settlingChannels (): Promise<PaymentChannel[]>
