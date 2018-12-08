@@ -28,7 +28,6 @@
     "lint": "tslint --format stylish --project ."
   },
   "dependencies": {
-    "@types/chalk": "^2.2.0",
     "chalk": "^2.4.1",
     "console.table": "^0.10.0",
     "glob": "^7.1.2",
