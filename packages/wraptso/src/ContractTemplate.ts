@@ -62,8 +62,8 @@ export default class ContractTemplate {
         if (abi.outputs.length === 1) {
           abi.singleReturnValue = true
         }
-        abi.inputs = abi.inputs.map(input => {
-          input.name = input.name ? input.name : 'index'
+        abi.inputs = abi.inputs.map((input, index) => {
+          input.name = input.name ? input.name : `param${index}`
           return input
         })
         return abi
