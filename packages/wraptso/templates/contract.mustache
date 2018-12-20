@@ -45,7 +45,7 @@ export namespace {{contractName}} {
   export function printEvents (txResult: truffle.TransactionResult): void {
     const result: Map<string, string> = new Map()
     for (let key of txResult.logs.keys()) {
-      let event: truffle.TransactionEvent<any> = txResult.logs[key];
+      let event: truffle.TransactionEvent<any> = txResult.logs[key]
       const length = event.args['__length__']
       for (let j = 0; j < length; j++) {
         delete event.args[j]
