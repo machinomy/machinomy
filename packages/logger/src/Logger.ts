@@ -38,7 +38,7 @@ export default class Logger {
       this.loggerDNA.log(formatter, {
         level: 'Fatal',
         app: '',
-        meta: { namespace: this.namespace },
+        meta: { namespace: this.namespace, args: JSON.stringify(args) },
         index_meta: true
       })
     }
@@ -50,7 +50,7 @@ export default class Logger {
       this.loggerDNA.log(formatter, {
         level: 'Error',
         app: '',
-        meta: { namespace: this.namespace },
+        meta: { namespace: this.namespace, args: JSON.stringify(args) },
         index_meta: true
       })
     }
@@ -62,7 +62,7 @@ export default class Logger {
       this.loggerDNA.log(formatter, {
         level: 'Warn',
         app: '',
-        meta: { namespace: this.namespace },
+        meta: { namespace: this.namespace, args: JSON.stringify(args) },
         index_meta: true
       })
     }
@@ -74,7 +74,7 @@ export default class Logger {
       this.loggerDNA.log(formatter, {
         level: 'Info',
         app: '',
-        meta: { namespace: this.namespace },
+        meta: { namespace: this.namespace, args: JSON.stringify(args) },
         index_meta: true
       })
     }
@@ -86,7 +86,7 @@ export default class Logger {
       this.loggerDNA.log(formatter, {
         level: 'Debug',
         app: '',
-        meta: { namespace: this.namespace },
+        meta: { namespace: this.namespace, args: JSON.stringify(args) },
         index_meta: true
       })
     }
@@ -98,7 +98,7 @@ export default class Logger {
       this.loggerDNA.log(formatter, {
         level: 'Trace',
         app: '',
-        meta: { namespace: this.namespace },
+        meta: { namespace: this.namespace, args: JSON.stringify(args) },
         index_meta: true
       })
     }
