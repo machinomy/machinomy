@@ -110,7 +110,11 @@ describe('ChannelManager', () => {
     it('saves the new payment channel in the database', () => {
       return channelManager.openChannel('0xcafe', '0xbeef', new BigNumber.BigNumber(1))
         .then(() => {
-          expect((channelsDao.save as sinon.SinonStub).calledWith(fakeChan)).toBe(true)
+          const fakeChan2 = {
+            ...fakeChan,
+            settlementPeriod: fakeChan.settlementPeriod + 1
+          }
+          expect((channelsDao.save as sinon.SinonStub).calledWith(fakeChan2)).toBe(true)
         })
     })
 
@@ -530,7 +534,7 @@ describe('ChannelManager', () => {
         .then((chan: PaymentChannel) => {
           const fakeChan2 = {
             ...fakeChan,
-            settlementPeriod: fakeChan.settlementPeriod - 1
+            settlementPeriod: fakeChan.settlementPeriod + 1
           }
           expect(chan).toEqual(fakeChan2)
           expect((channelContract.open as sinon.SinonStub).called).toBe(true)
