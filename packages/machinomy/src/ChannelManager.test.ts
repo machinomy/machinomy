@@ -21,7 +21,7 @@ import * as expect from 'expect'
 import Signature from './Signature'
 
 describe('ChannelManager', () => {
-  const fakeChan = new PaymentChannel('0xcafe', '0xbeef', '123', new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 0, '')
+  const fakeChan = new PaymentChannel('0xcafe', '0xbeef', '123', new BigNumber.BigNumber(10), new BigNumber.BigNumber(0), 0, '', ChannelManager.DEFAULT_SETTLEMENT_PERIOD)
 
   const fakeLog = {
     logs: [{
