@@ -529,7 +529,8 @@ describe('ChannelManager', () => {
       return channelManager.requireOpenChannel('0xcafe', '0xbeef', new BigNumber.BigNumber(1))
         .then((chan: PaymentChannel) => {
           const fakeChan2 = {
-            settlementPeriod: fakeChan.settlementPeriod
+            ...fakeChan,
+            settlementPeriod: fakeChan.settlementPeriod - 1
           }
           expect(chan).toEqual(fakeChan2)
           expect((channelContract.open as sinon.SinonStub).called).toBe(true)
