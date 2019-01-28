@@ -528,9 +528,12 @@ describe('ChannelManager', () => {
 
       return channelManager.requireOpenChannel('0xcafe', '0xbeef', new BigNumber.BigNumber(1))
         .then((chan: PaymentChannel) => {
-          expect(chan).toEqual(fakeChan)
+          const fakeChan2 = {
+            settlementPeriod: fakeChan.settlementPeriod - 1
+          }
+          expect(chan).toEqual(fakeChan2)
           expect((channelContract.open as sinon.SinonStub).called).toBe(true)
-          expect((channelsDao.save as sinon.SinonStub).calledWith(fakeChan)).toBe(true)
+          expect((channelsDao.save as sinon.SinonStub).calledWith(fakeChan2)).toBe(true)
         })
     })
   })
