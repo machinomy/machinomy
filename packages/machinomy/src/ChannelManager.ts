@@ -296,7 +296,7 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
   private async buildChannel (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number, channelId?: ChannelId | string, tokenContract?: string): Promise<PaymentChannel> {
     const res = await this.channelContract.open(sender, receiver, price, settlementPeriod, channelId, tokenContract)
     const _channelId = res.logs[0].args.channelId
-    return new PaymentChannel(sender, receiver, _channelId, price, new BigNumber.BigNumber(0), 0, tokenContract)
+    return new PaymentChannel(sender, receiver, _channelId, price, new BigNumber.BigNumber(0), 0, tokenContract, settlementPeriod)
   }
 
   private async handleUnknownChannel (channelId: ChannelId | string): Promise<PaymentChannel | null> {

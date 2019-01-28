@@ -1,3 +1,4 @@
+import ChannelManager from './ChannelManager'
 import Payment from './payment'
 import { BigNumber } from 'bignumber.js'
 import Serde from './Serde'
@@ -10,6 +11,7 @@ export interface PaymentChannelJSON {
   spent: BigNumber
   state: number
   tokenContract: string
+  settlementPeriod: number
 }
 export interface SerializedPaymentChannel {
   state: number,
@@ -19,6 +21,7 @@ export interface SerializedPaymentChannel {
   receiver: string,
   sender: string,
   tokenContract?: string
+  settlementPeriod: number
 }
 
 /**
@@ -32,6 +35,7 @@ export class PaymentChannel {
   spent: BigNumber
   state: number
   tokenContract: string
+  settlementPeriod: number
 
   /**
    * @param sender      Ethereum address of the client.
@@ -41,8 +45,9 @@ export class PaymentChannel {
    * @param spent       Value sent by {sender} to {receiver}.
    * @param state       0 - 'open', 1 - 'settling', 2 - 'settled'
    * @param tokenContract
+   * @param settlementPeriod
    */
-  constructor (sender: string, receiver: string, channelId: string, value: BigNumber, spent: BigNumber, state: number = 0, tokenContract?: string) {
+  constructor (sender: string, receiver: string, channelId: string, value: BigNumber, spent: BigNumber, state: number = 0, tokenContract?: string, settlementPeriod?: number) {
     this.sender = sender
     this.receiver = receiver
     this.channelId = channelId
@@ -50,6 +55,7 @@ export class PaymentChannel {
     this.spent = new BigNumber(spent.toString())
     this.state = Number(state)
     this.tokenContract = tokenContract || ''
+    this.settlementPeriod = settlementPeriod || ChannelManager.DEFAULT_SETTLEMENT_PERIOD
   }
 
   static fromPayment (payment: Payment): PaymentChannel {
@@ -64,7 +70,8 @@ export class PaymentChannel {
       document.value,
       document.spent,
       document.state,
-      document.tokenContract
+      document.tokenContract,
+      document.settlementPeriod
     )
   }
 }
@@ -80,7 +87,8 @@ export class PaymentChannelSerde implements Serde<PaymentChannel> {
       channelId: obj.channelId.toString(),
       receiver: obj.receiver,
       sender: obj.sender,
-      tokenContract: obj.tokenContract
+      tokenContract: obj.tokenContract,
+      settlementPeriod: obj.settlementPeriod
     }
   }
 
@@ -92,7 +100,8 @@ export class PaymentChannelSerde implements Serde<PaymentChannel> {
       data.value,
       data.spent,
       data.state,
-      data.tokenContract
+      data.tokenContract,
+      data.settlementPeriod
     )
   }
 }
