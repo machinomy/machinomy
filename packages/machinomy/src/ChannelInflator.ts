@@ -34,7 +34,8 @@ export default class ChannelInflator {
         paymentChannelJSON.spent,
         state === ChannelState.Impossible ? ChannelState.Settled : state,
         paymentChannelJSON.tokenContract,
-        paymentChannelJSON.settlementPeriod
+        paymentChannelJSON.settlementPeriod,
+        paymentChannelJSON.settlingUntil
       )
     } else {
       return null

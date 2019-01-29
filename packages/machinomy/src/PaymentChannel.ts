@@ -12,6 +12,7 @@ export interface PaymentChannelJSON {
   state: number
   tokenContract: string
   settlementPeriod: number
+  settlingUntil: BigNumber
 }
 export interface SerializedPaymentChannel {
   state: number,
@@ -22,6 +23,7 @@ export interface SerializedPaymentChannel {
   sender: string,
   tokenContract?: string
   settlementPeriod: number
+  settlingUntil: BigNumber
 }
 
 /**
@@ -36,6 +38,7 @@ export class PaymentChannel {
   state: number
   tokenContract: string
   settlementPeriod: number
+  settlingUntil: BigNumber
 
   /**
    * @param sender      Ethereum address of the client.
@@ -46,8 +49,9 @@ export class PaymentChannel {
    * @param state       0 - 'open', 1 - 'settling', 2 - 'settled'
    * @param tokenContract
    * @param settlementPeriod
+   * @param settlingUntil
    */
-  constructor (sender: string, receiver: string, channelId: string, value: BigNumber, spent: BigNumber, state: number = 0, tokenContract?: string, settlementPeriod?: number) {
+  constructor (sender: string, receiver: string, channelId: string, value: BigNumber, spent: BigNumber, state: number = 0, tokenContract?: string, settlementPeriod?: number, settlingUntil?: BigNumber) {
     this.sender = sender
     this.receiver = receiver
     this.channelId = channelId
@@ -56,6 +60,7 @@ export class PaymentChannel {
     this.state = Number(state)
     this.tokenContract = tokenContract || ''
     this.settlementPeriod = settlementPeriod || ChannelManager.DEFAULT_SETTLEMENT_PERIOD
+    this.settlingUntil = settlingUntil || new BigNumber(0)
   }
 
   static fromPayment (payment: Payment): PaymentChannel {
@@ -71,7 +76,8 @@ export class PaymentChannel {
       document.spent,
       document.state,
       document.tokenContract,
-      document.settlementPeriod
+      document.settlementPeriod,
+      document.settlingUntil
     )
   }
 }
@@ -88,7 +94,8 @@ export class PaymentChannelSerde implements Serde<PaymentChannel> {
       receiver: obj.receiver,
       sender: obj.sender,
       tokenContract: obj.tokenContract,
-      settlementPeriod: obj.settlementPeriod
+      settlementPeriod: obj.settlementPeriod,
+      settlingUntil: obj.settlingUntil
     }
   }
 
@@ -101,7 +108,8 @@ export class PaymentChannelSerde implements Serde<PaymentChannel> {
       data.spent,
       data.state,
       data.tokenContract,
-      data.settlementPeriod
+      data.settlementPeriod,
+      data.settlingUntil
     )
   }
 }
