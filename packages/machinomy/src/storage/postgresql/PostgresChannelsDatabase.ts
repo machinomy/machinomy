@@ -19,7 +19,7 @@ export default class PostgresChannelsDatabase extends AbstractChannelsDatabase<E
         paymentChannel.state,
         paymentChannel.tokenContract,
         paymentChannel.settlementPeriod,
-        paymentChannel.settlingUntil
+        paymentChannel.settlingUntil.toString()
       ]
     ))
   }

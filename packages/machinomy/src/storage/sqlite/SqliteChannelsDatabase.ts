@@ -19,7 +19,8 @@ export default class SqliteChannelsDatabase extends AbstractChannelsDatabase<Eng
           $spent: paymentChannel.spent.toString(),
           $state: paymentChannel.state,
           $tokenContract: paymentChannel.tokenContract,
-          $settlementPeriod: paymentChannel.settlementPeriod
+          $settlementPeriod: paymentChannel.settlementPeriod,
+          $settlingUntil: paymentChannel.settlingUntil.toString()
         })
     })
   }

@@ -20,7 +20,7 @@ export default class NedbChannelsDatabase extends AbstractChannelsDatabase<Engin
       state: paymentChannel.state,
       tokenContract: paymentChannel.tokenContract,
       settlementPeriod: paymentChannel.settlementPeriod,
-      settlingUntil: paymentChannel.settlingUntil
+      settlingUntil: paymentChannel.settlingUntil.toString()
     }
 
     await this.engine.exec(client => {
