@@ -23,7 +23,7 @@ export interface SerializedPaymentChannel {
   sender: string,
   tokenContract?: string
   settlementPeriod: number
-  settlingUntil: BigNumber
+  settlingUntil: string
 }
 
 /**
@@ -95,7 +95,7 @@ export class PaymentChannelSerde implements Serde<PaymentChannel> {
       sender: obj.sender,
       tokenContract: obj.tokenContract,
       settlementPeriod: obj.settlementPeriod,
-      settlingUntil: obj.settlingUntil
+      settlingUntil: obj.settlingUntil.toString()
     }
   }
 
