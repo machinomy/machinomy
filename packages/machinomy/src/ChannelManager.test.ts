@@ -291,7 +291,7 @@ describe('ChannelManager', () => {
         setup(1)
         await channelManager.closeChannel(id)
         expect((channelsDao.save as sinon.SinonStub).lastCall.args[0])
-          .toEqual(new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 1, ''))
+          .toEqual(new PaymentChannel('0xcafe', '0xbeef', id, new BigNumber.BigNumber(1), new BigNumber.BigNumber(0), 1, '', undefined, new BigNumber.BigNumber(1)))
       })
     })
   })
