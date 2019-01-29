@@ -235,7 +235,7 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
 
     this.emit('willOpenChannel', sender, receiver, depositAmount)
     let settlementPeriod = this.machinomyOptions.settlementPeriod || ChannelManager.DEFAULT_SETTLEMENT_PERIOD
-    let paymentChannel = await this.buildChannel(sender, receiver, depositAmount, settlementPeriod, channelId, tokenContract)
+    let paymentChannel = await this.buildChannel(sender, receiver, depositAmount, settlementPeriod, undefined, channelId, tokenContract)
     await this.channelsDao.save(paymentChannel)
     this.emit('didOpenChannel', paymentChannel)
     return paymentChannel
@@ -293,10 +293,10 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
     }
   }
 
-  private async buildChannel (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number, channelId?: ChannelId | string, tokenContract?: string): Promise<PaymentChannel> {
+  private async buildChannel (sender: string, receiver: string, price: BigNumber.BigNumber, settlementPeriod: number, settlingUntil: BigNumber.BigNumber | undefined, channelId?: ChannelId | string, tokenContract?: string): Promise<PaymentChannel> {
     const res = await this.channelContract.open(sender, receiver, price, settlementPeriod, channelId, tokenContract)
     const _channelId = res.logs[0].args.channelId
-    return new PaymentChannel(sender, receiver, _channelId, price, new BigNumber.BigNumber(0), 0, tokenContract, settlementPeriod)
+    return new PaymentChannel(sender, receiver, _channelId, price, new BigNumber.BigNumber(0), 0, tokenContract, settlementPeriod, settlingUntil)
   }
 
   private async handleUnknownChannel (channelId: ChannelId | string): Promise<PaymentChannel | null> {
@@ -312,7 +312,7 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
       return null
     }
 
-    const chan = new PaymentChannel(sender, receiver, channelId, value, new BigNumber.BigNumber(0), settlingUntil.eq(0) ? 0 : 1, '')
+    const chan = new PaymentChannel(sender, receiver, channelId, value, new BigNumber.BigNumber(0), settlingUntil.eq(0) ? 0 : 1, '', undefined, settlingUntil)
     await this.channelsDao.save(chan)
     return chan
   }
