@@ -3,7 +3,7 @@ import PaymentManager from './PaymentManager'
 import ChannelContract from './ChannelContract'
 import { TransactionResult } from 'truffle-contract'
 import Mutex from './Mutex'
-import Payment from './payment'
+import Payment, { PaymentJSON } from './payment'
 import MachinomyOptions from './MachinomyOptions'
 import IChannelManager from './IChannelManager'
 import * as BigNumber from 'bignumber.js'
@@ -19,14 +19,16 @@ import * as uuid from 'uuid'
 import { PaymentNotValidError, InvalidChannelError } from './Exceptions'
 import { RemoteChannelInfo } from './RemoteChannelInfo'
 import { recoverPersonalSignature } from 'eth-sig-util'
+import pify from './util/pify'
 
 const LOG = new Logger('channel-manager')
 
 const DAY_IN_SECONDS = 86400
+const NEW_BLOCK_TIME_IN_SECONDS = 15
 
 export default class ChannelManager extends EventEmitter implements IChannelManager {
   /** Default settlement period for a payment channel */
-  static DEFAULT_SETTLEMENT_PERIOD = 2 * DAY_IN_SECONDS
+  static DEFAULT_SETTLEMENT_PERIOD = 2 * DAY_IN_SECONDS / NEW_BLOCK_TIME_IN_SECONDS
 
   private account: string
 
@@ -264,15 +266,22 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
   }
 
   private settle (channel: PaymentChannel): Promise<TransactionResult> {
-    return this.channelContract.getState(channel.channelId).then((state: number) => {
+    return this.channelContract.getState(channel.channelId).then(async (state: number) => {
       if (state === 2) {
         throw new Error(`Channel ${channel.channelId.toString()} is already settled.`)
       }
 
       switch (state) {
-        case 0:
-          return this.channelContract.startSettle(this.account, channel.channelId)
-            .then((res: TransactionResult) => this.channelsDao.updateState(channel.channelId, 1).then(() => res))
+        case 0: {
+          const block: any = await pify((cb: (error: Error, block: any) => void) => {
+            this.web3.eth.getBlock('latest', cb)
+          })
+          const settlingUntil = block.number + channel.settlingUntil
+          const res = await this.channelContract.startSettle(this.account, channel.channelId)
+          await this.channelsDao.updateState(channel.channelId, 1)
+          await this.channelsDao.updateSettlingUntil(channel.channelId, settlingUntil)
+          return res
+        }
         case 1:
           return this.channelContract.finishSettle(this.account, channel.channelId)
             .then((res: TransactionResult) => this.channelsDao.updateState(channel.channelId, 2).then(() => res))

@@ -81,4 +81,6 @@ export default abstract class AbstractChannelsDatabase<T extends IEngine> implem
   abstract findBySenderReceiverChannelId (sender: string, receiver: string, channelId: ChannelId | string): Promise<PaymentChannel | null>
 
   abstract updateState (channelId: ChannelId | string, state: number): Promise<void>
+
+  abstract updateSettlingUntil (channelId: ChannelId | string, settlingUntil: BigNumber.BigNumber): Promise<void>
 }

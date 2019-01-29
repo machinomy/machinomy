@@ -15,4 +15,5 @@ export default interface IChannelsDatabase {
   findBySenderReceiver (sender: string, receiver: string): Promise<Array<PaymentChannel>>
   findBySenderReceiverChannelId (sender: string, receiver: string, channelId: ChannelId | string): Promise<PaymentChannel | null>
   updateState (channelId: ChannelId | string, state: number): Promise<void>
+  updateSettlingUntil (channelId: ChannelId | string, settlingUntil: BigNumber.BigNumber): Promise<void>
 }

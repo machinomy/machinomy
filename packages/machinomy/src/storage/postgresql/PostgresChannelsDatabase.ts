@@ -134,4 +134,14 @@ export default class PostgresChannelsDatabase extends AbstractChannelsDatabase<E
       ]
     ))
   }
+
+  updateSettlingUntil (channelId: ChannelId | string, settlingUntil: BigNumber.BigNumber): Promise<void> {
+    return this.engine.exec((client: any) => client.query(
+      'UPDATE channel SET settlingUntil = $1 WHERE "channelId" = $2',
+      [
+        settlingUntil.toString(),
+        channelId.toString()
+      ]
+    ))
+  }
 }

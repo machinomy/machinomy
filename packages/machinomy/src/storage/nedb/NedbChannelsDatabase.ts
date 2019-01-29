@@ -145,4 +145,19 @@ export default class NedbChannelsDatabase extends AbstractChannelsDatabase<Engin
       return client.update(query, update, {})
     })
   }
+
+  async updateSettlingUntil (channelId: ChannelId | string, settlingUntil: BigNumber.BigNumber): Promise<void> {
+    const query = {
+      kind: this.kind,
+      channelId: channelId.toString()
+    }
+    const update = {
+      $set: {
+        settlingUntil: settlingUntil.toString()
+      }
+    }
+    await this.engine.exec(client => {
+      return client.update(query, update, {})
+    })
+  }
 }
