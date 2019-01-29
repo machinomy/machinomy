@@ -137,4 +137,14 @@ export default class SqliteChannelsDatabase extends AbstractChannelsDatabase<Eng
         })
     })
   }
+
+  async updateSettlingUntil (channelId: ChannelId | string, settlingUntil: BigNumber.BigNumber): Promise<void> {
+    return this.engine.exec(async client => {
+      return client.run('UPDATE channel SET settlingUntil = $settlingUntil WHERE "channelId" = $channelId',
+        {
+          $settlingUntil: settlingUntil.toString(),
+          $channelId: channelId.toString()
+        })
+    })
+  }
 }
