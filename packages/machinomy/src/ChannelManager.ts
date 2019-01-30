@@ -276,7 +276,7 @@ export default class ChannelManager extends EventEmitter implements IChannelMana
           const block: any = await pify((cb: (error: Error, block: any) => void) => {
             this.web3.eth.getBlock('latest', cb)
           })
-          const settlingUntil = new BigNumber.BigNumber(parseInt(block.number, 10) + channel.settlementPeriod)
+          const settlingUntil = new BigNumber.BigNumber(parseInt(block.number, 10) + parseInt(channel.settlementPeriod.toString(), 10))
           const res = await this.channelContract.startSettle(this.account, channel.channelId)
           await this.channelsDao.updateState(channel.channelId, 1)
           await this.channelsDao.updateSettlingUntil(channel.channelId, settlingUntil)
