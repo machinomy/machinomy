@@ -54,8 +54,12 @@ describe('ChannelManager', () => {
   let machOpts: MachinomyOptions
 
   beforeEach(() => {
+    const pseudoWeb3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'))
     web3 = {
-      currentProvider: {}
+      currentProvider: {},
+      eth: {
+        getBlock: pseudoWeb3.eth.getBlock
+      }
     } as Web3
 
     deployed = {} as any
@@ -177,7 +181,7 @@ describe('ChannelManager', () => {
       channelContract.getState = sinon.stub().resolves(0)
       channelContract.channelById = sinon.stub().withArgs(id).resolves([fakeChan.sender, fakeChan.receiver, fakeChan.value, ChannelManager.DEFAULT_SETTLEMENT_PERIOD, 0])
       channelsDao.updateState = sinon.stub().withArgs(id, 1).resolves()
-
+      channelsDao.updateSettlingUntil = sinon.stub().withArgs(id, 100).resolves()
       return channelManager.closeChannel(id).then((res: TransactionResult) => {
         expect(res).toBe(startSettleResult)
         expect((channelsDao.updateState as sinon.SinonStub).calledWith(id, 1)).toBe(true)
@@ -190,7 +194,7 @@ describe('ChannelManager', () => {
       channelContract.getState = sinon.stub().resolves(1)
       channelContract.channelById = sinon.stub().withArgs(id).resolves([fakeChan.sender, fakeChan.receiver, fakeChan.value, ChannelManager.DEFAULT_SETTLEMENT_PERIOD, 0])
       channelsDao.updateState = sinon.stub().withArgs(id, 2).resolves()
-
+      channelsDao.updateSettlingUntil = sinon.stub().withArgs(id, 100).resolves()
       return channelManager.closeChannel(id).then((res: TransactionResult) => {
         expect(res).toBe(finishSettleResult)
         expect((channelsDao.updateState as sinon.SinonStub).calledWith(id, 2)).toBe(true)
@@ -233,7 +237,7 @@ describe('ChannelManager', () => {
       channelContract.getState = sinon.stub().resolves(0)
       channelContract.channelById = sinon.stub().withArgs(id).resolves([fakeChan.sender, fakeChan.receiver, fakeChan.value, ChannelManager.DEFAULT_SETTLEMENT_PERIOD, 0])
       channelsDao.updateState = sinon.stub().withArgs(id, 1).resolves()
-
+      channelsDao.updateSettlingUntil = sinon.stub().withArgs(id, 100).resolves()
       const will = sinon.stub()
       const did = sinon.stub()
       channelManager.addListener('willCloseChannel', will)
@@ -251,7 +255,7 @@ describe('ChannelManager', () => {
       channelContract.getState = sinon.stub().resolves(0)
       channelsDao.updateState = sinon.stub().withArgs(id, 1).resolves()
       channelContract.channelById = sinon.stub().withArgs(id).resolves([fakeChan.sender, fakeChan.receiver, fakeChan.value, ChannelManager.DEFAULT_SETTLEMENT_PERIOD, 0])
-
+      channelsDao.updateSettlingUntil = sinon.stub().withArgs(id, 100).resolves()
       const order: number[] = []
 
       return Promise.all([
@@ -272,6 +276,7 @@ describe('ChannelManager', () => {
         channelsDao.save = sinon.stub().resolves()
         channelContract.getState = sinon.stub().resolves(0)
         channelsDao.updateState = sinon.stub().withArgs(id, 1).resolves()
+        channelsDao.updateSettlingUntil = sinon.stub().withArgs(id, 100).resolves()
       }
 
       beforeEach(() => {
