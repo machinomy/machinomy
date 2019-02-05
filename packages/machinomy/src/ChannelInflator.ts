@@ -2,6 +2,7 @@ import ChannelEthContract from './ChannelEthContract'
 import ChannelTokenContract from './ChannelTokenContract'
 import { PaymentChannel, PaymentChannelJSON } from './PaymentChannel'
 import { ChannelState } from './ChannelState'
+import { BigNumber } from 'bignumber.js'
 
 export default class ChannelInflator {
   channelEthContract: ChannelEthContract
@@ -24,7 +25,8 @@ export default class ChannelInflator {
     const state = await contract.getState(channelId)
     const channel = await contract.channelById(channelId)
     if (channel) {
-      let value = channel[2]
+      const value = channel[2]
+      const settlingUntil = new BigNumber(channel[4])
 
       return new PaymentChannel(
         paymentChannelJSON.sender,
@@ -35,7 +37,7 @@ export default class ChannelInflator {
         state === ChannelState.Impossible ? ChannelState.Settled : state,
         paymentChannelJSON.tokenContract,
         paymentChannelJSON.settlementPeriod,
-        paymentChannelJSON.settlingUntil
+        settlingUntil
       )
     } else {
       return null
