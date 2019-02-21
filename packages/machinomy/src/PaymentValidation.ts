@@ -31,7 +31,6 @@ export default class PaymentValidation {
       this.isValidChannelValue(),
       this.isValidChannelId(),
       this.isValidPaymentValue(),
-      this.isGreaterThanPrevious(),
       this.isValidSender(),
       this.isPositive(),
       this.canClaim(),
@@ -62,14 +61,6 @@ export default class PaymentValidation {
       error(`Payment value exceeds the channel value. Channel value: ${this.paymentChannel.value}, payment: %o`, this.payment)
     }
     return isValidPaymentValue
-  }
-
-  private async isGreaterThanPrevious (): Promise<boolean> {
-    const isGreaterThanPrevious = this.paymentChannel.spent.add(this.payment.price).lte(this.payment.value)
-    if (!isGreaterThanPrevious) {
-      error(`Payment value is less than the previous payment. Payment: %o`, this.payment)
-    }
-    return isGreaterThanPrevious
   }
 
   private async isValidSender (): Promise<boolean> {
