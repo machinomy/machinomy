@@ -32,7 +32,7 @@ export namespace {{contractName}} {
 {{/each}}
 
   export function contract (provider?: Web3.Provider, defaults?: Web3.CallData): truffle.TruffleContract<Contract> {
-    let instance = truffle<Contract>(ARTIFACT)
+    let instance = truffle.default<Contract>(ARTIFACT)
     if (provider) {
       instance.setProvider(provider)
     }
